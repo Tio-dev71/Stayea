@@ -31,6 +31,7 @@ import { OrderModule } from '@/modules/order/order.module'
 import { ScheduledTasksModule } from '@/modules/scheduled-tasks/scheduled-tasks.module'
 import { TodoModule } from '@/modules/todo/todo.module'
 import { UploadModule } from '@/modules/upload/upload.module'
+import { StayeaModule } from '@/modules/stayea/stayea.module'
 
 import type { Env } from '@/app/config/env.schema'
 import type { NestModule, MiddlewareConsumer } from '@nestjs/common'
@@ -93,6 +94,7 @@ import type { NestModule, MiddlewareConsumer } from '@nestjs/common'
     ScheduledTasksModule, // Scheduled tasks (cron, interval, timeout examples)
     UploadModule, // File upload (Multer + local storage)
     AnalyticsModule, // Analytics dashboard data endpoints
+    StayeaModule, // Stayea platform backend modules
   ],
   providers: [
     // Global guards (order matters: JWT first, then roles, then throttler)

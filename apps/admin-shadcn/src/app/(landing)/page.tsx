@@ -1,5 +1,5 @@
-import { HeroSection } from '@/features/landing/hero-section'
+import { StayeaLandingPage } from "@/features/landing/stayea-landing-page"
 
 export default function Home() {
-  return <HeroSection />
+  return <StayeaLandingPage />
 }

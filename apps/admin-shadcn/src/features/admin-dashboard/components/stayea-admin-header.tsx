@@ -1,0 +1,123 @@
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Search, Bell, MessageSquare, Menu } from "lucide-react"
+
+interface StayeaAdminHeaderProps {
+  searchPlaceholder?: string
+  onSearch?: (query: string) => void
+  onNavigateLanding?: () => void
+  onToggleSidebar?: () => void
+}
+
+export function StayeaAdminHeader({
+  searchPlaceholder = "Tìm kiếm đặt phòng, khách hàng, bất động sản, đối tác...",
+  onSearch,
+  onNavigateLanding,
+  onToggleSidebar,
+}: StayeaAdminHeaderProps) {
+  const [searchVal, setSearchVal] = useState("")
+
+  return (
+    <header className="sticky top-0 z-40 w-full h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between gap-4">
+      {/* 1. Left: Hamburger Menu & Brand Logo */}
+      <div className="flex items-center gap-3 shrink-0">
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          aria-label="Toggle menu"
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onNavigateLanding}
+          className="flex items-center gap-2.5 text-left group"
+          title="Về trang chủ Stayea"
+        >
+          {/* Custom Green House Icon */}
+          <div className="w-9 h-9 rounded-xl bg-[#1b7a4e] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
+            <svg
+              className="w-5 h-5 fill-current"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
+            </svg>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-sans text-lg font-bold text-slate-900 leading-tight tracking-tight">
+              Stayea<span className="text-slate-500 font-normal">.com</span>
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium leading-none">
+              Ở đâu cũng là nhà
+            </span>
+          </div>
+        </button>
+      </div>
+
+      {/* 2. Middle: Large Search Input */}
+      <div className="flex-1 max-w-xl mx-4 hidden md:block">
+        <div className="relative flex items-center">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+          <input
+            type="text"
+            value={searchVal}
+            onChange={(e) => {
+              setSearchVal(e.target.value)
+              onSearch?.(e.target.value)
+            }}
+            placeholder={searchPlaceholder}
+            className="w-full bg-slate-100/70 hover:bg-slate-100 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 rounded-xl pl-9 pr-4 py-2 border border-transparent focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all shadow-xs"
+          />
+        </div>
+      </div>
+
+      {/* 3. Right: Notifications, Messages & Profile */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Notification Bell with Badge 3 */}
+        <button
+          type="button"
+          aria-label="Thông báo"
+          className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+        >
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-xs">
+            3
+          </span>
+        </button>
+
+        {/* Message Bubble Icon */}
+        <button
+          type="button"
+          aria-label="Tin nhắn"
+          className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+        >
+          <MessageSquare className="w-5 h-5" />
+        </button>
+
+        {/* User Profile Pill */}
+        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
+          <div className="relative w-9 h-9 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
+            <Image
+              src="/about/team-1.jpg"
+              alt="Nguyễn Minh"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="hidden sm:flex flex-col text-left">
+            <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors leading-tight">
+              Nguyễn Minh
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium leading-none">
+              Quản trị viên
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}

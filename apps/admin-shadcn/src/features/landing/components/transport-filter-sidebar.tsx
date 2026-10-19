@@ -1,0 +1,309 @@
+"use client"
+
+import * as React from "react"
+import { ChevronDown, SlidersHorizontal, Check } from "lucide-react"
+
+export interface TransportFilterState {
+  pricePreset: string | null
+  maxPrice: number
+  selectedServiceTypes: string[]
+  selectedLocations: string[]
+  selectedAmenities: string[]
+  selectedSuitability: string[]
+  sortOption: string
+}
+
+interface TransportFilterSidebarProps {
+  readonly filters: TransportFilterState
+  readonly onFiltersChange: React.Dispatch<React.SetStateAction<TransportFilterState>>
+  readonly onResetFilters: () => void
+}
+
+export function TransportFilterSidebar({
+  filters,
+  onFiltersChange,
+  onResetFilters,
+}: TransportFilterSidebarProps) {
+  function toggleServiceType(id: string) {
+    onFiltersChange((prev) => {
+      const exists = prev.selectedServiceTypes.includes(id)
+      return {
+        ...prev,
+        selectedServiceTypes: exists
+          ? prev.selectedServiceTypes.filter((item) => item !== id)
+          : [...prev.selectedServiceTypes, id],
+      }
+    })
+  }
+
+  function toggleLocation(id: string) {
+    onFiltersChange((prev) => {
+      const exists = prev.selectedLocations.includes(id)
+      return {
+        ...prev,
+        selectedLocations: exists
+          ? prev.selectedLocations.filter((item) => item !== id)
+          : [...prev.selectedLocations, id],
+      }
+    })
+  }
+
+  function toggleAmenity(id: string) {
+    onFiltersChange((prev) => {
+      const exists = prev.selectedAmenities.includes(id)
+      return {
+        ...prev,
+        selectedAmenities: exists
+          ? prev.selectedAmenities.filter((item) => item !== id)
+          : [...prev.selectedAmenities, id],
+      }
+    })
+  }
+
+  function toggleSuitability(id: string) {
+    onFiltersChange((prev) => {
+      const exists = prev.selectedSuitability.includes(id)
+      return {
+        ...prev,
+        selectedSuitability: exists
+          ? prev.selectedSuitability.filter((item) => item !== id)
+          : [...prev.selectedSuitability, id],
+      }
+    })
+  }
+
+  function handlePriceChipClick(preset: string) {
+    onFiltersChange((prev) => ({
+      ...prev,
+      pricePreset: prev.pricePreset === preset ? null : preset,
+    }))
+  }
+
+  return (
+    <aside className="w-full lg:w-[280px] shrink-0 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-6">
+      {/* Sidebar Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-teal-600" />
+          <h3 className="font-bold text-slate-900 text-base">Bộ lọc tìm kiếm</h3>
+        </div>
+        <button
+          type="button"
+          onClick={onResetFilters}
+          className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline transition-all"
+        >
+          Xóa tất cả
+        </button>
+      </div>
+
+      {/* 1. Khoảng giá (VND) */}
+      <div className="space-y-3 pb-5 border-b border-slate-100">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-800">Khoảng giá (VND)</span>
+          <span className="text-[11px] text-slate-500 font-medium">0đ - 5.000.000đ+</span>
+        </div>
+
+        {/* Range slider visual */}
+        <div className="relative pt-1 pb-2">
+          <input
+            type="range"
+            min={0}
+            max={5_000_000}
+            step={100_000}
+            value={filters.maxPrice}
+            onChange={(e) =>
+              onFiltersChange((prev) => ({ ...prev, maxPrice: Number(e.target.value) }))
+            }
+            className="w-full accent-teal-600 cursor-pointer h-1.5 bg-slate-100 rounded-lg"
+          />
+        </div>
+
+        {/* 4 Quick price chips (2x2 grid) */}
+        <div className="grid grid-cols-2 gap-1.5">
+          {[
+            { id: "under-500k", label: "Dưới 500.000đ" },
+            { id: "500k-1m", label: "500.000đ - 1.000.000đ" },
+            { id: "1m-2m", label: "1.000.000đ - 2.000.000đ" },
+            { id: "above-2m", label: "Trên 2.000.000đ" },
+          ].map((chip) => {
+            const isSelected = filters.pricePreset === chip.id
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => handlePriceChipClick(chip.id)}
+                className={`px-2 py-1.5 rounded-lg text-[11px] font-medium transition-colors border text-left truncate ${
+                  isSelected
+                    ? "bg-teal-50 border-teal-500 text-teal-800 font-semibold"
+                    : "bg-slate-50/60 border-slate-200 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                {chip.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 2. Loại dịch vụ */}
+      <div className="space-y-2.5 pb-5 border-b border-slate-100">
+        <h4 className="text-xs font-bold text-slate-800">Loại dịch vụ</h4>
+        <div className="grid grid-cols-2 gap-y-2 gap-x-1">
+          {[
+            { id: "airport-transfer", label: "Đưa đón sân bay", count: 32 },
+            { id: "car-rental", label: "Thuê ô tô", count: 48 },
+            { id: "motorbike-rental", label: "Thuê xe máy", count: 56 },
+            { id: "private-driver", label: "Tài xế riêng", count: 28 },
+          ].map((item) => {
+            const isChecked = filters.selectedServiceTypes.includes(item.id)
+            return (
+              <label
+                key={item.id}
+                className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-600 hover:text-slate-900 group select-none"
+              >
+                <div
+                  onClick={() => toggleServiceType(item.id)}
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                    isChecked
+                      ? "bg-teal-600 border-teal-600 text-white"
+                      : "border-slate-300 group-hover:border-slate-400 bg-white"
+                  }`}
+                >
+                  {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                </div>
+                <span className="truncate">{item.label}</span>
+                <span className="text-[10px] text-slate-400">({item.count})</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 3. Khu vực */}
+      <div className="space-y-2.5 pb-5 border-b border-slate-100">
+        <h4 className="text-xs font-bold text-slate-800">Khu vực</h4>
+        <div className="grid grid-cols-2 gap-y-2 gap-x-1">
+          {[
+            { id: "san-bay-phu-quoc", label: "Sân bay Phú Quốc", count: 62 },
+            { id: "duong-dong", label: "Dương Đông", count: 38 },
+            { id: "bai-truong", label: "Bãi Trường", count: 24 },
+            { id: "bai-sao", label: "Bãi Sao", count: 18 },
+            { id: "nam-dao", label: "Nam Đảo", count: 26 },
+            { id: "bac-dao", label: "Bắc Đảo", count: 18 },
+          ].map((item) => {
+            const isChecked = filters.selectedLocations.includes(item.id)
+            return (
+              <label
+                key={item.id}
+                className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-600 hover:text-slate-900 group select-none"
+              >
+                <div
+                  onClick={() => toggleLocation(item.id)}
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                    isChecked
+                      ? "bg-teal-600 border-teal-600 text-white"
+                      : "border-slate-300 group-hover:border-slate-400 bg-white"
+                  }`}
+                >
+                  {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                </div>
+                <span className="truncate">{item.label}</span>
+                <span className="text-[10px] text-slate-400">({item.count})</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 4. Tiện ích */}
+      <div className="space-y-2.5 pb-5 border-b border-slate-100">
+        <h4 className="text-xs font-bold text-slate-800">Tiện ích</h4>
+        <div className="grid grid-cols-2 gap-y-2 gap-x-1">
+          {[
+            { id: "don-tan-noi", label: "Đón tiễn tận nơi", count: 96 },
+            { id: "bao-hiem", label: "Bảo hiểm", count: 88 },
+            { id: "ghe-tre-em", label: "Ghế trẻ em", count: 24 },
+            { id: "wifi", label: "Wi-Fi", count: 22 },
+            { id: "nuoc-uong", label: "Nước uống miễn phí", count: 76 },
+          ].map((item) => {
+            const isChecked = filters.selectedAmenities.includes(item.id)
+            return (
+              <label
+                key={item.id}
+                className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-600 hover:text-slate-900 group select-none"
+              >
+                <div
+                  onClick={() => toggleAmenity(item.id)}
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                    isChecked
+                      ? "bg-teal-600 border-teal-600 text-white"
+                      : "border-slate-300 group-hover:border-slate-400 bg-white"
+                  }`}
+                >
+                  {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                </div>
+                <span className="truncate">{item.label}</span>
+                <span className="text-[10px] text-slate-400">({item.count})</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 5. Phù hợp cho */}
+      <div className="space-y-2.5 pb-5 border-b border-slate-100">
+        <h4 className="text-xs font-bold text-slate-800">Phù hợp cho</h4>
+        <div className="grid grid-cols-2 gap-y-2 gap-x-1">
+          {[
+            { id: "ca-nhan", label: "Cá nhân", count: 62 },
+            { id: "cap-doi", label: "Cặp đôi", count: 48 },
+            { id: "gia-dinh", label: "Gia đình", count: 46 },
+            { id: "nhom-ban", label: "Nhóm bạn", count: 38 },
+            { id: "doanh-nghiep", label: "Doanh nghiệp", count: 24 },
+          ].map((item) => {
+            const isChecked = filters.selectedSuitability.includes(item.id)
+            return (
+              <label
+                key={item.id}
+                className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-600 hover:text-slate-900 group select-none"
+              >
+                <div
+                  onClick={() => toggleSuitability(item.id)}
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                    isChecked
+                      ? "bg-teal-600 border-teal-600 text-white"
+                      : "border-slate-300 group-hover:border-slate-400 bg-white"
+                  }`}
+                >
+                  {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                </div>
+                <span className="truncate">{item.label}</span>
+                <span className="text-[10px] text-slate-400">({item.count})</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 6. Sắp xếp Dropdown */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-800 block">Sắp xếp</label>
+        <div className="relative">
+          <select
+            value={filters.sortOption}
+            onChange={(e) =>
+              onFiltersChange((prev) => ({ ...prev, sortOption: e.target.value }))
+            }
+            className="w-full h-9 pl-3 pr-8 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 outline-none cursor-pointer appearance-none hover:bg-slate-100 transition-colors"
+          >
+            <option value="popular">Phổ biến nhất</option>
+            <option value="price-low">Giá: Thấp đến cao</option>
+            <option value="price-high">Giá: Cao đến thấp</option>
+            <option value="rating">Đánh giá cao nhất</option>
+          </select>
+          <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+        </div>
+      </div>
+    </aside>
+  )
+}

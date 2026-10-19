@@ -7,7 +7,10 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   transpilePackages: ['@workspace/ui'],
   images: {
-    remotePatterns: [{ hostname: 'images.shadcnspace.com' }],
+    remotePatterns: [
+      { hostname: 'images.shadcnspace.com' },
+      { hostname: 'images.unsplash.com' },
+    ],
   },
   turbopack: {
     root: path.resolve(__dirname, '../..'),

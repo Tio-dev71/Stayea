@@ -1,5 +1,5 @@
-import AnalyticsDashboardPage from '@/features/analytics-dashboard/analytics-dashboard-page'
+import { StayeaAdminDashboardPage } from '@/features/admin-dashboard'
 
 export default function Page() {
-  return <AnalyticsDashboardPage />
+  return <StayeaAdminDashboardPage />
 }

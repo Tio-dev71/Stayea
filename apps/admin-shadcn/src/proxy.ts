@@ -7,6 +7,9 @@ export const proxy: NextProxy = (request: NextRequest) => {
   const { pathname } = request.nextUrl
 
   if (!token) {
+    if (pathname === "/" || /\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?)$/i.test(pathname)) {
+      return NextResponse.next()
+    }
     const loginUrl = new URL(`/login?redirectTo=${encodeURIComponent(pathname)}`, request.url)
     return NextResponse.redirect(loginUrl)
   }

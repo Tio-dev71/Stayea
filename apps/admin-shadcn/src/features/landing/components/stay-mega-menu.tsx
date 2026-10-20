@@ -43,10 +43,11 @@ function getCategoryIcon(iconName: string) {
 
 interface StayMegaMenuProps {
   readonly onClose: () => void
+  readonly onNavigate?: (item: string, category?: string) => void
 }
 
-export function StayMegaMenu({ onClose }: StayMegaMenuProps) {
-  const { kicker, title, description, features, ctaText, ctaHref, banners } = STAY_MEGA_MENU_DATA
+export function StayMegaMenu({ onClose, onNavigate }: StayMegaMenuProps) {
+  const { kicker, title, description, features, ctaText, banners } = STAY_MEGA_MENU_DATA
 
   return (
     <div
@@ -99,8 +100,14 @@ export function StayMegaMenu({ onClose }: StayMegaMenuProps) {
           {/* CTA Button */}
           <div className="relative z-10 mt-7">
             <Link
-              href={ctaHref}
-              onClick={onClose}
+              href="/stay"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("stay")
+                }
+                onClose()
+              }}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 hover:border-slate-800 text-slate-800 text-xs font-semibold hover:bg-slate-50 transition-all shadow-sm group"
             >
               <span>{ctaText}</span>
@@ -116,8 +123,14 @@ export function StayMegaMenu({ onClose }: StayMegaMenuProps) {
           {ACCOMMODATIONS.map((item) => (
             <Link
               key={item.id}
-              href={`#${item.id}`}
-              onClick={onClose}
+              href={`/stay#${item.id}`}
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("stay", item.id)
+                }
+                onClose()
+              }}
               className="group flex items-center gap-3 p-1.5 rounded-2xl hover:bg-slate-50/90 transition-all"
             >
               {/* Thumbnail Image */}
@@ -168,8 +181,14 @@ export function StayMegaMenu({ onClose }: StayMegaMenuProps) {
           {banners.map((banner) => (
             <Link
               key={banner.id}
-              href={banner.href}
-              onClick={onClose}
+              href="/experience"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("experience")
+                }
+                onClose()
+              }}
               className="group relative h-[160px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all block"
             >
               <Image

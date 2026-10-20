@@ -13,6 +13,7 @@ import {
 
 interface PackageMegaMenuProps {
   readonly onClose: () => void
+  readonly onNavigate?: (item: string, category?: string) => void
 }
 
 const PACKAGE_STYLES = [
@@ -53,7 +54,7 @@ const PACKAGE_STYLES = [
   },
 ]
 
-export function PackageMegaMenu({ onClose }: PackageMegaMenuProps) {
+export function PackageMegaMenu({ onClose, onNavigate }: PackageMegaMenuProps) {
   return (
     <div
       onMouseLeave={onClose}
@@ -67,8 +68,14 @@ export function PackageMegaMenu({ onClose }: PackageMegaMenuProps) {
               Phong cách hành trình
             </h4>
             <Link
-              href="#packages"
-              onClick={onClose}
+              href="/packages"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("Gói")
+                }
+                onClose()
+              }}
               className="text-xs font-semibold text-[#0c3b40] hover:text-[#072528] flex items-center gap-1 group"
             >
               <span>Xem tất cả</span>
@@ -82,8 +89,14 @@ export function PackageMegaMenu({ onClose }: PackageMegaMenuProps) {
               return (
                 <Link
                   key={style.id}
-                  href={`#packages?audience=${style.id}`}
-                  onClick={onClose}
+                  href="/packages"
+                  onClick={(e) => {
+                    if (onNavigate) {
+                      e.preventDefault()
+                      onNavigate("packages", style.id)
+                    }
+                    onClose()
+                  }}
                   className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
                 >
                   <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-[#0c3b40]/10 transition-colors">
@@ -110,8 +123,14 @@ export function PackageMegaMenu({ onClose }: PackageMegaMenuProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Card 1 */}
             <Link
-              href="#packages"
-              onClick={onClose}
+              href="/packages"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("packages")
+                }
+                onClose()
+              }}
               className="group block rounded-xl overflow-hidden border border-slate-100 hover:shadow-md transition-all"
             >
               <div className="relative h-28 w-full">
@@ -138,8 +157,14 @@ export function PackageMegaMenu({ onClose }: PackageMegaMenuProps) {
 
             {/* Card 2 */}
             <Link
-              href="#packages"
-              onClick={onClose}
+              href="/packages"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("packages")
+                }
+                onClose()
+              }}
               className="group block rounded-xl overflow-hidden border border-slate-100 hover:shadow-md transition-all"
             >
               <div className="relative h-28 w-full">
@@ -184,8 +209,14 @@ export function PackageMegaMenu({ onClose }: PackageMegaMenuProps) {
 
             <div className="pt-4 relative z-10">
               <Link
-                href="#packages"
-                onClick={onClose}
+                href="/packages"
+                onClick={(e) => {
+                  if (onNavigate) {
+                    e.preventDefault()
+                    onNavigate("packages")
+                  }
+                  onClose()
+                }}
                 className="inline-flex items-center justify-center w-full px-4 py-2 rounded-xl bg-white text-[#0c3b40] hover:bg-slate-100 text-xs font-bold transition-colors"
               >
                 <span>Khám phá ngay</span>

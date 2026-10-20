@@ -23,13 +23,31 @@ const INITIAL_FILTERS: StayFilterState = {
 
 interface StayListingPageProps {
   readonly onNavigate?: (item: string) => void
+  readonly initialCategory?: string
 }
 
-export function StayListingPage({ onNavigate }: StayListingPageProps = {}) {
+export function StayListingPage({ onNavigate, initialCategory }: StayListingPageProps = {}) {
   const handleBookingClick = React.useCallback(() => {
     onNavigate?.("new-booking")
   }, [onNavigate])
-  const [activeCategoryTab, setActiveCategoryTab] = React.useState<string>("all")
+
+  const normalizedInit = React.useMemo(() => {
+    if (!initialCategory) return "all"
+    if (initialCategory === "villa") return "villas"
+    if (initialCategory === "apartment") return "apartments"
+    if (initialCategory === "homestay") return "homestays"
+    if (initialCategory === "hotel") return "hotels"
+    if (initialCategory === "long-term") return "long-stay"
+    return initialCategory
+  }, [initialCategory])
+
+  const [activeCategoryTab, setActiveCategoryTab] = React.useState<string>(normalizedInit)
+
+  React.useEffect(() => {
+    if (normalizedInit) {
+      setActiveCategoryTab(normalizedInit)
+    }
+  }, [normalizedInit])
   const [filters, setFilters] = React.useState<StayFilterState>(INITIAL_FILTERS)
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
   const [pageSize, setPageSize] = React.useState<number>(12)

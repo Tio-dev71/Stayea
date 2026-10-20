@@ -82,22 +82,57 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
     | "stayea-club-claimed" | "transport"
 
+  const [activeStayCategory, setActiveStayCategory] = React.useState<string>("all")
+  const [activeExperienceCategory, setActiveExperienceCategory] = React.useState<string>("all")
+  const [activeTransportCategory, setActiveTransportCategory] = React.useState<string>("all")
+  const [activeExploreCategory, setActiveExploreCategory] = React.useState<string>("all")
+  const [activeDealsCategory, setActiveDealsCategory] = React.useState<string>("all")
+  const [activePackageAudience, setActivePackageAudience] = React.useState<string>("all")
+
   const [pageState, setPageState] = React.useState<PageType>(() => {
     if (initialPage) return initialPage
     if (typeof window !== "undefined") {
+      const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
+      const pathSegment = pathname.split("/")[0]
+      if (pathSegment && pathSegment !== "") {
+        if (pathSegment === "stay" || pathSegment === "luu-tru") return "stay"
+        if (pathSegment === "experience" || pathSegment === "trai-nghiem") return "experience"
+        if (pathSegment === "packages" || pathSegment === "goi") return "packages"
+        if (pathSegment === "transport" || pathSegment === "di-chuyen") return "transport"
+        if (pathSegment === "phu-quoc" || pathSegment === "explore") return "phu-quoc"
+        if (pathSegment === "deals" || pathSegment === "uu-dai") return "deals"
+        if (pathSegment === "host" || pathSegment === "chu-nha") return "host"
+        if (pathSegment === "partner" || pathSegment === "doi-tac") return "partner"
+        if (pathSegment === "about" || pathSegment === "ve-stayea") return "about"
+        if (pathSegment === "stayea-club" || pathSegment === "club") return "stayea-club"
+        if (pathSegment === "profile") return "profile"
+        if (pathSegment === "bookings") return "bookings"
+        if (pathSegment === "plans") return "plans"
+        if (pathSegment === "favorites") return "favorites"
+        if (pathSegment === "reviews") return "reviews"
+        if (pathSegment === "payment") return "payment"
+        if (pathSegment === "settings") return "settings"
+        if (pathSegment === "flight-booking") return "flight-booking"
+        if (pathSegment === "my-deals") return "my-deals"
+        if (pathSegment === "account-info") return "account-info"
+        if (pathSegment === "new-booking") return "new-booking"
+        if (pathSegment === "add-payment") return "add-payment"
+        if (pathSegment === "stayea-club-claimed") return "stayea-club-claimed"
+      }
       const params = new URLSearchParams(window.location.search)
       const pageParam = params.get("page")
       if (pageParam) return pageParam as PageType
       const hash = window.location.hash.replace("#", "").toLowerCase()
       if (hash === "host" || hash === "chu-nha") return "host"
       if (hash === "partner" || hash === "doi-tac") return "partner"
-      if (hash === "about" || hash === "ve-stayea") return "about"
+      if (hash === "about" || hash === "ve-stayea" || hash === "support" || hash === "ho-tro") return "about"
       if (hash === "club" || hash === "stayea-club") return "stayea-club"
-      if (hash === "stay" || hash === "luu-tru") return "stay"
+      if (hash === "stay" || hash === "luu-tru" || hash === "villas" || hash === "apartments" || hash === "homestays") return "stay"
       if (hash === "experience" || hash === "trai-nghiem") return "experience"
       if (hash === "packages" || hash === "goi") return "packages"
       if (hash === "transport" || hash === "di-chuyen") return "transport"
       if (hash === "deals" || hash === "uu-dai") return "deals"
+      if (hash === "phu-quoc" || hash === "explore") return "phu-quoc"
     }
     return "home"
   })
@@ -110,20 +145,17 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     []
   )
 
-  // Synchronize URL search params smoothly on pageState change without triggering React render conflicts
+  // Synchronize clean URL path on pageState change without triggering React render conflicts
   React.useEffect(() => {
     if (typeof window === "undefined") return
     try {
-      const url = new URL(window.location.href)
-      const currentUrlPage = url.searchParams.get("page")
-      if (pageState === "home") {
-        if (currentUrlPage) {
-          url.searchParams.delete("page")
-          window.history.replaceState(null, "", url.toString())
-        }
-      } else if (currentUrlPage !== pageState) {
-        url.searchParams.set("page", pageState)
-        window.history.pushState(null, "", url.toString())
+      const targetPath = pageState === "home" ? "/" : `/${pageState}`
+      const currentPath = window.location.pathname
+      const currentSearch = window.location.search
+
+      // Only pushState if we are not already at targetPath or if query params need clearing
+      if (currentPath !== targetPath || currentSearch) {
+        window.history.pushState(null, "", targetPath)
       }
     } catch {
       // Safe fallback
@@ -156,12 +188,30 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   React.useEffect(() => {
     function parseRoute() {
       if (typeof window === "undefined") return
+      const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
+      const pathSegment = pathname.split("/")[0] || ""
       const params = new URLSearchParams(window.location.search)
       const page = params.get("page")
-      const hash = window.location.hash.replace("#", "")
+      const hash = window.location.hash.replace("#", "").toLowerCase()
       setCurrentHash(window.location.hash)
 
-      const target = (page || hash).toLowerCase()
+      if (
+        hash === "villas" ||
+        hash === "apartments" ||
+        hash === "homestays" ||
+        hash === "hotels" ||
+        hash === "long-stay" ||
+        hash === "long-term" ||
+        hash === "verified" ||
+        hash === "select"
+      ) {
+        setActiveStayCategory(hash)
+        setCurrentPage("stay")
+        setActiveItem("Lưu trú")
+        return
+      }
+
+      const target = (pathSegment || page || hash).toLowerCase()
 
       if (
         target === "admin-bookings" ||
@@ -554,7 +604,28 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     }
   }, [setCurrentPage, initialPage])
 
-  function handleNavigate(item: string) {
+  function handleNavigate(item: string, subCategory?: string) {
+    if (subCategory) {
+      if (
+        item === "stay" ||
+        item === "Lưu trú" ||
+        item === "villas" ||
+        item === "homestays" ||
+        item === "apartments"
+      ) {
+        setActiveStayCategory(subCategory)
+      } else if (item === "experience" || item === "Trải nghiệm") {
+        setActiveExperienceCategory(subCategory)
+      } else if (item === "transport" || item === "Di chuyển") {
+        setActiveTransportCategory(subCategory)
+      } else if (item === "phu-quoc" || item === "Khám phá") {
+        setActiveExploreCategory(subCategory)
+      } else if (item === "deals" || item === "Ưu đãi") {
+        setActiveDealsCategory(subCategory)
+      } else if (item === "packages" || item === "Gói") {
+        setActivePackageAudience(subCategory)
+      }
+    }
     if (
       item === "bao-cao" ||
       item === "Báo cáo" ||
@@ -565,8 +636,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("admin-reports")
       setIsLoggedIn(true)
       setActiveItem("Báo cáo")
-      window.location.hash = "bao-cao"
-      return
+            return
     }
     if (
       item === "marketing" ||
@@ -576,8 +646,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("admin-marketing")
       setIsLoggedIn(true)
       setActiveItem("Marketing")
-      window.location.hash = "marketing"
-      return
+            return
     }
     if (
       item === "admin-bookings" ||
@@ -588,8 +657,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Đặt phòng")
       setActiveDropdown(null)
-      window.location.hash = "admin-bookings"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "admin-customers" ||
       item === "khach-hang" ||
@@ -600,8 +668,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Khách hàng")
       setActiveDropdown(null)
-      window.location.hash = "customers"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "admin-experiences" ||
       item === "trai-nghiem-tour" ||
@@ -612,8 +679,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Trải nghiệm & Tour")
       setActiveDropdown(null)
-      window.location.hash = "experiences"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "admin-hosts" ||
       item === "chu-nha-doi-tac" ||
@@ -625,8 +691,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Chủ nhà/Đối tác")
       setActiveDropdown(null)
-      window.location.hash = "hosts"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "dashboard" ||
       item === "admin" ||
@@ -638,8 +703,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Dashboard")
       setActiveDropdown(null)
-      window.location.hash = "dashboard"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "settings" ||
       item === "cai-dat" ||
@@ -649,8 +713,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Cài đặt")
       setActiveDropdown(null)
-      window.location.hash = "settings"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "flight-booking" ||
       item === "dat-ve-may-bay" ||
@@ -661,8 +724,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Di chuyển")
       setActiveDropdown(null)
-      window.location.hash = "flight-booking"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "stayea-club-claimed" ||
       item === "club-claimed" ||
@@ -672,8 +734,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Stayea Club")
       setActiveDropdown(null)
-      window.location.hash = "stayea-club-claimed"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "stayea-club" ||
       item === "staya-club" ||
@@ -685,8 +746,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Stayea Club")
       setActiveDropdown(null)
-      window.location.hash = "stayea-club"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "my-deals" ||
       item === "uu-dai-cua-toi" ||
@@ -698,8 +758,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Ưu đãi của tôi")
       setActiveDropdown(null)
-      window.location.hash = "my-deals"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "add-payment" ||
       item === "them-phuong-thuc" ||
@@ -710,8 +769,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Phương thức thanh toán")
       setActiveDropdown(null)
-      window.location.hash = "add-payment"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "payment" ||
       item === "thanh-toan" ||
@@ -723,8 +781,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Phương thức thanh toán")
       setActiveDropdown(null)
-      window.location.hash = "payment"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "account-info" ||
       item === "thong-tin-ca-nhan" ||
@@ -737,8 +794,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Thông tin cá nhân")
       setActiveDropdown(null)
-      window.location.hash = "account-info"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "reviews" ||
       item === "danh-gia" ||
@@ -750,8 +806,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Đánh giá của tôi")
       setActiveDropdown(null)
-      window.location.hash = "reviews"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "favorites" ||
       item === "yeu-thich" ||
@@ -762,8 +817,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Yêu thích")
       setActiveDropdown(null)
-      window.location.hash = "favorites"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "plans" ||
       item === "ke-hoach" ||
@@ -775,8 +829,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Kế hoạch của tôi")
       setActiveDropdown(null)
-      window.location.hash = "plans"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "new-booking" ||
       item === "dat-dich-vu-moi" ||
@@ -786,8 +839,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Đơn đặt dịch vụ")
       setActiveDropdown(null)
-      window.location.hash = "new-booking"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "bookings" ||
       item === "Đơn đặt dịch vụ" ||
@@ -798,8 +850,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Đơn đặt dịch vụ")
       setActiveDropdown(null)
-      window.location.hash = "bookings"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "profile" ||
       item === "Trang cá nhân" ||
@@ -810,33 +861,28 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Trang cá nhân")
       setActiveDropdown(null)
-      window.location.hash = "profile"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "logout" || item === "Đăng xuất") {
       setIsLoggedIn(false)
       setCurrentPage("login")
       setActiveItem("Đăng nhập")
       setActiveDropdown(null)
-      window.location.hash = "login"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "login" || item === "Đăng nhập" || item === "dang-nhap") {
       setCurrentPage("login")
       setActiveItem("Đăng nhập")
       setActiveDropdown(null)
-      window.location.hash = "login"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "register" || item === "Đăng ký" || item === "dang-ky") {
       setCurrentPage("register")
       setActiveItem("Đăng nhập")
       setActiveDropdown(null)
-      window.location.hash = "register"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "Trang chủ") {
       setCurrentPage("home")
       setActiveItem("Trang chủ")
       setActiveDropdown(null)
-      window.location.hash = "home"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "Ưu đãi" ||
       item === "deals" ||
@@ -848,8 +894,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("deals")
       setActiveItem("Ưu đãi")
       setActiveDropdown(null)
-      window.location.hash = "deals"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "Di chuyển" ||
       item === "transport" ||
@@ -860,8 +905,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("transport")
       setActiveItem("Di chuyển")
       setActiveDropdown(null)
-      window.location.hash = "transport"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "Khám phá" ||
       item === "Khám phá Phú Quốc" ||
@@ -872,8 +916,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("phu-quoc")
       setActiveItem("Khám phá")
       setActiveDropdown(null)
-      window.location.hash = "phu-quoc"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "Gói" ||
       item === "Tour" ||
@@ -885,8 +928,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("packages")
       setActiveItem("Gói")
       setActiveDropdown(null)
-      window.location.hash = "packages"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "Trải nghiệm" ||
       item === "experience" ||
@@ -896,8 +938,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("experience")
       setActiveItem("Trải nghiệm")
       setActiveDropdown(null)
-      window.location.hash = "experience"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
       item === "Lưu trú" ||
       item === "stay" ||
@@ -908,40 +949,35 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setCurrentPage("stay")
       setActiveItem("Lưu trú")
       setActiveDropdown(null)
-      window.location.hash = "stay"
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    } else if (item === "Về Stayea") {
-      setCurrentPage("about")
-      setActiveItem("Về Stayea")
-      setActiveDropdown(null)
-      window.location.hash = "about"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (
+      item === "Về Stayea" ||
+      item === "about" ||
+      item === "Hỗ trợ" ||
       item === "support" ||
       item === "ho-tro" ||
       item === "Trung tâm hỗ trợ" ||
       item === "Câu hỏi thường gặp"
     ) {
+      setCurrentPage("about")
+      setActiveItem("Hỗ trợ")
       setActiveDropdown(null)
-      alert("Đang kết nối trung tâm hỗ trợ khách hàng STAYEA 24/7 (Hotline: +84 297 730 9999)...")
+      window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "Trở thành chủ nhà" || item === "host") {
       setCurrentPage("host")
       setActiveItem("Trở thành chủ nhà")
       setActiveDropdown(null)
-      window.location.hash = "host"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "Hợp tác cùng STAYEA" || item === "Hợp tác cùng Stayea" || item === "partner") {
       setCurrentPage("partner")
       setActiveItem("Hợp tác cùng STAYEA")
       setActiveDropdown(null)
-      window.location.hash = "partner"
-      window.scrollTo({ top: 0, behavior: "smooth" })
+            window.scrollTo({ top: 0, behavior: "smooth" })
     } else {
       setActiveItem(item)
       if (currentPage !== "home") {
         setCurrentPage("home")
-        window.location.hash = "home"
-      }
+              }
     }
   }
 
@@ -949,50 +985,36 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminReportsPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-            window.location.hash = "admin-deals"
-            setCurrentPage("admin-deals")
+                        setCurrentPage("admin-deals")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "guests"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-            window.location.hash = "doanh-thu-thanh-toan"
-            setCurrentPage("admin-revenue")
+                        setCurrentPage("admin-revenue")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           } else if (tabId === "cai-dat" || tabId === "settings") {
-            window.location.hash = "cai-dat"
-            setCurrentPage("settings")
+                        setCurrentPage("settings")
           }
         }}
       />
@@ -1003,50 +1025,36 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminMarketingPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-            window.location.hash = "admin-deals"
-            setCurrentPage("admin-deals")
+                        setCurrentPage("admin-deals")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "guests"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-            window.location.hash = "doanh-thu-thanh-toan"
-            setCurrentPage("admin-revenue")
+                        setCurrentPage("admin-revenue")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           } else if (tabId === "cai-dat" || tabId === "settings") {
-            window.location.hash = "cai-dat"
-            setCurrentPage("settings")
+                        setCurrentPage("settings")
           }
         }}
       />
@@ -1057,50 +1065,36 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminMessagesPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-            window.location.hash = "admin-deals"
-            setCurrentPage("admin-deals")
+                        setCurrentPage("admin-deals")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "guests"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-            window.location.hash = "doanh-thu-thanh-toan"
-            setCurrentPage("admin-revenue")
+                        setCurrentPage("admin-revenue")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           } else if (tabId === "cai-dat" || tabId === "settings") {
-            window.location.hash = "cai-dat"
-            setCurrentPage("settings")
+                        setCurrentPage("settings")
           }
         }}
       />
@@ -1111,50 +1105,36 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminReviewsPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-            window.location.hash = "admin-deals"
-            setCurrentPage("admin-deals")
+                        setCurrentPage("admin-deals")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "guests"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-            window.location.hash = "doanh-thu-thanh-toan"
-            setCurrentPage("admin-revenue")
+                        setCurrentPage("admin-revenue")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           } else if (tabId === "cai-dat" || tabId === "settings") {
-            window.location.hash = "cai-dat"
-            setCurrentPage("settings")
+                        setCurrentPage("settings")
           }
         }}
       />
@@ -1165,50 +1145,36 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminRevenuePage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-            window.location.hash = "admin-deals"
-            setCurrentPage("admin-deals")
+                        setCurrentPage("admin-deals")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "guests"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-            window.location.hash = "doanh-thu-thanh-toan"
-            setCurrentPage("admin-revenue")
+                        setCurrentPage("admin-revenue")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           } else if (tabId === "cai-dat" || tabId === "settings") {
-            window.location.hash = "cai-dat"
-            setCurrentPage("settings")
+                        setCurrentPage("settings")
           }
         }}
       />
@@ -1258,50 +1224,36 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         initialModalOpen={isCreateOpen}
         initialTab={initialTab}
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-            window.location.hash = "admin-deals"
-            setCurrentPage("admin-deals")
+                        setCurrentPage("admin-deals")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "guests"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-            window.location.hash = "doanh-thu-thanh-toan"
-            setCurrentPage("admin-revenue")
+                        setCurrentPage("admin-revenue")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           } else if (tabId === "cai-dat" || tabId === "settings") {
-            window.location.hash = "cai-dat"
-            setCurrentPage("settings")
+                        setCurrentPage("settings")
           }
         }}
       />
@@ -1369,41 +1321,30 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         initialAddDayOpen={isAddDayOpen}
         initialCategoryTab={initialCategoryTab}
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "customers"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           }
         }}
       />
@@ -1414,38 +1355,28 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminPropertiesPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "customers"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           }
         }}
       />
@@ -1458,38 +1389,28 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       <StayeaAdminBookingsPage
         initialModalOpen={isModalDefaultOpen}
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "bat-dong-san") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "customers"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           }
         }}
       />
@@ -1500,38 +1421,28 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminCustomersPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           }
         }}
       />
@@ -1571,23 +1482,18 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         initialModalOpen={isModalDefaultOpen}
         initialModalTab={initialModalTab}
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "customers"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           }
         }}
       />
@@ -1598,41 +1504,30 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminDashboardPage
         onNavigateLanding={() => {
-          window.location.hash = "home"
-          setCurrentPage("home")
+                    setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
         onNavigateTab={(tabId) => {
           if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-            setCurrentPage("dashboard")
+                        setCurrentPage("dashboard")
           } else if (tabId === "dat-phong" || tabId === "bookings") {
-            window.location.hash = "admin-bookings"
-            setCurrentPage("admin-bookings")
+                        setCurrentPage("admin-bookings")
           } else if (tabId === "bat-dong-san" || tabId === "properties") {
-            window.location.hash = "properties"
-            setCurrentPage("admin-properties")
+                        setCurrentPage("admin-properties")
           } else if (tabId === "khach-hang" || tabId === "guests") {
-            window.location.hash = "customers"
-            setCurrentPage("admin-customers")
+                        setCurrentPage("admin-customers")
           } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-            window.location.hash = "hosts"
-            setCurrentPage("admin-hosts")
+                        setCurrentPage("admin-hosts")
           } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-            window.location.hash = "experiences"
-            setCurrentPage("admin-experiences")
+                        setCurrentPage("admin-experiences")
           } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-            window.location.hash = "danh-gia"
-            setCurrentPage("admin-reviews")
+                        setCurrentPage("admin-reviews")
           } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-            window.location.hash = "tin-nhan"
-            setCurrentPage("admin-messages")
+                        setCurrentPage("admin-messages")
           } else if (tabId === "marketing" || tabId === "admin-marketing") {
-            window.location.hash = "marketing"
-            setCurrentPage("admin-marketing")
+                        setCurrentPage("admin-marketing")
           } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-            window.location.hash = "bao-cao"
-            setCurrentPage("admin-reports")
+                        setCurrentPage("admin-reports")
           }
         }}
       />
@@ -1704,22 +1599,22 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
           <AuthPage initialMode="register" onNavigate={handleNavigate} />
         ) : currentPage === "deals" ? (
           /* Deals & Promotions Listing Screen */
-          <DealsListingPage onNavigate={handleNavigate} />
+          <DealsListingPage onNavigate={handleNavigate} initialTab={activeDealsCategory} />
         ) : currentPage === "transport" ? (
           /* Transportation Listing Screen */
-          <TransportListingPage onNavigate={handleNavigate} />
+          <TransportListingPage onNavigate={handleNavigate} initialTab={activeTransportCategory} />
         ) : currentPage === "phu-quoc" ? (
           /* Khám phá Phú Quốc Listing Screen */
-          <PhuQuocListingPage onNavigate={handleNavigate} />
+          <PhuQuocListingPage onNavigate={handleNavigate} initialCategory={activeExploreCategory} />
         ) : currentPage === "packages" ? (
           /* Packages & Tours Listing Screen */
-          <PackageListingPage onNavigate={handleNavigate} />
+          <PackageListingPage onNavigate={handleNavigate} initialAudience={activePackageAudience} />
         ) : currentPage === "experience" ? (
           /* Experience Listing Screen */
-          <ExperienceListingPage onNavigate={handleNavigate} />
+          <ExperienceListingPage onNavigate={handleNavigate} initialCategory={activeExperienceCategory} />
         ) : currentPage === "stay" ? (
           /* Villa & Accommodations Listing Screen */
-          <StayListingPage onNavigate={handleNavigate} />
+          <StayListingPage onNavigate={handleNavigate} initialCategory={activeStayCategory} />
         ) : currentPage === "partner" ? (
           <>
             {/* 1. Hero Section: "Hợp tác cùng STAYEA" */}

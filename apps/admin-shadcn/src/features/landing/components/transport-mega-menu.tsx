@@ -111,10 +111,11 @@ function getTransportIcon(iconName: string) {
 
 interface TransportMegaMenuProps {
   readonly onClose: () => void
+  readonly onNavigate?: (item: string, category?: string) => void
 }
 
-export function TransportMegaMenu({ onClose }: TransportMegaMenuProps) {
-  const { kicker, title, description, features, ctaText, ctaHref, banners } =
+export function TransportMegaMenu({ onClose, onNavigate }: TransportMegaMenuProps) {
+  const { kicker, title, description, features, ctaText, banners } =
     TRANSPORT_MEGA_MENU_DATA
 
   return (
@@ -168,8 +169,14 @@ export function TransportMegaMenu({ onClose }: TransportMegaMenuProps) {
           {/* CTA Button */}
           <div className="relative z-10 mt-6">
             <Link
-              href={ctaHref}
-              onClick={onClose}
+              href="/transport"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("Di chuyển")
+                }
+                onClose()
+              }}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 hover:border-slate-800 text-slate-800 text-xs font-semibold hover:bg-slate-50 transition-all shadow-sm group"
             >
               <span>{ctaText}</span>
@@ -185,8 +192,14 @@ export function TransportMegaMenu({ onClose }: TransportMegaMenuProps) {
           {TRANSPORT_CATEGORIES.map((item) => (
             <Link
               key={item.id}
-              href={`#${item.id}`}
-              onClick={onClose}
+              href={`/transport#${item.id}`}
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("transport", item.id)
+                }
+                onClose()
+              }}
               className="group flex flex-col rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all bg-white"
             >
               {/* Top Landscape Image */}
@@ -228,8 +241,14 @@ export function TransportMegaMenu({ onClose }: TransportMegaMenuProps) {
           {banners.map((banner) => (
             <Link
               key={banner.id}
-              href={banner.href}
-              onClick={onClose}
+              href="/transport"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("transport")
+                }
+                onClose()
+              }}
               className="group relative h-[155px] sm:h-[162px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all block"
             >
               <Image

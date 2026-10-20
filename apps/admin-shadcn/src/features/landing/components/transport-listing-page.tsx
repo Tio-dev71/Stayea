@@ -24,13 +24,20 @@ const INITIAL_FILTERS: TransportFilterState = {
 
 interface TransportListingPageProps {
   readonly onNavigate?: (item: string) => void
+  readonly initialTab?: string
 }
 
-export function TransportListingPage({ onNavigate }: TransportListingPageProps = {}) {
+export function TransportListingPage({ onNavigate, initialTab }: TransportListingPageProps = {}) {
   const handleBookingClick = React.useCallback(() => {
     onNavigate?.("flight-booking")
   }, [onNavigate])
-  const [activeTab, setActiveTab] = React.useState<string>("all")
+  const [activeTab, setActiveTab] = React.useState<string>(initialTab || "all")
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab)
+    }
+  }, [initialTab])
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = React.useState<string>("popular")
   const [itemsPerPage, setItemsPerPage] = React.useState<number>(12)

@@ -192,43 +192,43 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: "Trang chủ", href: "/" },
   {
     label: "Lưu trú",
-    href: "#accommodations",
+    href: "/stay",
     hasDropdown: true,
     isMegaMenu: true,
   },
   {
     label: "Trải nghiệm",
-    href: "#experiences",
+    href: "/experience",
     hasDropdown: true,
     isMegaMenu: true,
   },
   {
     label: "Gói",
-    href: "#packages",
+    href: "/packages",
     hasDropdown: true,
     isMegaMenu: true,
   },
   {
     label: "Di chuyển",
-    href: "#transportation",
+    href: "/transport",
     hasDropdown: true,
     isMegaMenu: true,
   },
   {
     label: "Khám phá",
-    href: "#explore",
+    href: "/phu-quoc",
     hasDropdown: true,
     isMegaMenu: true,
   },
   {
     label: "Ưu đãi",
-    href: "#deals",
+    href: "/deals",
     hasDropdown: true,
     isMegaMenu: true,
   },
-  { label: "Stayea Club", href: "#stayea-club" },
-  { label: "Trở thành chủ nhà", href: "#host" },
-  { label: "Hỗ trợ", href: "#support" },
+  { label: "Stayea Club", href: "/stayea-club" },
+  { label: "Trở thành chủ nhà", href: "/host" },
+  { label: "Hỗ trợ", href: "/about" },
 ]
 
 export const TRUST_BADGES: readonly TrustBadge[] = [

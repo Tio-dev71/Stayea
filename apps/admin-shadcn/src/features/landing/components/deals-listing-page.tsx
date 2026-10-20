@@ -16,10 +16,17 @@ import type {
 
 export interface DealsListingPageProps {
   readonly onNavigate?: (route: string) => void
+  readonly initialTab?: string
 }
 
-export function DealsListingPage({ onNavigate }: DealsListingPageProps = {}) {
-  const [activeTab, setActiveTab] = React.useState<string>("all")
+export function DealsListingPage({ onNavigate, initialTab }: DealsListingPageProps = {}) {
+  const [activeTab, setActiveTab] = React.useState<string>(initialTab || "all")
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab)
+    }
+  }, [initialTab])
   const [selectedCard, setSelectedCard] = React.useState<DealsFeaturedCard | null>(null)
   const [selectedCategory, setSelectedCategory] = React.useState<DealsCategoryItem | null>(null)
   const [showClubModal, setShowClubModal] = React.useState<boolean>(false)

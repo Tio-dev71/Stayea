@@ -20,13 +20,23 @@ const INITIAL_FILTERS: ExperienceFilterState = {
 
 interface ExperienceListingPageProps {
   readonly onNavigate?: (item: string) => void
+  readonly initialCategory?: string
 }
 
-export function ExperienceListingPage({ onNavigate }: ExperienceListingPageProps = {}) {
+export function ExperienceListingPage({ onNavigate, initialCategory }: ExperienceListingPageProps = {}) {
   const handleBookingClick = React.useCallback(() => {
     onNavigate?.("new-booking")
   }, [onNavigate])
-  const [filters, setFilters] = React.useState<ExperienceFilterState>(INITIAL_FILTERS)
+  const [filters, setFilters] = React.useState<ExperienceFilterState>(() => ({
+    ...INITIAL_FILTERS,
+    category: initialCategory || "all",
+  }))
+
+  React.useEffect(() => {
+    if (initialCategory) {
+      setFilters((prev) => ({ ...prev, category: initialCategory }))
+    }
+  }, [initialCategory])
   const [searchQuery, setSearchQuery] = React.useState("")
   const [sortBy, setSortBy] = React.useState("popular")
   const [sortDropdownOpen, setSortDropdownOpen] = React.useState(false)

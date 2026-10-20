@@ -20,13 +20,20 @@ const SORT_OPTIONS = [
 
 interface PhuQuocListingPageProps {
   readonly onNavigate?: (item: string) => void
+  readonly initialCategory?: string
 }
 
-export function PhuQuocListingPage({ onNavigate }: PhuQuocListingPageProps = {}) {
+export function PhuQuocListingPage({ onNavigate, initialCategory }: PhuQuocListingPageProps = {}) {
   const handleArticleClick = React.useCallback(() => {
     onNavigate?.("experience")
   }, [onNavigate])
-  const [activeCategory, setActiveCategory] = React.useState<string>("all")
+  const [activeCategory, setActiveCategory] = React.useState<string>(initialCategory || "all")
+
+  React.useEffect(() => {
+    if (initialCategory) {
+      setActiveCategory(initialCategory)
+    }
+  }, [initialCategory])
   const [searchQuery, setSearchQuery] = React.useState<string>("")
   const [selectedSort, setSelectedSort] = React.useState<string>(SORT_OPTIONS[0] ?? "Mới nhất")
   const [isSortOpen, setIsSortOpen] = React.useState<boolean>(false)

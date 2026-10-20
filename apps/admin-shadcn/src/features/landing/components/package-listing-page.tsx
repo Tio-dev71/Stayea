@@ -23,13 +23,20 @@ import type { PackageListingItem } from "@/features/landing/data/stayea-mock-dat
 
 interface PackageListingPageProps {
   readonly onNavigate?: (item: string) => void
+  readonly initialAudience?: string
 }
 
-export function PackageListingPage({ onNavigate }: PackageListingPageProps = {}) {
+export function PackageListingPage({ onNavigate, initialAudience }: PackageListingPageProps = {}) {
   const handleBookingClick = React.useCallback(() => {
     onNavigate?.("new-booking")
   }, [onNavigate])
-  const [selectedAudience, setSelectedAudience] = React.useState<string>("all")
+  const [selectedAudience, setSelectedAudience] = React.useState<string>(initialAudience || "all")
+
+  React.useEffect(() => {
+    if (initialAudience) {
+      setSelectedAudience(initialAudience)
+    }
+  }, [initialAudience])
   const [searchQuery, setSearchQuery] = React.useState<string>("")
   const [selectedDuration, setSelectedDuration] = React.useState<string>(PACKAGE_FILTER_DURATIONS[0] ?? "Tất cả thời gian")
   const [selectedPrice, setSelectedPrice] = React.useState<string>(PACKAGE_FILTER_PRICES[0] ?? "Tất cả mức giá")

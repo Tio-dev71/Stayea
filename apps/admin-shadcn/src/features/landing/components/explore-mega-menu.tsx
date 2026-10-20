@@ -47,10 +47,11 @@ function getExploreIcon(iconName: string) {
 
 interface ExploreMegaMenuProps {
   readonly onClose: () => void
+  readonly onNavigate?: (item: string, category?: string) => void
 }
 
-export function ExploreMegaMenu({ onClose }: ExploreMegaMenuProps) {
-  const { kicker, title, description, features, ctaText, ctaHref, banners } =
+export function ExploreMegaMenu({ onClose, onNavigate }: ExploreMegaMenuProps) {
+  const { kicker, title, description, features, ctaText, banners } =
     EXPLORE_MEGA_MENU_DATA
 
   return (
@@ -104,8 +105,14 @@ export function ExploreMegaMenu({ onClose }: ExploreMegaMenuProps) {
           {/* CTA Button */}
           <div className="relative z-10 mt-6">
             <Link
-              href={ctaHref}
-              onClick={onClose}
+              href="/phu-quoc"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("Khám phá")
+                }
+                onClose()
+              }}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 hover:border-slate-800 text-slate-800 text-xs font-semibold hover:bg-slate-50 transition-all shadow-sm group"
             >
               <span>{ctaText}</span>
@@ -121,8 +128,14 @@ export function ExploreMegaMenu({ onClose }: ExploreMegaMenuProps) {
           {EXPLORE_CATEGORIES.map((item) => (
             <Link
               key={item.id}
-              href={`#${item.id}`}
-              onClick={onClose}
+              href={`/phu-quoc#${item.id}`}
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("phu-quoc", item.id)
+                }
+                onClose()
+              }}
               className="group flex items-center gap-3 p-1.5 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
             >
               {/* Left Square Thumbnail */}
@@ -164,8 +177,14 @@ export function ExploreMegaMenu({ onClose }: ExploreMegaMenuProps) {
           {banners.map((banner) => (
             <Link
               key={banner.id}
-              href={banner.href}
-              onClick={onClose}
+              href="/phu-quoc"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("phu-quoc")
+                }
+                onClose()
+              }}
               className="group relative h-[155px] sm:h-[162px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all block"
             >
               <Image

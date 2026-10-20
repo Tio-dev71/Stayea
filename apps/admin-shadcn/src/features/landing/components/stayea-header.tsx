@@ -180,10 +180,8 @@ export function StayeaHeader({
                   <button
                     type="button"
                     onClick={() => {
-                      if (onNavigate && !isOpen) {
-                        onNavigate(item.label)
-                      }
-                      setActiveDropdown(isOpen ? null : item.label)
+                      setActiveDropdown(null)
+                      onNavigate?.(item.label)
                     }}
                     className={`${baseBtnClasses} gap-1 ${stateClasses}`}
                   >
@@ -505,7 +503,13 @@ export function StayeaHeader({
 
               {/* Đặt ngay CTA */}
               <Link
-                href="#accommodations"
+                href="/stay"
+                onClick={(e) => {
+                  if (onNavigate) {
+                    e.preventDefault()
+                    onNavigate("stay")
+                  }
+                }}
                 className="inline-flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-medium shadow-xs transition-all hover:shadow active:scale-95"
               >
                 <span>Đặt ngay</span>
@@ -541,13 +545,13 @@ export function StayeaHeader({
             className="hidden lg:block absolute top-full left-0 right-0 z-50 pointer-events-auto px-4 sm:px-6 lg:px-8 pt-3 pb-6"
           >
             <div className="max-w-[1440px] mx-auto animate-in fade-in-0 zoom-in-95 duration-150">
-              {activeDropdown === "Ưu đãi" && <DealsMegaMenu onClose={() => setActiveDropdown(null)} />}
-              {activeDropdown === "Khám phá" && <ExploreMegaMenu onClose={() => setActiveDropdown(null)} />}
-              {activeDropdown === "Di chuyển" && <TransportMegaMenu onClose={() => setActiveDropdown(null)} />}
-              {activeDropdown === "Lưu trú" && <StayMegaMenu onClose={() => setActiveDropdown(null)} />}
-                            {activeDropdown === "Trải nghiệm" && <ExperienceMegaMenu onClose={() => setActiveDropdown(null)} />}
+              {activeDropdown === "Ưu đãi" && <DealsMegaMenu onClose={() => setActiveDropdown(null)} onNavigate={onNavigate} />}
+              {activeDropdown === "Khám phá" && <ExploreMegaMenu onClose={() => setActiveDropdown(null)} onNavigate={onNavigate} />}
+              {activeDropdown === "Di chuyển" && <TransportMegaMenu onClose={() => setActiveDropdown(null)} onNavigate={onNavigate} />}
+              {activeDropdown === "Lưu trú" && <StayMegaMenu onClose={() => setActiveDropdown(null)} onNavigate={onNavigate} />}
+                            {activeDropdown === "Trải nghiệm" && <ExperienceMegaMenu onClose={() => setActiveDropdown(null)} onNavigate={onNavigate} />}
               {(activeDropdown === "Gói" || activeDropdown === "Tour") && (
-                <PackageMegaMenu onClose={() => setActiveDropdown(null)} />
+                <PackageMegaMenu onClose={() => setActiveDropdown(null)} onNavigate={onNavigate} />
               )}
             </div>
           </div>

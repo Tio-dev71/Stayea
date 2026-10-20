@@ -47,10 +47,11 @@ function getDealIcon(iconName: string) {
 
 interface DealsMegaMenuProps {
   readonly onClose: () => void
+  readonly onNavigate?: (item: string, category?: string) => void
 }
 
-export function DealsMegaMenu({ onClose }: DealsMegaMenuProps) {
-  const { kicker, title, description, features, ctaText, ctaHref, banners } =
+export function DealsMegaMenu({ onClose, onNavigate }: DealsMegaMenuProps) {
+  const { kicker, title, description, features, ctaText, banners } =
     DEALS_MEGA_MENU_DATA
 
   return (
@@ -104,8 +105,14 @@ export function DealsMegaMenu({ onClose }: DealsMegaMenuProps) {
           {/* CTA Button */}
           <div className="relative z-10 mt-6">
             <Link
-              href={ctaHref}
-              onClick={onClose}
+              href="/deals"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("Ưu đãi")
+                }
+                onClose()
+              }}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 hover:border-slate-800 text-slate-800 text-xs font-semibold hover:bg-slate-50 transition-all shadow-xs group"
             >
               <span>{ctaText}</span>
@@ -121,8 +128,14 @@ export function DealsMegaMenu({ onClose }: DealsMegaMenuProps) {
           {DEALS_CATEGORIES.map((item) => (
             <Link
               key={item.id}
-              href={`#${item.id}`}
-              onClick={onClose}
+              href={`/deals#${item.id}`}
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("deals", item.id)
+                }
+                onClose()
+              }}
               className="group flex items-center gap-2.5 p-1.5 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
             >
               {/* Left Square Thumbnail */}
@@ -165,8 +178,14 @@ export function DealsMegaMenu({ onClose }: DealsMegaMenuProps) {
           {banners.map((banner) => (
             <Link
               key={banner.id}
-              href={banner.href}
-              onClick={onClose}
+              href="/deals"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault()
+                  onNavigate("deals")
+                }
+                onClose()
+              }}
               className="group relative h-[155px] sm:h-[162px] rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all block"
             >
               <Image

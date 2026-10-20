@@ -3,16 +3,23 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
   Request,
 } from "@nestjs/common"
-import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger"
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiTags } from "@nestjs/swagger"
 
+import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
 import { UseEnvelope } from "@/shared-kernel/infrastructure/decorators/use-envelope.decorator"
 
-import { CheckoutBookingDto, CreatePaymentMethodDto } from "@/modules/stayea/payment/dtos/payment.dto"
+import {
+  CheckoutBookingDto,
+  CreatePaymentMethodDto,
+  InitiatePaymentDto,
+  PaymentWebhookDto,
+} from "@/modules/stayea/payment/dtos/payment.dto"
 import { StayeaPaymentService } from "@/modules/stayea/payment/stayea-payment.service"
 
 @ApiTags("Stayea - Payment & Billing")
@@ -53,6 +60,30 @@ export class StayeaPaymentController {
     @Param("id") id: string
   ) {
     return this.paymentService.setDefaultPaymentMethod(req.user.id, id)
+  }
+
+  @Post("initiate")
+  @ApiOperation({ summary: "Initiate payment session (VietQR dynamic, PayOS, VNPay, MoMo)" })
+  async initiate(
+    @Request() req: { user: { id: string } },
+    @Body() dto: InitiatePaymentDto
+  ) {
+    return this.paymentService.initiatePayment(req.user.id, dto)
+  }
+
+  @Post("webhook")
+  @Public()
+  @ApiOperation({ summary: "Payment Gateway Webhook IPN Callback (HMAC Verified, Public)" })
+  @ApiHeader({
+    name: "x-signature",
+    description: "HMAC SHA-256 signature from payment gateway",
+    required: false,
+  })
+  async webhook(
+    @Body() dto: PaymentWebhookDto,
+    @Headers("x-signature") signatureHeader?: string
+  ) {
+    return this.paymentService.handlePaymentWebhook(dto, signatureHeader)
   }
 
   @Post("checkout")

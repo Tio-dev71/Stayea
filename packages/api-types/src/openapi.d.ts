@@ -750,6 +750,590 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stayea/accommodations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List accommodations with filters (villa, resort, hotel, etc.) */
+        get: operations["StayeaAccommodationsController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/accommodations/{idOrSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get accommodation details by ID or slug */
+        get: operations["StayeaAccommodationsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/experiences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List experiences (tours, diving, snorkeling, sunsets) */
+        get: operations["StayeaExperiencesController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/experiences/{idOrSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get experience details by ID or slug */
+        get: operations["StayeaExperiencesController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List travel combos and vacation packages (3D2N, All-Inclusive) */
+        get: operations["StayeaPackagesController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/packages/{idOrSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get travel package details by ID or slug */
+        get: operations["StayeaPackagesController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/flights/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search scheduled flights (SGN, HAN, DAD to PQC) */
+        get: operations["StayeaFlightsController_searchFlights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/flights/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get flight details by ID */
+        get: operations["StayeaFlightsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all active promotional deals & vouchers */
+        get: operations["StayeaDealsController_getPromotions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/deals/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate promo code and calculate discount amount */
+        post: operations["StayeaDealsController_validatePromo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current user booking history */
+        get: operations["StayeaBookingController_findUserBookings"];
+        put?: never;
+        /** Create a new booking (stay, flight, tour, combo) */
+        post: operations["StayeaBookingController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/bookings/admin/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all bookings across platform (Admin only) */
+        get: operations["StayeaBookingController_findAllBookingsForAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/bookings/admin/{idOrCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get any booking details (Admin only) */
+        get: operations["StayeaBookingController_findOneForAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/bookings/{idOrCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get booking details by ID or bookingCode */
+        get: operations["StayeaBookingController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/bookings/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancel booking by ID */
+        patch: operations["StayeaBookingController_cancel"];
+        trace?: never;
+    };
+    "/api/stayea/bookings/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update booking status (Admin only) */
+        patch: operations["StayeaBookingController_updateStatus"];
+        trace?: never;
+    };
+    "/api/stayea/club/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user Stayea Club loyalty profile and points balance */
+        get: operations["StayeaClubController_getProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/club/perks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user claimed perks and active benefits */
+        get: operations["StayeaClubController_getPerks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/club/claim-perk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Claim a Stayea Club exclusive offer */
+        post: operations["StayeaClubController_claimPerk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/club/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Stayea Club points earning and redemption history */
+        get: operations["StayeaClubController_getHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/payments/methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current user saved cards, bank accounts, and wallets */
+        get: operations["StayeaPaymentController_getMethods"];
+        put?: never;
+        /** Save a new payment method (credit card, bank, wallet) */
+        post: operations["StayeaPaymentController_addMethod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/payments/methods/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a saved payment method */
+        delete: operations["StayeaPaymentController_deleteMethod"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/payments/methods/{id}/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set payment method as default */
+        patch: operations["StayeaPaymentController_setDefault"];
+        trace?: never;
+    };
+    "/api/stayea/payments/initiate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Initiate payment session (VietQR dynamic, PayOS, VNPay, MoMo) */
+        post: operations["StayeaPaymentController_initiate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/payments/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Payment Gateway Webhook IPN Callback (HMAC Verified, Public) */
+        post: operations["StayeaPaymentController_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/payments/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Process sandbox checkout for a booking */
+        post: operations["StayeaPaymentController_checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/vouchers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user personal voucher wallet */
+        get: operations["StayeaUserController_getVouchers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/vouchers/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Claim promo code into user personal wallet */
+        post: operations["StayeaUserController_claimVoucher"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user customized trip plans and itineraries */
+        get: operations["StayeaUserController_getPlans"];
+        put?: never;
+        /** Create a new customized trip plan */
+        post: operations["StayeaUserController_createPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete trip plan by ID */
+        delete: operations["StayeaUserController_deletePlan"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user favorites / wishlist */
+        get: operations["StayeaUserController_getFavorites"];
+        put?: never;
+        /** Add or toggle item in wishlist */
+        post: operations["StayeaUserController_addFavorite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/favorites/{idOrItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove item from wishlist */
+        delete: operations["StayeaUserController_removeFavorite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user submitted reviews */
+        get: operations["StayeaUserController_getReviews"];
+        put?: never;
+        /** Submit a new rating and review */
+        post: operations["StayeaUserController_createReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stayea/user/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user notifications and account preferences */
+        get: operations["StayeaUserController_getSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update user notifications and preferences */
+        patch: operations["StayeaUserController_updateSettings"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1397,6 +1981,178 @@ export interface components {
         };
         ArticleCategoryStatsDto: {
             categories: components["schemas"]["ArticleCategoryStatItemDto"][];
+        };
+        ValidatePromoDto: {
+            /** @description Promo/Voucher code to validate, e.g. STAYEA10AIR */
+            code?: string;
+            /** @description Subtotal of the booking to calculate discount */
+            subtotal?: number;
+            /** @description Booking category: stay, flight, tour, combo */
+            category?: string;
+        };
+        CreateBookingDto: {
+            /**
+             * @example stay
+             * @enum {string}
+             */
+            bookingType: "stay" | "flight" | "experience" | "package" | "combo";
+            /** @example Premier Village Phu Quoc Resort - Eden Bay Villa */
+            title: string;
+            /** @example Mũi Ông Đội, An Thới, Phú Quốc */
+            destination: string;
+            /** @example 2026-11-10 */
+            startDate: string;
+            /** @example 2026-11-14 */
+            endDate: string;
+            /**
+             * @default 1
+             * @example 2
+             */
+            guestCount: number;
+            /** @example 8500000 */
+            totalAmount: number;
+            /** @example STAYEA10AIR */
+            voucherCode?: string;
+            /**
+             * @description Points to redeem for discount (1 point = 1,000 VND)
+             * @example 500
+             */
+            pointsToRedeem?: number;
+            /** @example credit_card */
+            paymentMethod?: string;
+            /** @description Detailed service metadata (roomType, flightSegments, guestList, contactInfo) */
+            details?: Record<string, never>;
+        };
+        UpdateBookingStatusDto: {
+            /**
+             * @example confirmed
+             * @enum {string}
+             */
+            status: "pending" | "confirmed" | "completed" | "cancelled" | "refunded";
+        };
+        ClaimPerkDto: {
+            /** @example offer-fnb-15 */
+            offerId: string;
+            /** @example Giảm 15% Ẩm Thực Nhà Hàng Biển */
+            title: string;
+            /** @example -15% */
+            discount: string;
+        };
+        CreatePaymentMethodDto: {
+            /**
+             * @example credit_card
+             * @enum {string}
+             */
+            type: "credit_card" | "bank_account" | "e_wallet";
+            /** @example visa */
+            brand: string;
+            /** @example Thẻ Visa Platinum •••• 8899 */
+            title: string;
+            /** @default false */
+            isDefault: boolean;
+            /** @description Instrument parameters (cardNumber, bankName, accountNumber, etc.) */
+            details?: Record<string, never>;
+        };
+        InitiatePaymentDto: {
+            /** @example bk-uuid-or-id */
+            bookingId: string;
+            /**
+             * @default vietqr
+             * @enum {string}
+             */
+            gatewayProvider: "vietqr" | "payos" | "vnpay" | "momo" | "credit_card" | "sandbox";
+            /** @example https://stayea.com/bookings/success */
+            returnUrl?: string;
+            /** @example https://stayea.com/bookings/cancel */
+            cancelUrl?: string;
+        };
+        PaymentWebhookDto: {
+            /** @example STA-202610-8888 */
+            orderCode: string;
+            /** @example TX-20261020-123456 */
+            transactionRef: string;
+            /** @example 2500000 */
+            amount: number;
+            /**
+             * @example PAID
+             * @enum {string}
+             */
+            status: "PAID" | "FAILED" | "CANCELLED";
+            /** @example payos */
+            gateway?: string;
+            /** @description Cryptographic signature sent by payment gateway for HMAC verification */
+            signature?: string;
+        };
+        CheckoutBookingDto: {
+            /** @example bk-uuid-or-id */
+            bookingId: string;
+            /** @example pm-1 */
+            paymentMethodId?: string;
+            /**
+             * @default credit_card
+             * @example credit_card
+             */
+            paymentMethodType: string;
+        };
+        ClaimVoucherDto: {
+            /** @example STAYEA10AIR */
+            code: string;
+        };
+        CreatePlanDto: {
+            /** @example Kỳ Nghỉ Phú Quốc 4N3Đ Cùng Gia Đình */
+            title: string;
+            /** @example Phú Quốc, Kiên Giang */
+            destination: string;
+            /** @example 15/11 - 18/11/2026 */
+            dates: string;
+            /** @example https://images.unsplash.com/photo-1540555700478-4be289fbecef */
+            coverImage: string;
+            /** @description Daily scheduled activities and booked services */
+            itinerary?: string[];
+        };
+        FavoriteItemDto: {
+            /**
+             * @example stay
+             * @enum {string}
+             */
+            itemType: "stay" | "experience" | "package" | "flight";
+            /** @example stay-1 */
+            itemId: string;
+            /** @example Premier Village Phu Quoc Resort */
+            title: string;
+            /** @example Mũi Ông Đội, An Thới, Phú Quốc */
+            location?: string;
+            /** @example https://images.unsplash.com/photo-1582719478250-c89cae4dc85b */
+            imageUrl: string;
+            /** @example 8500000 */
+            price: number;
+            /** @example 4.95 */
+            rating?: number;
+        };
+        CreateReviewDto: {
+            /**
+             * @example stay
+             * @enum {string}
+             */
+            itemType: "stay" | "experience" | "package";
+            /** @example stay-1 */
+            itemId: string;
+            /** @example Premier Village Phu Quoc Resort */
+            itemTitle: string;
+            /** @example 5 */
+            rating: number;
+            /** @example Biệt thự view hoàng hôn cực đẹp, dịch vụ quản gia chu đáo và đẳng cấp! */
+            comment: string;
+        };
+        UpdateUserSettingsDto: {
+            emailNotifications?: Record<string, never>;
+            pushNotifications?: Record<string, never>;
+            /** @example vi */
+            language?: string;
+            /** @example VND */
+            currency?: string;
+            /** @example false */
+            twoFactorEnabled?: boolean;
         };
         FieldError: {
             /**
@@ -3472,6 +4228,1185 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ArticleCategoryStatsDto"];
                 };
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaAccommodationsController_findAll: {
+        parameters: {
+            query?: {
+                /** @description Filter by category: villa, resort, apartment, hotel, beachfront */
+                category?: string;
+                /** @description Search by title or location */
+                search?: string;
+                /** @description Minimum price per night */
+                minPrice?: number;
+                /** @description Maximum price per night */
+                maxPrice?: number;
+                /** @description Minimum bedrooms */
+                bedrooms?: number;
+                /** @description Filter featured accommodations only */
+                isFeatured?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaAccommodationsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaExperiencesController_findAll: {
+        parameters: {
+            query?: {
+                /** @description Filter by category: tour, island, snorkeling, diving, cruise, food, spa */
+                category?: string;
+                /** @description Search by title or location */
+                search?: string;
+                /** @description Filter by duration: e.g. 4 giờ, 1 ngày */
+                duration?: string;
+                /** @description Filter featured experiences only */
+                isFeatured?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaExperiencesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPackagesController_findAll: {
+        parameters: {
+            query?: {
+                /** @description Filter by audience: couple, family, luxury, wellness, all */
+                audience?: string;
+                /** @description Search by title or destination */
+                search?: string;
+                /** @description Filter by duration: e.g. 3 ngày 2 đêm */
+                duration?: string;
+                /** @description Filter featured packages only */
+                isFeatured?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPackagesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaFlightsController_searchFlights: {
+        parameters: {
+            query?: {
+                /** @description Departure Airport code, e.g. SGN, HAN, DAD */
+                fromAirport?: string;
+                /** @description Arrival Airport code, e.g. PQC */
+                toAirport?: string;
+                /** @description Departure date, e.g. 2026-10-25 */
+                departureDate?: string;
+                /** @description Seat class: economy, business */
+                seatClass?: string;
+                /** @description Airline code: VN, VJ, QH, VU */
+                airline?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaFlightsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaDealsController_getPromotions: {
+        parameters: {
+            query: {
+                category: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaDealsController_validatePromo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidatePromoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_findUserBookings: {
+        parameters: {
+            query?: {
+                /** @description Filter by status: all, pending, confirmed, completed, cancelled */
+                status?: string;
+                /** @description Filter by type: stay, flight, experience, package, combo */
+                bookingType?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBookingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_findAllBookingsForAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_findOneForAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaBookingController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBookingStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaClubController_getProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaClubController_getPerks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaClubController_claimPerk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimPerkDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaClubController_getHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_getMethods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_addMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePaymentMethodDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_deleteMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_setDefault: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_initiate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InitiatePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_webhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description HMAC SHA-256 signature from payment gateway */
+                "x-signature"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentWebhookDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaPaymentController_checkout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutBookingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_getVouchers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_claimVoucher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimVoucherDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_getPlans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_createPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_deletePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_getFavorites: {
+        parameters: {
+            query: {
+                itemType: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_addFavorite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FavoriteItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_removeFavorite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_getReviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_createReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateReviewDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_getSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetailsDto"];
+                };
+            };
+        };
+    };
+    StayeaUserController_updateSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response (includes 400/401/403/404/422/429/500, etc.) */
             default: {

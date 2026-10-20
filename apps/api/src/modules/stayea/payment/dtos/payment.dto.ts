@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger"
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator"
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
 
 export class CreatePaymentMethodDto {
   @ApiProperty({
@@ -55,4 +55,61 @@ export class CheckoutBookingDto {
   @IsOptional()
   @IsString()
   paymentMethodType?: string = "credit_card"
+}
+
+export class InitiatePaymentDto {
+  @ApiProperty({ example: "bk-uuid-or-id" })
+  @IsString()
+  @IsNotEmpty()
+  bookingId: string
+
+  @ApiPropertyOptional({
+    enum: ["vietqr", "payos", "vnpay", "momo", "credit_card", "sandbox"],
+    default: "vietqr",
+  })
+  @IsOptional()
+  @IsEnum(["vietqr", "payos", "vnpay", "momo", "credit_card", "sandbox"])
+  gatewayProvider?: "vietqr" | "payos" | "vnpay" | "momo" | "credit_card" | "sandbox" = "vietqr"
+
+  @ApiPropertyOptional({ example: "https://stayea.com/bookings/success" })
+  @IsOptional()
+  @IsString()
+  returnUrl?: string
+
+  @ApiPropertyOptional({ example: "https://stayea.com/bookings/cancel" })
+  @IsOptional()
+  @IsString()
+  cancelUrl?: string
+}
+
+export class PaymentWebhookDto {
+  @ApiProperty({ example: "STA-202610-8888" })
+  @IsString()
+  @IsNotEmpty()
+  orderCode: string
+
+  @ApiProperty({ example: "TX-20261020-123456" })
+  @IsString()
+  @IsNotEmpty()
+  transactionRef: string
+
+  @ApiProperty({ example: 2_500_000 })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number
+
+  @ApiProperty({ enum: ["PAID", "FAILED", "CANCELLED"], example: "PAID" })
+  @IsEnum(["PAID", "FAILED", "CANCELLED"])
+  @IsNotEmpty()
+  status: "PAID" | "FAILED" | "CANCELLED"
+
+  @ApiPropertyOptional({ example: "payos" })
+  @IsOptional()
+  @IsString()
+  gateway?: string
+
+  @ApiPropertyOptional({ description: "Cryptographic signature sent by payment gateway for HMAC verification" })
+  @IsOptional()
+  @IsString()
+  signature?: string
 }

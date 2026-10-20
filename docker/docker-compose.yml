@@ -3,25 +3,73 @@ version: '3.8'
 services:
   postgres:
     image: bitnami/postgresql:latest
-    container_name: postgres
+    container_name: stayea-postgres
     restart: unless-stopped
     environment:
       - POSTGRESQL_USERNAME=postgres
       - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_DATABASE=postgres
+      - POSTGRESQL_DATABASE=stayea
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/bitnami/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d stayea"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: stayea-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: stayea-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/stayea
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=a370f0e007e07e31e694c004c5eae0f367e0a3e1eb9f51ce9e0dc4fd56b795c8
+      - ALLOWED_ORIGINS=http://localhost:8080,https://stayea.com
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/admin-shadcn/Dockerfile
+    container_name: stayea-web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - NEXT_PUBLIC_APP_NAME=Stayea - Nền tảng Đặt phòng & Trải nghiệm Du lịch
+      - NEXT_PUBLIC_APP_URL=http://localhost:8080
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

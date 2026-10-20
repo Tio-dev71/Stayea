@@ -61,9 +61,36 @@ import { StayeaFooter } from "./components/stayea-footer"
 
 export function StayeaLandingPage() {
   // Page view state: "phu-quoc" (active screen) | "packages" | "experience" | "stay" | "home" | "about" | "host" | "partner"
-  const [currentPage, setCurrentPage] = React.useState<
-    "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers" | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue" | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings" | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host" | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc" | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club" | "stayea-club-claimed" | "transport"
-  >("settings")
+  type PageType =
+    | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
+    | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue"
+    | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings"
+    | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host"
+    | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc"
+    | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
+    | "stayea-club-claimed" | "transport"
+
+  const [pageState, setPageState] = React.useState<PageType>("home")
+  const currentPage = pageState
+
+  const setCurrentPage = React.useCallback(
+    (pageOrUpdater: PageType | ((prev: PageType) => PageType)) => {
+      setPageState((prev) => {
+        const next = typeof pageOrUpdater === "function" ? pageOrUpdater(prev) : pageOrUpdater
+        if (typeof window !== "undefined") {
+          const url = new URL(window.location.href)
+          if (next === "home") {
+            url.searchParams.delete("page")
+          } else {
+            url.searchParams.set("page", next)
+          }
+          window.history.pushState(null, "", url.toString())
+        }
+        return next
+      })
+    },
+    []
+  )
   const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(true)
   const [activeItem, setActiveItem] = React.useState<string>("Stayea Club")
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null)
@@ -475,13 +502,15 @@ export function StayeaLandingPage() {
 
     parseRoute()
     window.addEventListener("hashchange", parseRoute)
+    window.addEventListener("popstate", parseRoute)
     return () => {
       window.removeEventListener("hashchange", parseRoute)
+      window.removeEventListener("popstate", parseRoute)
       if (closeTimerRef.current) {
         clearTimeout(closeTimerRef.current)
       }
     }
-  }, [])
+  }, [setCurrentPage])
 
   function handleNavigate(item: string) {
     if (

@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common"
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger"
 
+import { Roles } from "@/shared-kernel/infrastructure/decorators/roles.decorator"
 import { UseEnvelope } from "@/shared-kernel/infrastructure/decorators/use-envelope.decorator"
 
 import {
@@ -44,6 +45,23 @@ export class StayeaBookingController {
     return this.bookingService.findUserBookings(req.user.id, query)
   }
 
+  @Get("admin/all")
+  @Roles("ADMIN")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Get all bookings across platform (Admin only)" })
+  async findAllBookingsForAdmin(
+    @Query() query: BookingQueryDto & { search?: string }
+  ) {
+    return this.bookingService.findAllBookingsForAdmin(query)
+  }
+
+  @Get("admin/:idOrCode")
+  @Roles("ADMIN")
+  @ApiOperation({ summary: "Get any booking details (Admin only)" })
+  async findOneForAdmin(@Param("idOrCode") idOrCode: string) {
+    return this.bookingService.findBookingByIdForAdmin(idOrCode)
+  }
+
   @Get(":idOrCode")
   @ApiOperation({ summary: "Get booking details by ID or bookingCode" })
   async findOne(
@@ -63,7 +81,8 @@ export class StayeaBookingController {
   }
 
   @Patch(":id/status")
-  @ApiOperation({ summary: "Update booking status (admin or internal)" })
+  @Roles("ADMIN")
+  @ApiOperation({ summary: "Update booking status (Admin only)" })
   async updateStatus(
     @Param("id") id: string,
     @Body() dto: UpdateBookingStatusDto

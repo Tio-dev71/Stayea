@@ -52,6 +52,7 @@ import { StayeaAdminReviewsPage } from "@/features/admin-reviews"
 import { StayeaAdminMessagesPage } from "@/features/admin-messages"
 import { StayeaAdminMarketingPage } from "@/features/admin-marketing"
 import { StayeaAdminReportsPage } from "@/features/admin-reports"
+import { StayeaAdminSettingsPage } from "@/features/admin-settings"
 import { AccommodationSection } from "./components/accommodation-section"
 import { ExperiencesAndPackagesSection } from "./components/experiences-and-packages-section"
 import { ExploreSection } from "./components/explore-section"
@@ -62,7 +63,7 @@ import { StayeaFooter } from "./components/stayea-footer"
 export type StayeaPageType =
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
     | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue"
-    | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings"
+    | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "admin-settings" | "bookings"
     | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host"
     | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc"
     | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
@@ -390,6 +391,13 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         setCurrentPage("dashboard")
         setIsLoggedIn(true)
         setActiveItem("Dashboard")
+      } else if (
+        target === "admin-settings" ||
+        target === "cai-dat-admin"
+      ) {
+        setCurrentPage("admin-settings")
+        setIsLoggedIn(true)
+        setActiveItem("Cài đặt")
       } else if (
         target === "settings" ||
         target === "cai-dat"
@@ -981,6 +989,85 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     }
   }
 
+  const handleAdminNavigateTab = (tabId: string) => {
+    switch (tabId) {
+      case "tong-quan":
+      case "dashboard":
+        setCurrentPage("dashboard")
+        break
+      case "dat-phong":
+      case "bookings":
+        setCurrentPage("admin-bookings")
+        break
+      case "bat-dong-san":
+      case "properties":
+        setCurrentPage("admin-properties")
+        break
+      case "khach-hang":
+      case "guests":
+      case "customers":
+        setCurrentPage("admin-customers")
+        break
+      case "chu-nha-doi-tac":
+      case "hosts":
+        setCurrentPage("admin-hosts")
+        break
+      case "trai-nghiem-tour":
+      case "experience":
+      case "experiences":
+        setCurrentPage("admin-experiences")
+        break
+      case "uu-dai-khuyen-mai":
+      case "deals":
+        setCurrentPage("admin-deals")
+        break
+      case "doanh-thu-thanh-toan":
+      case "transactions":
+      case "revenue":
+        setCurrentPage("admin-revenue")
+        break
+      case "danh-gia":
+      case "reviews":
+      case "admin-reviews":
+        setCurrentPage("admin-reviews")
+        break
+      case "tin-nhan":
+      case "messages":
+      case "admin-messages":
+        setCurrentPage("admin-messages")
+        break
+      case "marketing":
+      case "admin-marketing":
+        setCurrentPage("admin-marketing")
+        break
+      case "bao-cao":
+      case "reports":
+      case "admin-reports":
+      case "analytics":
+        setCurrentPage("admin-reports")
+        break
+      case "cai-dat":
+      case "settings":
+      case "admin-settings":
+        setCurrentPage("admin-settings")
+        break
+      default:
+        console.warn("Unknown admin tab:", tabId)
+    }
+  }
+
+  if (currentPage === "admin-settings") {
+    return (
+      <StayeaAdminSettingsPage
+        onNavigateLanding={() => {
+          setCurrentPage("home")
+          window.scrollTo({ top: 0, behavior: "smooth" })
+        }}
+        onNavigateTab={handleAdminNavigateTab}
+      />
+    )
+  }
+
   if (currentPage === "admin-reports") {
     return (
       <StayeaAdminReportsPage
@@ -988,35 +1075,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-                        setCurrentPage("admin-deals")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-                        setCurrentPage("admin-revenue")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          } else if (tabId === "cai-dat" || tabId === "settings") {
-                        setCurrentPage("settings")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1028,35 +1087,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-                        setCurrentPage("admin-deals")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-                        setCurrentPage("admin-revenue")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          } else if (tabId === "cai-dat" || tabId === "settings") {
-                        setCurrentPage("settings")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1068,35 +1099,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-                        setCurrentPage("admin-deals")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-                        setCurrentPage("admin-revenue")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          } else if (tabId === "cai-dat" || tabId === "settings") {
-                        setCurrentPage("settings")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1108,35 +1111,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-                        setCurrentPage("admin-deals")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-                        setCurrentPage("admin-revenue")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          } else if (tabId === "cai-dat" || tabId === "settings") {
-                        setCurrentPage("settings")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1148,35 +1123,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-                        setCurrentPage("admin-deals")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-                        setCurrentPage("admin-revenue")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          } else if (tabId === "cai-dat" || tabId === "settings") {
-                        setCurrentPage("settings")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1227,35 +1174,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "uu-dai-khuyen-mai" || tabId === "deals") {
-                        setCurrentPage("admin-deals")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "doanh-thu-thanh-toan" || tabId === "transactions" || tabId === "revenue") {
-                        setCurrentPage("admin-revenue")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          } else if (tabId === "cai-dat" || tabId === "settings") {
-                        setCurrentPage("settings")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1324,29 +1243,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1358,27 +1255,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1392,27 +1269,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "bat-dong-san") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1424,27 +1281,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1485,17 +1322,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }
@@ -1507,29 +1334,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
                     setCurrentPage("home")
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onNavigateTab={(tabId) => {
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-                        setCurrentPage("dashboard")
-          } else if (tabId === "dat-phong" || tabId === "bookings") {
-                        setCurrentPage("admin-bookings")
-          } else if (tabId === "bat-dong-san" || tabId === "properties") {
-                        setCurrentPage("admin-properties")
-          } else if (tabId === "khach-hang" || tabId === "guests") {
-                        setCurrentPage("admin-customers")
-          } else if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                        setCurrentPage("admin-hosts")
-          } else if (tabId === "trai-nghiem-tour" || tabId === "experience" || tabId === "experiences") {
-                        setCurrentPage("admin-experiences")
-          } else if (tabId === "danh-gia" || tabId === "reviews" || tabId === "admin-reviews") {
-                        setCurrentPage("admin-reviews")
-          } else if (tabId === "tin-nhan" || tabId === "messages" || tabId === "admin-messages") {
-                        setCurrentPage("admin-messages")
-          } else if (tabId === "marketing" || tabId === "admin-marketing") {
-                        setCurrentPage("admin-marketing")
-          } else if (tabId === "bao-cao" || tabId === "reports" || tabId === "admin-reports" || tabId === "analytics") {
-                        setCurrentPage("admin-reports")
-          }
-        }}
+        onNavigateTab={handleAdminNavigateTab}
       />
     )
   }

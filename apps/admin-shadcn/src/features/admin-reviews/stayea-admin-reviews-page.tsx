@@ -217,7 +217,7 @@ export function StayeaAdminReviewsPage({
       />
 
       {/* 2. Main Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-w-0">
         {/* Left Sidebar */}
         <div className={`${sidebarOpen ? "block" : "hidden"} lg:block`}>
           <StayeaAdminSidebar
@@ -238,7 +238,7 @@ export function StayeaAdminReviewsPage({
         </div>
 
         {/* Scrollable Main Content */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-7 py-6">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-7 py-6">
           <div className="max-w-[1600px] w-full mx-auto space-y-5">
             {/* Page Title & Action Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

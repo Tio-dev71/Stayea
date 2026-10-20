@@ -122,7 +122,7 @@ export function StayeaAdminDealsPage({
       />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-w-0">
         {/* Left Sidebar */}
         <div className={`${sidebarOpen ? "block" : "hidden"} lg:block`}>
           <StayeaAdminSidebar
@@ -143,7 +143,7 @@ export function StayeaAdminDealsPage({
         </div>
 
         {/* Center & Right Scrollable Area */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           {/* Top Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>

@@ -102,7 +102,7 @@ export function StayeaAdminRevenuePage({
       />
 
       {/* 2. Main Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-w-0">
         {/* Left Sidebar */}
         <div className={`${sidebarOpen ? "block" : "hidden"} lg:block`}>
           <StayeaAdminSidebar
@@ -123,7 +123,7 @@ export function StayeaAdminRevenuePage({
         </div>
 
         {/* Scrollable Main Content */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-7 py-6">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-7 py-6">
           {/* Main 2-column Grid: Left Main (8.5 cols / ~72%) + Right Sidebar (3.5 cols / ~28%) */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
             {/* Left Column: Title Row + Filter Bar + 4 KPI Cards + Dual Charts + Table */}

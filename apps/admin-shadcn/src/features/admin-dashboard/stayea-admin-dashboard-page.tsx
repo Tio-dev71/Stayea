@@ -107,7 +107,7 @@ export function StayeaAdminDashboardPage({
       />
 
       {/* 2. Main Body with Sidebar + Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-w-0">
         {/* Left Sidebar */}
         <div className={`${sidebarOpen ? "block" : "hidden"} lg:block`}>
           <StayeaAdminSidebar
@@ -149,7 +149,7 @@ export function StayeaAdminDashboardPage({
         </div>
 
         {/* Scrollable Content Container */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
           <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
             {/* Greeting & Date Picker Bar */}
             <StayeaAdminGreetingBar

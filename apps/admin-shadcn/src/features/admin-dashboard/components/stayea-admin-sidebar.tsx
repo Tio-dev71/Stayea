@@ -86,18 +86,55 @@ export function StayeaAdminSidebar({
   promoSubtitle = "Chờ bạn khám phá",
   promoButtonText = "Xem ngay",
 }: StayeaAdminSidebarProps) {
+  const normalizedActiveTab = (() => {
+    switch (activeTab) {
+      case "dashboard":
+        return "tong-quan"
+      case "bookings":
+        return "dat-phong"
+      case "properties":
+        return "bat-dong-san"
+      case "guests":
+      case "customers":
+        return "khach-hang"
+      case "hosts":
+        return "chu-nha-doi-tac"
+      case "experience":
+      case "experiences":
+        return "trai-nghiem-tour"
+      case "deals":
+        return "uu-dai-khuyen-mai"
+      case "revenue":
+      case "transactions":
+        return "doanh-thu-thanh-toan"
+      case "reviews":
+        return "danh-gia"
+      case "messages":
+        return "tin-nhan"
+      case "marketing":
+        return "marketing"
+      case "analytics":
+      case "reports":
+        return "bao-cao"
+      case "settings":
+        return "cai-dat"
+      default:
+        return activeTab
+    }
+  })()
+
   return (
-    <aside className="w-60 shrink-0 bg-white border-r border-slate-200/80 min-h-[calc(100vh-4rem)] p-3 sm:p-4 flex flex-col justify-between hidden lg:flex select-none">
+    <aside className="w-64 shrink-0 bg-white border-r border-slate-200/80 min-h-[calc(100vh-4rem)] p-3 flex flex-col justify-between hidden lg:flex select-none">
       {/* Navigation List */}
       <nav className="space-y-1">
         {ADMIN_SIDEBAR_NAV_VI.map((item: SidebarNavMenuItem) => {
-          const isActive = activeTab === item.id
+          const isActive = normalizedActiveTab === item.id
           return (
             <button
               key={item.id}
               type="button"
               onClick={() => onSelectTab?.(item.id)}
-              className={`relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-left ${
+              className={`relative w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-[13px] font-medium transition-all text-left ${
                 isActive
                   ? "bg-[#eef8f3] text-[#1b7a4e] font-semibold shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"

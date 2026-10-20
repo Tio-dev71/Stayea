@@ -1,11 +1,14 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { PROMO_BANNERS, PARTNER_CARDS } from "@/features/landing/data/stayea-mock-data"
 
-export function PromosAndPartnersSection() {
+interface PromosAndPartnersSectionProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function PromosAndPartnersSection({ onNavigate }: PromosAndPartnersSectionProps = {}) {
   const plannerBanner = PROMO_BANNERS[0]
   const dealsBanner = PROMO_BANNERS[1]
 
@@ -38,13 +41,14 @@ export function PromosAndPartnersSection() {
               </div>
 
               <div className="relative z-10 pt-4">
-                <Link
-                  href={plannerBanner.href}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-sm transition-all hover:gap-3"
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.("plans")}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-sm transition-all hover:gap-3 active:scale-95"
                 >
                   <span>{plannerBanner.buttonText}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                </button>
               </div>
             </div>
           )}
@@ -73,13 +77,14 @@ export function PromosAndPartnersSection() {
               </div>
 
               <div className="relative z-10 pt-4">
-                <Link
-                  href={dealsBanner.href}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-sm transition-all hover:gap-3"
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.("deals")}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-sm transition-all hover:gap-3 active:scale-95"
                 >
                   <span>{dealsBanner.buttonText}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                </button>
               </div>
             </div>
           )}
@@ -113,13 +118,19 @@ export function PromosAndPartnersSection() {
               </div>
 
               <div className="relative z-10 pt-4">
-                <Link
-                  href={card.href}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-sm transition-all hover:gap-2.5"
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (card.id === "stayea-club") onNavigate?.("stayea-club")
+                    else if (card.id === "become-host") onNavigate?.("host")
+                    else if (card.id === "partner-stayea") onNavigate?.("partner")
+                    else onNavigate?.(card.href.replace("#", ""))
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-sm transition-all hover:gap-2.5 active:scale-95"
                 >
                   <span>{card.buttonText}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                </button>
               </div>
             </div>
           ))}

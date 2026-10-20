@@ -7,9 +7,10 @@ import type { PhuQuocArticleItem } from "@/features/landing/data/stayea-mock-dat
 
 interface PhuQuocArticleCardProps {
   readonly article: PhuQuocArticleItem
+  readonly onSelect?: () => void
 }
 
-export function PhuQuocArticleCard({ article }: PhuQuocArticleCardProps) {
+export function PhuQuocArticleCard({ article, onSelect }: PhuQuocArticleCardProps) {
   return (
     <article className="group bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col justify-between">
       <div>
@@ -57,7 +58,7 @@ export function PhuQuocArticleCard({ article }: PhuQuocArticleCardProps) {
         </div>
 
         <Link
-          href={`#article-${article.id}`}
+          href={`#article-${article.id}`} onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(); } }}
           aria-label={`Đọc bài viết: ${article.title}`}
           className="w-8 h-8 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center shadow-xs transition-transform active:scale-95 group-hover:scale-105"
         >

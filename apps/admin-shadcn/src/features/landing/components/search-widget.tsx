@@ -18,19 +18,40 @@ type TabType = "stay" | "experience" | "package" | "transport"
 const DEFAULT_CHECK_IN = "Chọn ngày"
 const DEFAULT_CHECK_OUT = "Chọn ngày"
 
-function scrollToTarget(e: React.FormEvent, tab: TabType) {
-  e.preventDefault()
-  let targetId = "#accommodations"
-  if (tab === "experience") targetId = "#experiences"
-  if (tab === "transport") targetId = "#transportation"
-  if (tab === "package") targetId = "#packages"
-  const element = document.querySelector(targetId)
-  if (element) {
-    element.scrollIntoView({ behavior: "smooth" })
-  }
+interface SearchWidgetProps {
+  readonly onNavigate?: (item: string) => void
 }
 
-export function SearchWidget() {
+export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
+  function handleSearchSubmit(e: React.FormEvent, tab: TabType) {
+    e.preventDefault()
+    if (onNavigate) {
+      if (tab === "stay") {
+        onNavigate("stay")
+        return
+      }
+      if (tab === "experience") {
+        onNavigate("experience")
+        return
+      }
+      if (tab === "package") {
+        onNavigate("packages")
+        return
+      }
+      if (tab === "transport") {
+        onNavigate("transport")
+        return
+      }
+    }
+    let targetId = "#accommodations"
+    if (tab === "experience") targetId = "#experiences"
+    if (tab === "transport") targetId = "#transportation"
+    if (tab === "package") targetId = "#packages"
+    const element = document.querySelector(targetId)
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+    }
+  }
   const widgetRef = React.useRef<HTMLDivElement>(null)
 
   // Default to "transport" tab active to match the provided design reference image
@@ -119,7 +140,7 @@ export function SearchWidget() {
 
       {/* Inputs & search button row */}
       <form
-        onSubmit={(e) => scrollToTarget(e, activeTab)}
+        onSubmit={(e) => handleSearchSubmit(e, activeTab)}
         className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2"
       >
         {/* ========================================================= */}

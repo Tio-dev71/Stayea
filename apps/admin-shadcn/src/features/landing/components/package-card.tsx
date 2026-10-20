@@ -24,6 +24,7 @@ interface PackageCardProps {
   readonly isWishlisted?: boolean
   readonly onToggleWishlist?: (id: string) => void
   readonly viewMode?: "grid" | "list"
+  readonly onSelect?: () => void
 }
 
 function getHighlightIcon(iconName: PackageListingItem["highlightIcon"]) {
@@ -81,6 +82,7 @@ export function PackageCard({
   isWishlisted = false,
   onToggleWishlist,
   viewMode = "grid",
+  onSelect,
 }: PackageCardProps) {
   const [internalWishlist, setInternalWishlist] = React.useState(isWishlisted)
 
@@ -165,6 +167,7 @@ export function PackageCard({
             </div>
             <button
               type="button"
+              onClick={onSelect}
               aria-label={`Xem chi tiết ${item.title}`}
               className="w-9 h-9 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center shadow-xs transition-transform active:scale-95 group-hover:scale-105"
             >

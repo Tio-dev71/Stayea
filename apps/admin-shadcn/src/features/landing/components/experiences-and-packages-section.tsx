@@ -1,11 +1,14 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { EXPERIENCES, PACKAGES } from "@/features/landing/data/stayea-mock-data"
 
-export function ExperiencesAndPackagesSection() {
+interface ExperiencesAndPackagesSectionProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function ExperiencesAndPackagesSection({ onNavigate }: ExperiencesAndPackagesSectionProps = {}) {
   return (
     <section id="experiences" className="py-12 bg-slate-50/60 border-y border-slate-100">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -23,13 +26,14 @@ export function ExperiencesAndPackagesSection() {
                 </p>
               </div>
 
-              <Link
-                href="#experiences"
-                className="group inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors shrink-0"
+              <button
+                type="button"
+                onClick={() => onNavigate?.("experience")}
+                className="group inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors shrink-0 active:scale-95"
               >
                 <span>Xem tất cả trải nghiệm</span>
                 <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+              </button>
             </div>
 
             {/* 8 Cards Grid */}
@@ -37,7 +41,11 @@ export function ExperiencesAndPackagesSection() {
               {EXPERIENCES.map((exp) => (
                 <div
                   key={exp.id}
-                  className="group flex flex-col rounded-xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-center"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNavigate?.("experience")}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("experience") }}
+                  className="group cursor-pointer flex flex-col rounded-xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-center"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
                     <Image
@@ -74,13 +82,14 @@ export function ExperiencesAndPackagesSection() {
                 </p>
               </div>
 
-              <Link
-                href="#packages"
-                className="group inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors shrink-0"
+              <button
+                type="button"
+                onClick={() => onNavigate?.("packages")}
+                className="group inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors shrink-0 active:scale-95"
               >
                 <span>Xem tất cả gói</span>
                 <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+              </button>
             </div>
 
             {/* 5 Cards Grid */}
@@ -88,7 +97,11 @@ export function ExperiencesAndPackagesSection() {
               {PACKAGES.map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="group flex flex-col rounded-xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-center"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNavigate?.("packages")}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("packages") }}
+                  className="group cursor-pointer flex flex-col rounded-xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-center"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
                     <Image

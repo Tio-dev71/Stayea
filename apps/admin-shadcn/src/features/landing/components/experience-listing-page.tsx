@@ -18,7 +18,14 @@ const INITIAL_FILTERS: ExperienceFilterState = {
   durations: [],
 }
 
-export function ExperienceListingPage() {
+interface ExperienceListingPageProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function ExperienceListingPage({ onNavigate }: ExperienceListingPageProps = {}) {
+  const handleBookingClick = React.useCallback(() => {
+    onNavigate?.("new-booking")
+  }, [onNavigate])
   const [filters, setFilters] = React.useState<ExperienceFilterState>(INITIAL_FILTERS)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [sortBy, setSortBy] = React.useState("popular")
@@ -219,7 +226,7 @@ export function ExperienceListingPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                 {filteredItems.map((item) => (
-                  <ExperienceCard key={item.id} item={item} />
+                  <ExperienceCard key={item.id} item={item} onSelect={handleBookingClick} />
                 ))}
               </div>
             )}

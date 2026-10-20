@@ -21,7 +21,11 @@ function getBadgeIcon(iconName: string) {
   }
 }
 
-export function StayeaHero() {
+interface StayeaHeroProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function StayeaHero({ onNavigate }: StayeaHeroProps = {}) {
   return (
     <section className="relative w-full overflow-hidden bg-slate-900 min-h-[660px] sm:min-h-[720px] lg:min-h-[780px] flex flex-col justify-between">
       {/* Full-width Edge-to-Edge Background Image */}
@@ -89,7 +93,7 @@ export function StayeaHero() {
 
           {/* Centered Search Widget (Bảng Khám Phá) */}
           <div className="w-full max-w-[880px] pt-2 sm:pt-3">
-            <SearchWidget />
+            <SearchWidget onNavigate={onNavigate} />
           </div>
         </div>
 

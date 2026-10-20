@@ -21,7 +21,14 @@ import {
 } from "@/features/landing/data/stayea-mock-data"
 import type { PackageListingItem } from "@/features/landing/data/stayea-mock-data"
 
-export function PackageListingPage() {
+interface PackageListingPageProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function PackageListingPage({ onNavigate }: PackageListingPageProps = {}) {
+  const handleBookingClick = React.useCallback(() => {
+    onNavigate?.("new-booking")
+  }, [onNavigate])
   const [selectedAudience, setSelectedAudience] = React.useState<string>("all")
   const [searchQuery, setSearchQuery] = React.useState<string>("")
   const [selectedDuration, setSelectedDuration] = React.useState<string>(PACKAGE_FILTER_DURATIONS[0] ?? "Tất cả thời gian")
@@ -217,6 +224,7 @@ export function PackageListingPage() {
                 viewMode={viewMode}
                 isWishlisted={wishlistIds.has(item.id)}
                 onToggleWishlist={handleToggleWishlist}
+                onSelect={handleBookingClick}
               />
             ))}
           </div>

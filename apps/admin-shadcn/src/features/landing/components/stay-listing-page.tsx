@@ -21,7 +21,14 @@ const INITIAL_FILTERS: StayFilterState = {
   sortBy: "popular",
 }
 
-export function StayListingPage() {
+interface StayListingPageProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function StayListingPage({ onNavigate }: StayListingPageProps = {}) {
+  const handleBookingClick = React.useCallback(() => {
+    onNavigate?.("new-booking")
+  }, [onNavigate])
   const [activeCategoryTab, setActiveCategoryTab] = React.useState<string>("all")
   const [filters, setFilters] = React.useState<StayFilterState>(INITIAL_FILTERS)
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
@@ -234,13 +241,13 @@ export function StayListingPage() {
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                 {filteredItems.slice(0, pageSize).map((item) => (
-                  <StayCard key={item.id} item={item} />
+                  <StayCard key={item.id} item={item} onSelect={handleBookingClick} />
                 ))}
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredItems.slice(0, pageSize).map((item) => (
-                  <StayCard key={item.id} item={item} isListView />
+                  <StayCard key={item.id} item={item} isListView onSelect={handleBookingClick} />
                 ))}
               </div>
             )}

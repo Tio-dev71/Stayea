@@ -21,6 +21,7 @@ import type { ExperienceListingItem } from "@/features/landing/data/stayea-mock-
 
 interface ExperienceCardProps {
   readonly item: ExperienceListingItem
+  readonly onSelect?: () => void
 }
 
 function getHighlightIcon(iconName: string) {
@@ -46,7 +47,7 @@ function getHighlightIcon(iconName: string) {
   }
 }
 
-export function ExperienceCard({ item }: ExperienceCardProps) {
+export function ExperienceCard({ item, onSelect }: ExperienceCardProps) {
   const [isFavorited, setIsFavorited] = React.useState(false)
 
   return (
@@ -125,7 +126,7 @@ export function ExperienceCard({ item }: ExperienceCardProps) {
           </div>
 
           <Link
-            href={`#experience-${item.id}`}
+            href={`#experience-${item.id}`} onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(); } }}
             className="w-7 h-7 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center transition-all shadow-xs group-hover:scale-105 active:scale-95"
             aria-label={`Xem chi tiết ${item.title}`}
           >

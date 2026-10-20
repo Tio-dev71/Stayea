@@ -27,6 +27,7 @@ import type { StayAccommodationItem } from "@/features/landing/data/stayea-mock-
 interface StayCardProps {
   readonly item: StayAccommodationItem
   readonly isListView?: boolean
+  readonly onSelect?: () => void
 }
 
 function getBadgeElement(badge: StayAccommodationItem["badge"]) {
@@ -106,7 +107,7 @@ function getAmenityIcon(iconName: string) {
   }
 }
 
-export function StayCard({ item, isListView = false }: StayCardProps) {
+export function StayCard({ item, isListView = false, onSelect }: StayCardProps) {
   const [isFavorited, setIsFavorited] = React.useState(false)
 
   if (isListView) {
@@ -158,7 +159,7 @@ export function StayCard({ item, isListView = false }: StayCardProps) {
               <span className="text-xs text-slate-500 font-normal"> / đêm</span>
             </div>
             <Link
-              href={`#details-${item.id}`}
+              href={`#details-${item.id}`} onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(); } }}
               className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
             >
               <span>Xem chi tiết</span>
@@ -245,7 +246,7 @@ export function StayCard({ item, isListView = false }: StayCardProps) {
           </div>
 
           <Link
-            href={`#details-${item.id}`}
+            href={`#details-${item.id}`} onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(); } }}
             className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#0c3b40] hover:bg-[#072528] text-white text-[11px] font-semibold shadow-xs transition-all active:scale-95"
           >
             <span>Xem chi tiết</span>

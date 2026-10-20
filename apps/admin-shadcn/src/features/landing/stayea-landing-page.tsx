@@ -59,9 +59,7 @@ import { TransportationSection } from "./components/transportation-section"
 import { PromosAndPartnersSection } from "./components/promos-and-partners-section"
 import { StayeaFooter } from "./components/stayea-footer"
 
-export function StayeaLandingPage() {
-  // Page view state: "phu-quoc" (active screen) | "packages" | "experience" | "stay" | "home" | "about" | "host" | "partner"
-  type PageType =
+export type StayeaPageType =
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
     | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue"
     | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings"
@@ -70,27 +68,67 @@ export function StayeaLandingPage() {
     | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
     | "stayea-club-claimed" | "transport"
 
-  const [pageState, setPageState] = React.useState<PageType>("home")
+export interface StayeaLandingPageProps {
+  readonly initialPage?: StayeaPageType
+}
+
+export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) {
+  type PageType = StayeaPageType
+    | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
+    | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue"
+    | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings"
+    | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host"
+    | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc"
+    | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
+    | "stayea-club-claimed" | "transport"
+
+  const [pageState, setPageState] = React.useState<PageType>(() => {
+    if (initialPage) return initialPage
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const pageParam = params.get("page")
+      if (pageParam) return pageParam as PageType
+      const hash = window.location.hash.replace("#", "").toLowerCase()
+      if (hash === "host" || hash === "chu-nha") return "host"
+      if (hash === "partner" || hash === "doi-tac") return "partner"
+      if (hash === "about" || hash === "ve-stayea") return "about"
+      if (hash === "club" || hash === "stayea-club") return "stayea-club"
+      if (hash === "stay" || hash === "luu-tru") return "stay"
+      if (hash === "experience" || hash === "trai-nghiem") return "experience"
+      if (hash === "packages" || hash === "goi") return "packages"
+      if (hash === "transport" || hash === "di-chuyen") return "transport"
+      if (hash === "deals" || hash === "uu-dai") return "deals"
+    }
+    return "home"
+  })
   const currentPage = pageState
 
   const setCurrentPage = React.useCallback(
     (pageOrUpdater: PageType | ((prev: PageType) => PageType)) => {
-      setPageState((prev) => {
-        const next = typeof pageOrUpdater === "function" ? pageOrUpdater(prev) : pageOrUpdater
-        if (typeof window !== "undefined") {
-          const url = new URL(window.location.href)
-          if (next === "home") {
-            url.searchParams.delete("page")
-          } else {
-            url.searchParams.set("page", next)
-          }
-          window.history.pushState(null, "", url.toString())
-        }
-        return next
-      })
+      setPageState(pageOrUpdater)
     },
     []
   )
+
+  // Synchronize URL search params smoothly on pageState change without triggering React render conflicts
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const url = new URL(window.location.href)
+      const currentUrlPage = url.searchParams.get("page")
+      if (pageState === "home") {
+        if (currentUrlPage) {
+          url.searchParams.delete("page")
+          window.history.replaceState(null, "", url.toString())
+        }
+      } else if (currentUrlPage !== pageState) {
+        url.searchParams.set("page", pageState)
+        window.history.pushState(null, "", url.toString())
+      }
+    } catch {
+      // Safe fallback
+    }
+  }, [pageState])
   const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(true)
   const [activeItem, setActiveItem] = React.useState<string>("Stayea Club")
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null)
@@ -495,8 +533,12 @@ export function StayeaLandingPage() {
         setCurrentPage("phu-quoc")
         setActiveItem("Khám phá")
       } else if (!target) {
-        setCurrentPage("phu-quoc")
-        setActiveItem("Khám phá")
+        if (initialPage) {
+          setCurrentPage(initialPage)
+        } else {
+          setCurrentPage("home")
+          setActiveItem("Trang chủ")
+        }
       }
     }
 
@@ -510,7 +552,7 @@ export function StayeaLandingPage() {
         clearTimeout(closeTimerRef.current)
       }
     }
-  }, [setCurrentPage])
+  }, [setCurrentPage, initialPage])
 
   function handleNavigate(item: string) {
     if (
@@ -1665,19 +1707,19 @@ export function StayeaLandingPage() {
           <DealsListingPage onNavigate={handleNavigate} />
         ) : currentPage === "transport" ? (
           /* Transportation Listing Screen */
-          <TransportListingPage />
+          <TransportListingPage onNavigate={handleNavigate} />
         ) : currentPage === "phu-quoc" ? (
           /* Khám phá Phú Quốc Listing Screen */
-          <PhuQuocListingPage />
+          <PhuQuocListingPage onNavigate={handleNavigate} />
         ) : currentPage === "packages" ? (
           /* Packages & Tours Listing Screen */
-          <PackageListingPage />
+          <PackageListingPage onNavigate={handleNavigate} />
         ) : currentPage === "experience" ? (
           /* Experience Listing Screen */
-          <ExperienceListingPage />
+          <ExperienceListingPage onNavigate={handleNavigate} />
         ) : currentPage === "stay" ? (
           /* Villa & Accommodations Listing Screen */
-          <StayListingPage />
+          <StayListingPage onNavigate={handleNavigate} />
         ) : currentPage === "partner" ? (
           <>
             {/* 1. Hero Section: "Hợp tác cùng STAYEA" */}
@@ -1732,12 +1774,12 @@ export function StayeaLandingPage() {
         ) : (
           <>
             {/* Home Screen: Redesigned Balanced Banner */}
-            <StayeaHero />
-            <AccommodationSection />
-            <ExperiencesAndPackagesSection />
-            <ExploreSection />
-            <TransportationSection />
-            <PromosAndPartnersSection />
+            <StayeaHero onNavigate={handleNavigate} />
+            <AccommodationSection onNavigate={handleNavigate} />
+            <ExperiencesAndPackagesSection onNavigate={handleNavigate} />
+            <ExploreSection onNavigate={handleNavigate} />
+            <TransportationSection onNavigate={handleNavigate} />
+            <PromosAndPartnersSection onNavigate={handleNavigate} />
           </>
         )}
       </main>

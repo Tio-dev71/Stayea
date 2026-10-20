@@ -1,11 +1,14 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { TRANSPORTATION_SERVICES } from "@/features/landing/data/stayea-mock-data"
 
-export function TransportationSection() {
+interface TransportationSectionProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function TransportationSection({ onNavigate }: TransportationSectionProps = {}) {
   return (
     <section id="transportation" className="py-12 bg-slate-50/50">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,13 +23,14 @@ export function TransportationSection() {
             </p>
           </div>
 
-          <Link
-            href="#transportation"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors"
+          <button
+            type="button"
+            onClick={() => onNavigate?.("transport")}
+            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors active:scale-95"
           >
             <span>Xem tất cả dịch vụ</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
         </div>
 
         {/* 4 Landscape Cards Grid */}
@@ -34,7 +38,11 @@ export function TransportationSection() {
           {TRANSPORTATION_SERVICES.map((item) => (
             <div
               key={item.id}
-              className="group flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-300 hover:-translate-y-1"
+              role="button"
+              tabIndex={0}
+              onClick={() => onNavigate?.("transport")}
+              onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("transport") }}
+              className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-300 hover:-translate-y-1"
             >
               {/* Landscape Image */}
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">

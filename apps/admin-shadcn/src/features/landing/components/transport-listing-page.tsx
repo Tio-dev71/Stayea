@@ -22,7 +22,14 @@ const INITIAL_FILTERS: TransportFilterState = {
   sortOption: "popular",
 }
 
-export function TransportListingPage() {
+interface TransportListingPageProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function TransportListingPage({ onNavigate }: TransportListingPageProps = {}) {
+  const handleBookingClick = React.useCallback(() => {
+    onNavigate?.("flight-booking")
+  }, [onNavigate])
   const [activeTab, setActiveTab] = React.useState<string>("all")
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = React.useState<string>("popular")
@@ -233,7 +240,7 @@ export function TransportListingPage() {
                   <TransportCard
                     key={item.id}
                     item={item}
-                    onSelect={(it) => setSelectedTransport(it)}
+                    onSelect={(it) => { setSelectedTransport(it); handleBookingClick(); }}
                   />
                 ))}
               </div>

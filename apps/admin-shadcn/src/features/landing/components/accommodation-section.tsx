@@ -1,7 +1,6 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import { ArrowRight, Crown, Home, Building2, Calendar, ShieldCheck, Hotel, Sparkles } from "lucide-react"
 import { ACCOMMODATIONS } from "@/features/landing/data/stayea-mock-data"
 
@@ -26,7 +25,11 @@ function getCategoryIcon(iconName: string) {
   }
 }
 
-export function AccommodationSection() {
+interface AccommodationSectionProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function AccommodationSection({ onNavigate }: AccommodationSectionProps = {}) {
   return (
     <section id="accommodations" className="py-12 bg-white">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,13 +44,14 @@ export function AccommodationSection() {
             </p>
           </div>
 
-          <Link
-            href="#accommodations"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors"
+          <button
+            type="button"
+            onClick={() => onNavigate?.("stay")}
+            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#0c3b40] transition-colors active:scale-95"
           >
             <span>Xem tất cả lưu trú</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
         </div>
 
         {/* 7 Columns Grid */}
@@ -55,7 +59,11 @@ export function AccommodationSection() {
           {ACCOMMODATIONS.map((item) => (
             <div
               key={item.id}
-              className={`group flex flex-col rounded-2xl overflow-hidden bg-white border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+              role="button"
+              tabIndex={0}
+              onClick={() => onNavigate?.("stay")}
+              onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("stay") }}
+              className={`group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                 item.isSelect
                   ? "border-amber-300/80 ring-1 ring-amber-300/40 shadow-sm"
                   : "border-slate-100 shadow-sm hover:border-slate-200"

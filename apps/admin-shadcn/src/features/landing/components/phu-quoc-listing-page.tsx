@@ -18,7 +18,14 @@ const SORT_OPTIONS = [
   "Cũ nhất",
 ]
 
-export function PhuQuocListingPage() {
+interface PhuQuocListingPageProps {
+  readonly onNavigate?: (item: string) => void
+}
+
+export function PhuQuocListingPage({ onNavigate }: PhuQuocListingPageProps = {}) {
+  const handleArticleClick = React.useCallback(() => {
+    onNavigate?.("experience")
+  }, [onNavigate])
   const [activeCategory, setActiveCategory] = React.useState<string>("all")
   const [searchQuery, setSearchQuery] = React.useState<string>("")
   const [selectedSort, setSelectedSort] = React.useState<string>(SORT_OPTIONS[0] ?? "Mới nhất")
@@ -142,7 +149,7 @@ export function PhuQuocListingPage() {
             {filteredArticles.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                 {filteredArticles.map((article) => (
-                  <PhuQuocArticleCard key={article.id} article={article} />
+                  <PhuQuocArticleCard key={article.id} article={article} onSelect={handleArticleClick} />
                 ))}
               </div>
             ) : (

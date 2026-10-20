@@ -25,6 +25,7 @@ interface StayeaHeaderProps {
     readonly email?: string
     readonly avatarUrl: string
     readonly notificationsCount?: number
+    readonly role?: "customer" | "admin" | "host"
   }
 }
 
@@ -41,6 +42,7 @@ export function StayeaHeader({
     email: "nguyenminh@gmail.com",
     avatarUrl: "/profile/profile-avatar.jpg",
     notificationsCount: 3,
+    role: "customer",
   },
 }: StayeaHeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
@@ -448,17 +450,19 @@ export function StayeaHeader({
                         <span>Phương thức thanh toán</span>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserDropdownOpen(false)
-                          onNavigate?.("dashboard")
-                        }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-emerald-800 hover:bg-emerald-50/70 font-semibold cursor-pointer"
-                      >
-                        <LayoutDashboard className="w-4 h-4 text-emerald-600" />
-                        <span>Admin Dashboard</span>
-                      </button>
+                      {currentUser.role === "admin" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserDropdownOpen(false)
+                            onNavigate?.("dashboard")
+                          }}
+                          className="w-full flex items-center gap-2.5 px-4 py-2 text-emerald-800 hover:bg-emerald-50/70 font-semibold cursor-pointer"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-emerald-600" />
+                          <span>Admin Dashboard</span>
+                        </button>
+                      )}
 
                       <button
                         type="button"

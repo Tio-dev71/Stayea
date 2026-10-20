@@ -38,6 +38,7 @@ export const proxy: NextProxy = (request: NextRequest) => {
   // Allow static assets, public pages, and all customer portal routes
   if (
     pathname === '/' ||
+    pathname.startsWith('/api') ||
     PUBLIC_ROUTES.has(pathname) ||
     /\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?)$/i.test(pathname)
   ) {

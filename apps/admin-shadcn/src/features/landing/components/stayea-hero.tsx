@@ -22,7 +22,7 @@ function getBadgeIcon(iconName: string) {
 }
 
 interface StayeaHeroProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string) => void
 }
 
 export function StayeaHero({ onNavigate }: StayeaHeroProps = {}) {

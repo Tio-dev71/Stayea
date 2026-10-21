@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@workspace/ui/components/dialog"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { ProfileSidebar } from "./profile-sidebar"
 import { PaymentMethodsHeroBanner } from "./payment-methods-hero-banner"
 import { PaymentMetricsBar } from "./payment-metrics-bar"
@@ -45,6 +46,16 @@ interface PaymentMethodsPageProps {
 }
 
 export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
+  const [accountHolderName, setAccountHolderName] = React.useState<string>("Chủ tài khoản")
+
+  React.useEffect(() => {
+    stayeaApi.getProfile().then((u) => {
+      if (u && (u.displayName || u.name)) {
+        setAccountHolderName(u.displayName || u.name)
+      }
+    }).catch(() => {})
+  }, [])
+
   // 1. Data States
   const [cards, setCards] = React.useState<readonly SavedCreditCard[]>(SAVED_CREDIT_CARDS)
   const [bankAccounts, setBankAccounts] =
@@ -171,7 +182,7 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
         id: `bank-${Date.now()}`,
         bankName: newBankName,
         bankCode: "bidv",
-        accountHolder: "Nguyễn Minh",
+        accountHolder: accountHolderName,
         accountNumberMasked: `**** ${last4}`,
         logoColor: "#0066B3",
       }

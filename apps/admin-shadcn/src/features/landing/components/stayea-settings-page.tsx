@@ -10,6 +10,7 @@ import { StayeaSettingsNotificationsPanel } from "./stayea-settings-notification
 import { StayeaSettingsPreferencesPanel } from "./stayea-settings-preferences-panel"
 import { StayeaSettingsPrivacyPanel } from "./stayea-settings-privacy-panel"
 import { StayeaSettingsSupportBanner } from "./stayea-settings-support-banner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { STAYEA_SETTINGS_DATA } from "@/features/landing/data/stayea-mock-data"
 
 export interface StayeaSettingsPageProps {
@@ -18,6 +19,19 @@ export interface StayeaSettingsPageProps {
 
 export function StayeaSettingsPage({ onNavigate }: StayeaSettingsPageProps) {
   const [toastMessage, setToastMessage] = React.useState<string | null>(null)
+  const [securityData, setSecurityData] = React.useState(STAYEA_SETTINGS_DATA.security)
+
+  React.useEffect(() => {
+    stayeaApi.getProfile().then((u) => {
+      if (u) {
+        setSecurityData((prev) => ({
+          ...prev,
+          email: u.email || "",
+          phone: u.phone || "",
+        }))
+      }
+    }).catch(() => {})
+  }, [])
 
   function showToast(msg: string) {
     setToastMessage(msg)
@@ -129,7 +143,7 @@ export function StayeaSettingsPage({ onNavigate }: StayeaSettingsPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
               {/* Top-Left: Security */}
               <StayeaSettingsSecurityPanel
-                security={STAYEA_SETTINGS_DATA.security}
+                security={securityData}
                 onEditEmail={() => showToast("Mở hộp thoại chỉnh sửa email đăng nhập")}
                 onUpdatePhone={() => showToast("Mở hộp thoại cập nhật số điện thoại")}
                 onChangePassword={() => showToast("Mở hộp thoại đổi mật khẩu tài khoản")}

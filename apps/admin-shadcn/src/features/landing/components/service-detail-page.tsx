@@ -148,9 +148,20 @@ export function ServiceDetailPage({
   const [bookingModalOpen, setBookingModalOpen] = React.useState(false)
   const [bookingSuccess, setBookingSuccess] = React.useState(false)
   const [bookingCode, setBookingCode] = React.useState("")
-  const [customerName, setCustomerName] = React.useState("Nguyễn Minh")
-  const [customerPhone, setCustomerPhone] = React.useState("0912 345 678")
-  const [customerEmail, setCustomerEmail] = React.useState("minh.nguyen@stayea.vn")
+  const [customerName, setCustomerName] = React.useState("")
+  const [customerPhone, setCustomerPhone] = React.useState("")
+  const [customerEmail, setCustomerEmail] = React.useState("")
+
+  // Auto fill customer information if user is authenticated
+  React.useEffect(() => {
+    stayeaApi.getProfile().then((u) => {
+      if (u) {
+        if (u.displayName || u.name) setCustomerName(u.displayName || u.name)
+        if (u.phone) setCustomerPhone(u.phone)
+        if (u.email) setCustomerEmail(u.email)
+      }
+    }).catch(() => {})
+  }, [])
   const [customerNotes, setCustomerNotes] = React.useState("")
   const [paymentMethod, setPaymentMethod] = React.useState("vietqr")
 

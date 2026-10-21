@@ -362,7 +362,7 @@ export function StayeaHeader({
                   <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-4 py-2 border-b border-slate-100">
                       <p className="text-xs font-bold text-slate-900">{currentUser.name}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{currentUser.email || "nguyenminh@gmail.com"}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{currentUser.email || "Thành viên STAYEA"}</p>
                     </div>
 
                     <div className="py-1 text-xs">

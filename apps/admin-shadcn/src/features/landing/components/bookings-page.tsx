@@ -35,8 +35,15 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
   >("all")
   const [currentPage, setCurrentPage] = React.useState<number>(1)
   const [liveBookings, setLiveBookings] = React.useState<ServiceBookingItem[]>([])
+  const [customerName, setCustomerName] = React.useState<string>("Quý khách")
 
   React.useEffect(() => {
+    stayeaApi.getProfile().then((u) => {
+      if (u && (u.displayName || u.name)) {
+        setCustomerName(u.displayName || u.name)
+      }
+    }).catch(() => {})
+
     async function fetchBookings() {
       try {
         const raw = await stayeaApi.getUserBookings()
@@ -398,7 +405,7 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
             </div>
 
             <div className="text-xs text-slate-600 space-y-1 mb-4 text-left p-3 rounded-xl bg-slate-50">
-              <p>Khách hàng: <strong className="text-slate-800">Nguyễn Minh</strong></p>
+              <p>Khách hàng: <strong className="text-slate-800">{customerName}</strong></p>
               <p>Thời gian: <strong className="text-slate-800">{voucherModalItem.dates}</strong></p>
             </div>
 

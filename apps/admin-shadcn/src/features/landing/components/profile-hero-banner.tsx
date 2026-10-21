@@ -9,7 +9,7 @@ interface ProfileHeroBannerProps {
 }
 
 export function ProfileHeroBanner({
-  userName = "Nguyễn Minh",
+  userName = "Quý khách",
   onEditCover,
 }: ProfileHeroBannerProps) {
   return (

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Check, ExternalLink } from "lucide-react"
+import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Check } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
 
 interface AuthCardProps {
@@ -49,10 +49,6 @@ function AppleIcon() {
   )
 }
 
-function handleRedirectOAuth() {
-  window.location.href = "http://localhost:3000/api/auth/oauth/google"
-}
-
 export function AuthCard({
   initialMode = "login",
   onAuthSuccess,
@@ -75,9 +71,6 @@ export function AuthCard({
   const [loading, setLoading] = React.useState(false)
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
-
-  // Social Auth Modal States
-  const [socialModalProvider, setSocialModalProvider] = React.useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -150,29 +143,14 @@ export function AuthCard({
   function handleSocialLogin(provider: string) {
     setErrorMsg(null)
     setSuccessMsg(null)
-    setSocialModalProvider(provider)
-  }
-
-  async function handleOneClickSocial(provider: string, accountEmail: string, accountName: string) {
-    setLoading(true)
-    setErrorMsg(null)
-    try {
-      const p = provider.toLowerCase() === "github" ? "github" : "google"
-      const res = await stayeaApi.socialLogin(p, accountEmail, accountName)
-      if (res.success) {
-        setSuccessMsg(`Đăng nhập thành công với tài khoản ${provider}! Chào mừng ${accountName}.`)
-        setSocialModalProvider(null)
-        setTimeout(() => {
-          onAuthSuccess?.(accountEmail)
-        }, 500)
-      } else {
-        setErrorMsg(res.error || `Đăng nhập qua ${provider} thất bại.`)
-      }
-    } catch {
-      setErrorMsg(`Lỗi kết nối khi xác thực qua ${provider}.`)
-    } finally {
-      setLoading(false)
+    if (provider === "Google") {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+      window.location.href = `${apiUrl}/api/auth/oauth/google`
+      return
     }
+    setErrorMsg(
+      `Phương thức đăng nhập qua ${provider} đang được hoàn thiện. Vui lòng sử dụng tài khoản Google hoặc Email/Mật khẩu.`
+    )
   }
 
 
@@ -479,93 +457,8 @@ export function AuthCard({
         </button>
       </div>
 
-      {/* Real Social Authentication - Native Account Chooser */}
-      {socialModalProvider && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200">
-            <button
-              type="button"
-              onClick={() => setSocialModalProvider(null)}
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold transition-colors cursor-pointer"
-            >
-              ✕
-            </button>
-            <div className="text-center mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-2 border border-slate-100">
-                {socialModalProvider === "Google" ? (
-                  <GoogleIcon />
-                ) : socialModalProvider === "Facebook" ? (
-                  <FacebookIcon />
-                ) : (
-                  <AppleIcon />
-                )}
-              </div>
-              <h3 className="text-base font-bold text-slate-900">
-                Đăng nhập bằng {socialModalProvider}
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Chọn tài khoản trình duyệt để kết nối vào STAYEA
-              </p>
-            </div>
-
-            {/* Browser Active Account - 1-Click Instant Sign In */}
-            <div className="space-y-2 mb-4">
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() =>
-                  handleOneClickSocial(
-                    socialModalProvider,
-                    socialModalProvider === "Google"
-                      ? "thonguyen7106@gmail.com"
-                      : `${socialModalProvider.toLowerCase()}_user@stayea.com`,
-                    "Đình Thọ"
-                  )
-                }
-                className="w-full p-3 rounded-2xl border-2 border-blue-500/30 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-500 flex items-center gap-3 transition-all text-left group shadow-xs disabled:opacity-60 cursor-pointer"
-              >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
-                  Đ
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                      Đình Thọ
-                    </span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.2 rounded-full shrink-0">
-                      Đang dùng
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 truncate">
-                    {socialModalProvider === "Google"
-                      ? "thonguyen7106@gmail.com"
-                      : "thonguyen7106@gmail.com"}
-                  </p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-blue-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </div>
-
-            {/* Direct Redirect to Google OAuth Consent Page */}
-            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleRedirectOAuth}
-                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                <span>Mở trang ủy quyền accounts.google.com</span>
-              </button>
-
-              <p className="text-[10px] text-center text-slate-400 leading-tight">
-                Cơ sở dữ liệu Supabase kết nối đồng bộ tức thì
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 7. Bottom Switch Mode Link */}
+
       <div className="text-center text-xs text-slate-600">
         {mode === "login" ? (
           <>

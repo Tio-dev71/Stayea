@@ -1,13 +1,11 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
-import { appPaths } from '@/config/app-paths'
 import { setToken, setRefreshToken } from '@/lib/token'
 
 export function OAuthCallbackPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -17,15 +15,20 @@ export function OAuthCallbackPage() {
     if (token && refreshToken) {
       setToken(token)
       setRefreshToken(refreshToken)
-      router.replace(appPaths.dashboard.href)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('stayea_token', token)
+        localStorage.setItem('stayea_auth_state', 'logged_in')
+      }
+      const returnUrl = searchParams.get('returnUrl') || '/'
+      window.location.href = returnUrl
     } else {
-      router.replace(appPaths.auth.login.getHref())
+      window.location.href = '/login'
     }
-  }, [router, searchParams])
+  }, [searchParams])
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Completing sign in...</p>
+      <p className="text-muted-foreground">Đang hoàn tất đăng nhập STAYEA...</p>
     </div>
   )
 }

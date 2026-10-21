@@ -3330,12 +3330,12 @@ export interface UserProfileInfo {
 }
 
 export const CURRENT_USER_PROFILE: UserProfileInfo = {
-  id: "user-nguyen-minh",
-  name: "Nguyễn Minh",
+  id: "user-default",
+  name: "Thành viên STAYEA",
   membershipTier: "Thành viên Staya Club",
-  email: "nguyenminh@gmail.com",
-  phone: "+84 90 123 4567",
-  bio: "Thích du lịch, khám phá những điểm đến mới và trải nghiệm văn hóa địa phương.",
+  email: "",
+  phone: "",
+  bio: "Chào mừng bạn đến với kỳ nghỉ tuyệt mỹ cùng STAYEA.",
   avatarUrl: "/profile/profile-avatar.jpg",
   coverUrl: "/profile/profile-hero-banner.jpg",
   stats: {
@@ -4200,21 +4200,21 @@ export interface UserAccountFormDetails {
 }
 
 export const USER_ACCOUNT_FORM_DEFAULT: UserAccountFormDetails = {
-  fullName: "Nguyễn Minh",
-  email: "nguyenminh@gmail.com",
-  phone: "+84 90 123 4567",
-  birthDate: "12/05/1990",
-  gender: "Nam",
+  fullName: "",
+  email: "",
+  phone: "",
+  birthDate: "",
+  gender: "Khác",
   nationality: "Việt Nam",
-  city: "Hà Nội",
-  address: "Số 12 Nguyễn Văn Cừ, Long Biên, Hà Nội",
+  city: "",
+  address: "",
   documentType: "CCCD",
-  documentNumber: "****678901",
-  documentExpiry: "12/05/2030",
-  emergencyContactName: "Trần Thu Hà",
-  emergencyContactPhone: "0908 123 456",
-  emergencyContactRelation: "Vợ",
-  twoFactorAuth: true,
+  documentNumber: "",
+  documentExpiry: "",
+  emergencyContactName: "",
+  emergencyContactPhone: "",
+  emergencyContactRelation: "",
+  twoFactorAuth: false,
   promoNotifications: true,
 }
 
@@ -4334,7 +4334,7 @@ export const LINKED_BANK_ACCOUNTS: readonly LinkedBankAccount[] = [
     id: "bank-vcb-257522",
     bankName: "Vietcombank",
     bankCode: "vcb",
-    accountHolder: "Nguyễn Minh",
+    accountHolder: "Chủ tài khoản",
     accountNumberMasked: "**** 257522",
     logoColor: "#007A33",
   },
@@ -4342,7 +4342,7 @@ export const LINKED_BANK_ACCOUNTS: readonly LinkedBankAccount[] = [
     id: "bank-tcb-886621",
     bankName: "Techcombank",
     bankCode: "tcb",
-    accountHolder: "Nguyễn Minh",
+    accountHolder: "Chủ tài khoản",
     accountNumberMasked: "**** 886621",
     logoColor: "#E31837",
   },
@@ -4391,10 +4391,10 @@ export interface BillingInvoiceAddress {
 
 export const DEFAULT_BILLING_ADDRESS: BillingInvoiceAddress = {
   type: "Cá nhân",
-  fullName: "Nguyễn Minh",
-  email: "nguyenminh@gmail.com",
-  phone: "+84 90 123 4567",
-  address: "18 Trần Hưng Đạo, Dương Đông, Phú Quốc, Kiên Giang, Việt Nam",
+  fullName: "Khách hàng",
+  email: "",
+  phone: "",
+  address: "Phú Quốc, Kiên Giang, Việt Nam",
 }
 
 export interface RecentPaymentTransaction {
@@ -4721,7 +4721,7 @@ export interface StayeaClubProfile {
 }
 
 export const STAYEA_CLUB_PROFILE: StayeaClubProfile = {
-  memberName: "Nguyễn Minh",
+  memberName: "Thành viên STAYEA",
   memberTier: "Thành viên Vàng",
   memberSince: "06/2024",
   avatarUrl: "/profile/profile-avatar.jpg",
@@ -5285,9 +5285,9 @@ export interface StayeaSettingsData {
 
 export const STAYEA_SETTINGS_DATA: StayeaSettingsData = {
   security: {
-    email: "nguyenminh@gmail.com",
-    phone: "+84 912 345 678",
-    isPhoneVerified: true,
+    email: "",
+    phone: "",
+    isPhoneVerified: false,
     is2FAEnabled: false,
   },
   notifications: {

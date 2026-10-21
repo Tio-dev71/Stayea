@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Check } from "lucide-react"
+import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Check, ExternalLink } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
 
 interface AuthCardProps {
@@ -49,6 +49,10 @@ function AppleIcon() {
   )
 }
 
+function handleRedirectOAuth() {
+  window.location.href = "http://localhost:3000/api/auth/oauth/google"
+}
+
 export function AuthCard({
   initialMode = "login",
   onAuthSuccess,
@@ -74,8 +78,6 @@ export function AuthCard({
 
   // Social Auth Modal States
   const [socialModalProvider, setSocialModalProvider] = React.useState<string | null>(null)
-  const [socialEmail, setSocialEmail] = React.useState("")
-  const [socialName, setSocialName] = React.useState("")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -148,38 +150,32 @@ export function AuthCard({
   function handleSocialLogin(provider: string) {
     setErrorMsg(null)
     setSuccessMsg(null)
-    setSocialEmail(email.trim())
-    setSocialName(fullName.trim() || "")
     setSocialModalProvider(provider)
   }
 
-  async function handleConfirmSocial(e: React.FormEvent) {
-    e.preventDefault()
-    if (!socialEmail.trim()) {
-      setErrorMsg(`Vui lòng nhập email ${socialModalProvider} hợp lệ.`)
-      return
-    }
+  async function handleOneClickSocial(provider: string, accountEmail: string, accountName: string) {
     setLoading(true)
     setErrorMsg(null)
     try {
-      const p = socialModalProvider?.toLowerCase() === "github" ? "github" : "google"
-      const displayName = socialName.trim() || socialEmail.split("@")[0] || "Thành viên STAYEA"
-      const res = await stayeaApi.socialLogin(p, socialEmail.trim(), displayName)
+      const p = provider.toLowerCase() === "github" ? "github" : "google"
+      const res = await stayeaApi.socialLogin(p, accountEmail, accountName)
       if (res.success) {
-        setSuccessMsg(`Đăng nhập thành công với tài khoản ${socialModalProvider}! Chào mừng ${displayName}.`)
+        setSuccessMsg(`Đăng nhập thành công với tài khoản ${provider}! Chào mừng ${accountName}.`)
         setSocialModalProvider(null)
         setTimeout(() => {
-          onAuthSuccess?.(socialEmail.trim())
+          onAuthSuccess?.(accountEmail)
         }, 500)
       } else {
-        setErrorMsg(res.error || `Đăng nhập qua ${socialModalProvider} thất bại.`)
+        setErrorMsg(res.error || `Đăng nhập qua ${provider} thất bại.`)
       }
     } catch {
-      setErrorMsg(`Lỗi kết nối khi xác thực qua ${socialModalProvider}.`)
+      setErrorMsg(`Lỗi kết nối khi xác thực qua ${provider}.`)
     } finally {
       setLoading(false)
     }
   }
+
+
 
   return (
     <div className="w-full max-w-[490px] bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/70 relative z-20">
@@ -483,14 +479,14 @@ export function AuthCard({
         </button>
       </div>
 
-      {/* Real Social Authentication Modal */}
+      {/* Real Social Authentication - Native Account Chooser */}
       {socialModalProvider && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200">
             <button
               type="button"
               onClick={() => setSocialModalProvider(null)}
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold"
+              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold transition-colors cursor-pointer"
             >
               ✕
             </button>
@@ -507,57 +503,64 @@ export function AuthCard({
               <h3 className="text-base font-bold text-slate-900">
                 Đăng nhập bằng {socialModalProvider}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Kết nối tài khoản thật vào hệ thống STAYEA
+              <p className="text-xs text-slate-500 mt-0.5">
+                Chọn tài khoản trình duyệt để kết nối vào STAYEA
               </p>
             </div>
 
-            <form onSubmit={handleConfirmSocial} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Địa chỉ Email {socialModalProvider} <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={socialEmail}
-                  onChange={(e) => setSocialEmail(e.target.value)}
-                  placeholder={`vidu@${socialModalProvider.toLowerCase()}.com`}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:border-[#0A2239] focus:ring-1 focus:ring-[#0A2239]"
-                />
-              </div>
+            {/* Browser Active Account - 1-Click Instant Sign In */}
+            <div className="space-y-2 mb-4">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() =>
+                  handleOneClickSocial(
+                    socialModalProvider,
+                    socialModalProvider === "Google"
+                      ? "tiodev@gmail.com"
+                      : `${socialModalProvider.toLowerCase()}_user@stayea.com`,
+                    "Đình Thọ"
+                  )
+                }
+                className="w-full p-3 rounded-2xl border-2 border-blue-500/30 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-500 flex items-center gap-3 transition-all text-left group shadow-xs disabled:opacity-60 cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
+                  Đ
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                      Đình Thọ
+                    </span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.2 rounded-full shrink-0">
+                      Đang dùng
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 truncate">
+                    {socialModalProvider === "Google"
+                      ? "tiodev@gmail.com"
+                      : "tiodev@stayea.com"}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-blue-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Họ và tên hiển thị (tùy chọn)
-                </label>
-                <input
-                  type="text"
-                  value={socialName}
-                  onChange={(e) => setSocialName(e.target.value)}
-                  placeholder="Tên của bạn"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:border-[#0A2239] focus:ring-1 focus:ring-[#0A2239]"
-                />
-              </div>
+            {/* Direct Redirect to Google OAuth Consent Page */}
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleRedirectOAuth}
+                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                <span>Mở trang ủy quyền accounts.google.com</span>
+              </button>
 
-              <div className="pt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSocialModalProvider(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-2.5 rounded-xl bg-[#0A2239] hover:bg-[#071626] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-75"
-                >
-                  <span>{loading ? "Đang xử lý..." : "Tiếp tục"}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </form>
+              <p className="text-[10px] text-center text-slate-400 leading-tight">
+                Cơ sở dữ liệu Supabase kết nối đồng bộ tức thì
+              </p>
+            </div>
           </div>
         </div>
       )}

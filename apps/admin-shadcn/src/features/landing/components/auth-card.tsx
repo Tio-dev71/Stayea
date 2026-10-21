@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Check } from "lucide-react"
+import { stayeaApi } from "@/lib/stayea-api-service"
 
 interface AuthCardProps {
   readonly initialMode?: "login" | "register"
@@ -71,7 +72,7 @@ export function AuthCard({
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setErrorMsg(null)
     setSuccessMsg(null)
@@ -107,16 +108,36 @@ export function AuthCard({
     }
 
     setLoading(true)
-    setTimeout(() => {
+    const identifier = authMethod === "email" ? email : phone
+    const normalizedEmail = authMethod === "email" ? email.trim() : `${phone.trim().replaceAll(/[^0-9]/g, '')}@phone.stayea.com`
+
+    try {
+      if (mode === "login") {
+        const res = await stayeaApi.login(normalizedEmail, password)
+        if (res.success) {
+          setSuccessMsg(`Đăng nhập thành công! Chào mừng trở lại STAYEA.`)
+          setTimeout(() => {
+            onAuthSuccess?.(identifier)
+          }, 600)
+        } else {
+          setErrorMsg(res.error || "Tài khoản hoặc mật khẩu không chính xác.")
+        }
+      } else {
+        const res = await stayeaApi.register(normalizedEmail, password, fullName.trim() || identifier)
+        if (res.success) {
+          setSuccessMsg(`Đăng ký thành công! Chào mừng ${fullName || identifier} đến với STAYEA.`)
+          setTimeout(() => {
+            onAuthSuccess?.(identifier)
+          }, 600)
+        } else {
+          setErrorMsg(res.error || "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.")
+        }
+      }
+    } catch {
+      setErrorMsg("Đã xảy ra lỗi khi kết nối. Vui lòng thử lại sau.")
+    } finally {
       setLoading(false)
-      const identifier = authMethod === "email" ? email : phone
-      const msg =
-        mode === "login"
-          ? `Đăng nhập thành công với ${identifier}!`
-          : `Đăng ký thành công! Chào mừng ${fullName || identifier} đến với STAYEA.`
-      setSuccessMsg(msg)
-      onAuthSuccess?.(identifier)
-    }, 800)
+    }
   }
 
   function handleSocialLogin(provider: string) {

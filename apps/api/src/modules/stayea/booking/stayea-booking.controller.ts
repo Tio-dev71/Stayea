@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common"
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger"
 
+import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
 import { Roles } from "@/shared-kernel/infrastructure/decorators/roles.decorator"
 import { UseEnvelope } from "@/shared-kernel/infrastructure/decorators/use-envelope.decorator"
 
@@ -26,13 +27,17 @@ import { StayeaBookingService } from "@/modules/stayea/booking/stayea-booking.se
 export class StayeaBookingController {
   constructor(private readonly bookingService: StayeaBookingService) {}
 
+  @Public()
   @Post()
   @ApiOperation({ summary: "Create a new booking (stay, flight, tour, combo)" })
   async create(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user?: { id?: string } },
     @Body() dto: CreateBookingDto
   ) {
-    return this.bookingService.createBooking(req.user.id, dto)
+    const userId = req.user?.id || (dto.details?.contactInfo?.email
+      ? `guest_${dto.details.contactInfo.email.toLowerCase().replaceAll(/[^a-z0-9]/g, '_')}`
+      : `guest_${Date.now()}`)
+    return this.bookingService.createBooking(userId, dto)
   }
 
   @Get()

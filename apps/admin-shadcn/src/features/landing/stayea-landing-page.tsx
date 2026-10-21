@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { StayeaHeader } from "./components/stayea-header"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { StayeaHero } from "./components/stayea-hero"
 import { AboutHero } from "./components/about-hero"
 import { AboutStory } from "./components/about-story"
@@ -227,6 +228,42 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     }
   }, [pageState, selectedServiceItem])
   const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(true)
+  const [currentUser, setCurrentUser] = React.useState<{
+    name: string
+    email?: string
+    avatarUrl: string
+    notificationsCount?: number
+    role?: "customer" | "admin" | "host"
+  }>({
+    name: "Nguyễn Minh",
+    email: "nguyenminh@gmail.com",
+    avatarUrl: "/profile/profile-avatar.jpg",
+    notificationsCount: 3,
+    role: "customer",
+  })
+
+  // Sync real profile on mount from NestJS Auth
+  React.useEffect(() => {
+    async function syncAuth() {
+      try {
+        const profile = await stayeaApi.getProfile()
+        if (profile) {
+          setIsLoggedIn(true)
+          const isAdmin = profile.role === "ADMIN" || profile.role === "admin"
+          setCurrentUser({
+            name: profile.displayName || profile.email?.split("@")[0] || "Quý khách",
+            email: profile.email,
+            avatarUrl: profile.avatarUrl || "/profile/profile-avatar.jpg",
+            notificationsCount: 3,
+            role: isAdmin ? "admin" : "customer",
+          })
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+    syncAuth()
+  }, [])
   const [activeItem, setActiveItem] = React.useState<string>("Stayea Club")
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null)
   const [currentHash, setCurrentHash] = React.useState<string>("")
@@ -973,7 +1010,15 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "logout" || item === "Đăng xuất") {
+      stayeaApi.logout()
       setIsLoggedIn(false)
+      setCurrentUser({
+        name: "Quý khách",
+        email: "",
+        avatarUrl: "/profile/profile-avatar.jpg",
+        notificationsCount: 0,
+        role: "customer",
+      })
       setCurrentPage("login")
       setActiveItem("Đăng nhập")
       setActiveDropdown(null)
@@ -1452,6 +1497,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         activeItem={activeItem}
         onNavigate={handleNavigate}
         isLoggedIn={currentPage === "profile" || isLoggedIn}
+        currentUser={currentUser}
       />
 
       {/* Main Page Content */}

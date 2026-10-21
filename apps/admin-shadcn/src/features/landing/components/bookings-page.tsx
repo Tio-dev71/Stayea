@@ -20,6 +20,7 @@ import { ProfileSidebar } from "./profile-sidebar"
 import { BookingsTabs } from "./bookings-tabs"
 import { BookingCard } from "./booking-card"
 import { BookingsSupportBanner } from "./bookings-support-banner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { SERVICE_BOOKINGS_DATA } from "@/features/landing/data/stayea-mock-data"
 import type { ServiceBookingItem } from "@/features/landing/data/stayea-mock-data"
 
@@ -33,6 +34,39 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
     "all" | "stay" | "experience" | "transport" | "cancelled"
   >("all")
   const [currentPage, setCurrentPage] = React.useState<number>(1)
+  const [liveBookings, setLiveBookings] = React.useState<ServiceBookingItem[]>([])
+
+  React.useEffect(() => {
+    async function fetchBookings() {
+      try {
+        const raw = await stayeaApi.getUserBookings()
+        if (raw && raw.length > 0) {
+          const mapped: ServiceBookingItem[] = raw.map((b: any) => ({
+            id: b.id,
+            code: b.bookingCode || b.id,
+            category: (b.category as any) || "stay",
+            status: b.status === "cancelled" ? "cancelled" : "upcoming",
+            statusLabel: b.status === "cancelled" ? "Đã hủy" : "Sắp diễn ra",
+            title: b.title || "Dịch vụ tuyển chọn STAYEA",
+            dates: b.dates || `${new Date(b.checkInDate || Date.now()).toLocaleDateString("vi-VN")} - ${new Date(b.checkOutDate || Date.now()).toLocaleDateString("vi-VN")}`,
+            location: b.details?.location || "Phú Quốc, Kiên Giang",
+            guests: `${b.guestCount || 2} khách`,
+            detailInfo: b.details?.packageName || b.details?.roomName || "Gói tiêu chuẩn tuyển chọn",
+            detailIcon: b.category === "experience" ? "sparkles" : b.category === "transport" ? "plane" : "bed",
+            price: `${Number(b.finalAmount || b.totalAmount || 0).toLocaleString("vi-VN")}đ`,
+            priceNum: Number(b.finalAmount || b.totalAmount || 0),
+            imageUrl: b.details?.imageUrl || "/bookings/premier-residences.jpg",
+            primaryActionLabel: "Quản lý đặt phòng",
+            secondaryActionLabel: "Liên hệ hỗ trợ",
+          }))
+          setLiveBookings(mapped)
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+    fetchBookings()
+  }, [])
   const [notificationMsg, setNotificationMsg] = React.useState<string | null>(null)
 
   // Modals
@@ -53,19 +87,24 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
     }, 3500)
   }
 
+  // Combined items (Live DB bookings prepended to standard list)
+  const allBookings = React.useMemo(() => {
+    return [...liveBookings, ...SERVICE_BOOKINGS_DATA]
+  }, [liveBookings])
+
   // Filter items based on active tab
   const filteredBookings = React.useMemo(() => {
-    if (activeFilterTab === "all") return SERVICE_BOOKINGS_DATA
+    if (activeFilterTab === "all") return allBookings
     if (activeFilterTab === "stay")
-      return SERVICE_BOOKINGS_DATA.filter((item) => item.category === "stay")
+      return allBookings.filter((item) => item.category === "stay")
     if (activeFilterTab === "experience")
-      return SERVICE_BOOKINGS_DATA.filter((item) => item.category === "experience")
+      return allBookings.filter((item) => item.category === "experience")
     if (activeFilterTab === "transport")
-      return SERVICE_BOOKINGS_DATA.filter((item) => item.category === "transport")
+      return allBookings.filter((item) => item.category === "transport")
     if (activeFilterTab === "cancelled")
-      return SERVICE_BOOKINGS_DATA.filter((item) => item.status === "cancelled")
-    return SERVICE_BOOKINGS_DATA
-  }, [activeFilterTab])
+      return allBookings.filter((item) => item.status === "cancelled")
+    return allBookings
+  }, [activeFilterTab, allBookings])
 
   function handleActionClick(action: string, item: ServiceBookingItem) {
     if (action === "Xem voucher" || action === "Xem chi tiết") {

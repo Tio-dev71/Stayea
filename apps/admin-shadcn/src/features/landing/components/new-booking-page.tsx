@@ -27,7 +27,7 @@ import type {
 } from "@/features/landing/data/stayea-mock-data"
 
 interface NewBookingPageProps {
-  readonly onNavigate?: (route: string) => void
+  readonly onNavigate?: (route: string, subCategory?: string, itemData?: any) => void
 }
 
 export function NewBookingPage({ onNavigate }: NewBookingPageProps) {
@@ -260,23 +260,35 @@ export function NewBookingPage({ onNavigate }: NewBookingPageProps) {
               </div>
 
               {/* Modal CTA Buttons */}
-              <div className="pt-2 flex items-center justify-end gap-3">
+              <div className="pt-2 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setSelectedRecommendation(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100"
+                  className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
                 >
                   Đóng
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    const route = selectedRecommendation.targetRoute
+                    const rec = selectedRecommendation
                     setSelectedRecommendation(null)
-                    showToast(`Đang đặt "${selectedRecommendation.title}"...`)
-                    setTimeout(() => onNavigate?.(route), 400)
+                    const sType = rec.targetRoute === "stay" ? "stay" : rec.targetRoute === "packages" ? "package" : rec.targetRoute === "transport" ? "transport" : "experience"
+                    onNavigate?.("service-detail", undefined, { type: sType, item: rec })
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-[#0A2239] hover:bg-[#071726] text-white text-xs font-semibold shadow-xs"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors shadow-2xs"
+                >
+                  Xem chi tiết
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const rec = selectedRecommendation
+                    setSelectedRecommendation(null)
+                    const sType = rec.targetRoute === "stay" ? "stay" : rec.targetRoute === "packages" ? "package" : rec.targetRoute === "transport" ? "transport" : "experience"
+                    onNavigate?.("service-detail", undefined, { type: sType, item: rec })
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-[#0c3b40] hover:bg-[#072528] text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
                 >
                   Đặt ngay
                 </button>

@@ -38,7 +38,7 @@ import type {
 } from "@/features/landing/data/stayea-mock-data"
 
 interface FavoritesPageProps {
-  readonly onNavigate?: (route: string) => void
+  readonly onNavigate?: (route: string, subCategory?: string, itemData?: any) => void
 }
 
 function formatCurrency(amount: number): string {
@@ -325,13 +325,14 @@ export function FavoritesPage({ onNavigate }: FavoritesPageProps) {
                     <button
                       type="button"
                       onClick={() => {
-                        const target = selectedItemForDetail.targetRoute || "new-booking"
+                        const it = selectedItemForDetail
                         setSelectedItemForDetail(null)
-                        onNavigate?.(target)
+                        const sType = it.category === "stay" ? "stay" : it.category === "experience" ? "experience" : it.category === "transport" ? "transport" : "stay"
+                        onNavigate?.("service-detail", undefined, { type: sType, item: it })
                       }}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0A2239] text-white hover:bg-[#12365A] text-xs font-semibold shadow-2xs transition-all"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0c3b40] text-white hover:bg-[#072528] text-xs font-semibold shadow-2xs transition-all"
                     >
-                      <span>Xem danh mục</span>
+                      <span>Xem chi tiết</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </button>
                   </div>

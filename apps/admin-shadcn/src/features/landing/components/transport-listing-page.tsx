@@ -23,13 +23,13 @@ const INITIAL_FILTERS: TransportFilterState = {
 }
 
 interface TransportListingPageProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string, itemData?: any) => void
   readonly initialTab?: string
 }
 
 export function TransportListingPage({ onNavigate, initialTab }: TransportListingPageProps = {}) {
-  const handleBookingClick = React.useCallback(() => {
-    onNavigate?.("flight-booking")
+  const handleViewDetail = React.useCallback((item: TransportItem) => {
+    onNavigate?.("service-detail", undefined, { type: "transport", item })
   }, [onNavigate])
   const [activeTab, setActiveTab] = React.useState<string>(initialTab || "all")
 
@@ -247,7 +247,7 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
                   <TransportCard
                     key={item.id}
                     item={item}
-                    onSelect={(it) => { setSelectedTransport(it); handleBookingClick(); }}
+                    onSelect={(it) => handleViewDetail(it)}
                   />
                 ))}
               </div>
@@ -284,8 +284,8 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSelectedTransport(item)}
-                        className="px-4 py-2 rounded-xl bg-[#0A2239] text-white text-xs font-semibold hover:bg-[#071626]"
+                        onClick={() => handleViewDetail(item)}
+                        className="px-4 py-2 rounded-xl bg-[#0c3b40] text-white text-xs font-semibold hover:bg-[#072528] transition-colors"
                       >
                         Xem chi tiết
                       </button>

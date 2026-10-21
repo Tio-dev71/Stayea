@@ -19,13 +19,13 @@ const INITIAL_FILTERS: ExperienceFilterState = {
 }
 
 interface ExperienceListingPageProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string, itemData?: any) => void
   readonly initialCategory?: string
 }
 
 export function ExperienceListingPage({ onNavigate, initialCategory }: ExperienceListingPageProps = {}) {
-  const handleBookingClick = React.useCallback(() => {
-    onNavigate?.("new-booking")
+  const handleViewDetail = React.useCallback((item: ExperienceListingItem) => {
+    onNavigate?.("service-detail", undefined, { type: "experience", item })
   }, [onNavigate])
   const [filters, setFilters] = React.useState<ExperienceFilterState>(() => ({
     ...INITIAL_FILTERS,
@@ -236,7 +236,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                 {filteredItems.map((item) => (
-                  <ExperienceCard key={item.id} item={item} onSelect={handleBookingClick} />
+                  <ExperienceCard key={item.id} item={item} onSelect={() => handleViewDetail(item)} />
                 ))}
               </div>
             )}

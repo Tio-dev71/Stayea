@@ -22,13 +22,13 @@ import {
 import type { PackageListingItem } from "@/features/landing/data/stayea-mock-data"
 
 interface PackageListingPageProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string, itemData?: any) => void
   readonly initialAudience?: string
 }
 
 export function PackageListingPage({ onNavigate, initialAudience }: PackageListingPageProps = {}) {
-  const handleBookingClick = React.useCallback(() => {
-    onNavigate?.("new-booking")
+  const handleViewDetail = React.useCallback((item: PackageListingItem) => {
+    onNavigate?.("service-detail", undefined, { type: "package", item })
   }, [onNavigate])
   const [selectedAudience, setSelectedAudience] = React.useState<string>(initialAudience || "all")
 
@@ -231,7 +231,7 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
                 viewMode={viewMode}
                 isWishlisted={wishlistIds.has(item.id)}
                 onToggleWishlist={handleToggleWishlist}
-                onSelect={handleBookingClick}
+                onSelect={() => handleViewDetail(item)}
               />
             ))}
           </div>

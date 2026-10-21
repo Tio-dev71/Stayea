@@ -39,6 +39,8 @@ import { StayeaClubPage } from "./components/stayea-club-page"
 import { StayeaClubClaimedPage } from "./components/stayea-club-claimed-page"
 import { StayeaFlightBookingPage } from "./components/stayea-flight-booking-page"
 import { StayeaSettingsPage } from "./components/stayea-settings-page"
+import { ServiceDetailPage } from "./components/service-detail-page"
+import type { ServiceType } from "./components/service-detail-page"
 import { StayeaAdminDashboardPage } from "@/features/admin-dashboard"
 import { StayeaAdminBookingsPage } from "@/features/admin-bookings"
 import { StayeaAdminPropertiesPage } from "@/features/admin-properties"
@@ -66,7 +68,7 @@ export type StayeaPageType =
     | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "admin-settings" | "bookings"
     | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host"
     | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc"
-    | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
+    | "plans" | "profile" | "register" | "reviews" | "service-detail" | "settings" | "stay" | "stayea-club"
     | "stayea-club-claimed" | "transport"
 
 export interface StayeaLandingPageProps {
@@ -80,7 +82,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings"
     | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host"
     | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc"
-    | "plans" | "profile" | "register" | "reviews" | "settings" | "stay" | "stayea-club"
+    | "plans" | "profile" | "register" | "reviews" | "service-detail" | "settings" | "stay" | "stayea-club"
     | "stayea-club-claimed" | "transport"
 
   const [activeStayCategory, setActiveStayCategory] = React.useState<string>("all")
@@ -89,6 +91,10 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   const [activeExploreCategory, setActiveExploreCategory] = React.useState<string>("all")
   const [activeDealsCategory, setActiveDealsCategory] = React.useState<string>("all")
   const [activePackageAudience, setActivePackageAudience] = React.useState<string>("all")
+  const [selectedServiceItem, setSelectedServiceItem] = React.useState<{
+    type: ServiceType
+    item: any
+  } | null>(null)
 
   const [pageState, setPageState] = React.useState<PageType>(() => {
     if (initialPage) return initialPage
@@ -119,6 +125,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         if (pathSegment === "new-booking") return "new-booking"
         if (pathSegment === "add-payment") return "add-payment"
         if (pathSegment === "stayea-club-claimed") return "stayea-club-claimed"
+        if (pathSegment === "service-detail" || pathSegment === "chi-tiet") return "service-detail"
       }
       const params = new URLSearchParams(window.location.search)
       const pageParam = params.get("page")
@@ -612,7 +619,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     }
   }, [setCurrentPage, initialPage])
 
-  function handleNavigate(item: string, subCategory?: string) {
+  function handleNavigate(item: string, subCategory?: string, itemData?: any) {
     if (subCategory) {
       if (
         item === "stay" ||
@@ -633,6 +640,24 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       } else if (item === "packages" || item === "Gói") {
         setActivePackageAudience(subCategory)
       }
+    }
+    if (
+      item === "service-detail" ||
+      item === "detail" ||
+      item === "chi-tiet" ||
+      item === "chi-tiet-dich-vu"
+    ) {
+      if (itemData) {
+        setSelectedServiceItem(itemData)
+      }
+      setCurrentPage("service-detail")
+      setActiveItem("Lưu trú")
+      setActiveDropdown(null)
+      if (typeof window !== "undefined") {
+        window.history.pushState(null, "", "/service-detail")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      }
+      return
     }
     if (
       item === "bao-cao" ||
@@ -1417,6 +1442,23 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         ) : currentPage === "experience" ? (
           /* Experience Listing Screen */
           <ExperienceListingPage onNavigate={handleNavigate} initialCategory={activeExperienceCategory} />
+        ) : currentPage === "service-detail" ? (
+          /* Comprehensive Service Detail Screen */
+          <ServiceDetailPage
+            type={selectedServiceItem?.type || "stay"}
+            item={selectedServiceItem?.item}
+            onBack={() => {
+              const backRoute = selectedServiceItem?.type === "experience"
+                ? "experience"
+                : selectedServiceItem?.type === "package"
+                ? "packages"
+                : selectedServiceItem?.type === "transport"
+                ? "transport"
+                : "stay"
+              handleNavigate(backRoute)
+            }}
+            onNavigate={handleNavigate}
+          />
         ) : currentPage === "stay" ? (
           /* Villa & Accommodations Listing Screen */
           <StayListingPage onNavigate={handleNavigate} initialCategory={activeStayCategory} />

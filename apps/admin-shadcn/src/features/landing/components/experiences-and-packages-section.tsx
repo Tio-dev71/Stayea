@@ -5,7 +5,7 @@ import { ArrowRight, Compass, Sparkles } from "lucide-react"
 import { EXPERIENCES, PACKAGES } from "@/features/landing/data/stayea-mock-data"
 
 interface ExperiencesAndPackagesSectionProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string, itemData?: any) => void
 }
 
 export function ExperiencesAndPackagesSection({ onNavigate }: ExperiencesAndPackagesSectionProps = {}) {
@@ -51,8 +51,8 @@ export function ExperiencesAndPackagesSection({ onNavigate }: ExperiencesAndPack
                   key={exp.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => onNavigate?.("experience")}
-                  onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("experience") }}
+                  onClick={() => onNavigate?.("service-detail", undefined, { type: "experience", item: exp })}
+                  onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("service-detail", undefined, { type: "experience", item: exp }) }}
                   className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)] hover:border-[#0c3b40]/30 transition-all duration-300 text-center hover:-translate-y-1"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
@@ -112,8 +112,8 @@ export function ExperiencesAndPackagesSection({ onNavigate }: ExperiencesAndPack
                   key={pkg.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => onNavigate?.("packages")}
-                  onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("packages") }}
+                  onClick={() => onNavigate?.("service-detail", undefined, { type: "package", item: pkg })}
+                  onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("service-detail", undefined, { type: "package", item: pkg }) }}
                   className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)] hover:border-[#0c3b40]/30 transition-all duration-300 text-center hover:-translate-y-1"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">

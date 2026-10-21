@@ -96,7 +96,7 @@ export function PackageCard({
   // LIST VIEW LAYOUT
   if (viewMode === "list") {
     return (
-      <div className="group bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all overflow-hidden flex flex-col sm:flex-row gap-4 p-3.5">
+      <div role="button" tabIndex={0} onClick={onSelect} onKeyDown={(e) => { if (e.key === "Enter") onSelect?.() }} className="group cursor-pointer bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all overflow-hidden flex flex-col sm:flex-row gap-4 p-3.5">
         {/* Left Thumbnail Image */}
         <div className="relative w-full sm:w-64 h-48 sm:h-auto rounded-xl overflow-hidden shrink-0">
           <Image
@@ -181,7 +181,7 @@ export function PackageCard({
 
   // DEFAULT GRID VIEW LAYOUT (Matches 4-column design)
   return (
-    <div className="group bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col justify-between">
+    <div role="button" tabIndex={0} onClick={onSelect} onKeyDown={(e) => { if (e.key === "Enter") onSelect?.() }} className="group cursor-pointer bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col justify-between">
       <div>
         {/* Card Image Container */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
@@ -254,10 +254,12 @@ export function PackageCard({
         </div>
         <button
           type="button"
+          onClick={onSelect}
           aria-label={`Xem chi tiết ${item.title}`}
-          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center shadow-xs transition-transform active:scale-95 group-hover:scale-105"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0c3b40] hover:bg-[#072528] text-white text-[11px] font-semibold shadow-xs transition-transform active:scale-95 group-hover:scale-105"
         >
-          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Xem chi tiết</span>
+          <ArrowRight className="w-3 h-3" />
         </button>
       </div>
     </div>

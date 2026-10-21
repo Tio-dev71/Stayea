@@ -26,7 +26,7 @@ function getCategoryIcon(iconName: string) {
 }
 
 interface AccommodationSectionProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string, itemData?: any) => void
 }
 
 export function AccommodationSection({ onNavigate }: AccommodationSectionProps = {}) {
@@ -61,8 +61,8 @@ export function AccommodationSection({ onNavigate }: AccommodationSectionProps =
               key={item.id}
               role="button"
               tabIndex={0}
-              onClick={() => onNavigate?.("stay")}
-              onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("stay") }}
+              onClick={() => onNavigate?.("stay", item.id)}
+              onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("stay", item.id) }}
               className={`group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                 item.isSelect
                   ? "border-amber-300/80 ring-1 ring-amber-300/40 shadow-sm"

@@ -51,7 +51,7 @@ export function ExperienceCard({ item, onSelect }: ExperienceCardProps) {
   const [isFavorited, setIsFavorited] = React.useState(false)
 
   return (
-    <div className="group flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 hover:border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
+    <div role="button" tabIndex={0} onClick={onSelect} onKeyDown={(e) => { if (e.key === "Enter") onSelect?.() }} className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 hover:border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
       {/* 1. Image Header */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
         <Image
@@ -72,7 +72,7 @@ export function ExperienceCard({ item, onSelect }: ExperienceCardProps) {
         {/* Top-right Heart Wishlist */}
         <button
           type="button"
-          onClick={() => setIsFavorited(!isFavorited)}
+          onClick={(e) => { e.stopPropagation(); setIsFavorited(!isFavorited); }}
           className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-xs text-white transition-all active:scale-90"
           aria-label="Wishlist"
         >
@@ -127,10 +127,11 @@ export function ExperienceCard({ item, onSelect }: ExperienceCardProps) {
 
           <Link
             href={`#experience-${item.id}`} onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(); } }}
-            className="w-7 h-7 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center transition-all shadow-xs group-hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0c3b40] hover:bg-[#072528] text-white text-[11px] font-semibold shadow-xs transition-all group-hover:scale-105 active:scale-95"
             aria-label={`Xem chi tiết ${item.title}`}
           >
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Xem chi tiết</span>
+            <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
       </div>

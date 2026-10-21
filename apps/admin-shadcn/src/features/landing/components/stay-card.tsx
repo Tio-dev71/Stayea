@@ -124,7 +124,7 @@ export function StayCard({ item, isListView = false, onSelect }: StayCardProps) 
           {item.badge && <div className="absolute top-2.5 left-2.5 z-10">{getBadgeElement(item.badge)}</div>}
           <button
             type="button"
-            onClick={() => setIsFavorited(!isFavorited)}
+            onClick={(e) => { e.stopPropagation(); setIsFavorited(!isFavorited); }}
             className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-black/35 hover:bg-black/55 backdrop-blur-xs text-white transition-colors"
             aria-label="Wishlist"
           >
@@ -172,7 +172,7 @@ export function StayCard({ item, isListView = false, onSelect }: StayCardProps) 
   }
 
   return (
-    <div className="group flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 hover:border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
+    <div role="button" tabIndex={0} onClick={onSelect} onKeyDown={(e) => { if (e.key === "Enter") onSelect?.() }} className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 hover:border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
       {/* 1. Image Container with Top Badge + Wishlist + Bottom Rating */}
       <div className="relative aspect-[16/11] w-full overflow-hidden bg-slate-100">
         <Image
@@ -193,7 +193,7 @@ export function StayCard({ item, isListView = false, onSelect }: StayCardProps) 
         {/* Top-right Heart Wishlist */}
         <button
           type="button"
-          onClick={() => setIsFavorited(!isFavorited)}
+          onClick={(e) => { e.stopPropagation(); setIsFavorited(!isFavorited); }}
           className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-xs text-white transition-all active:scale-90"
           aria-label="Wishlist"
         >

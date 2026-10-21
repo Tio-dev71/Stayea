@@ -25,6 +25,7 @@ const PUBLIC_ROUTES = new Set([
   '/my-deals',
   '/account-info',
   '/new-booking',
+  '/service-detail',
   '/add-payment',
   '/login',
   '/register',

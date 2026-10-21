@@ -22,13 +22,13 @@ const INITIAL_FILTERS: StayFilterState = {
 }
 
 interface StayListingPageProps {
-  readonly onNavigate?: (item: string) => void
+  readonly onNavigate?: (item: string, subCategory?: string, itemData?: any) => void
   readonly initialCategory?: string
 }
 
 export function StayListingPage({ onNavigate, initialCategory }: StayListingPageProps = {}) {
-  const handleBookingClick = React.useCallback(() => {
-    onNavigate?.("new-booking")
+  const handleViewDetail = React.useCallback((item: StayAccommodationItem) => {
+    onNavigate?.("service-detail", undefined, { type: "stay", item })
   }, [onNavigate])
 
   const normalizedInit = React.useMemo(() => {
@@ -259,13 +259,13 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                 {filteredItems.slice(0, pageSize).map((item) => (
-                  <StayCard key={item.id} item={item} onSelect={handleBookingClick} />
+                  <StayCard key={item.id} item={item} onSelect={() => handleViewDetail(item)} />
                 ))}
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredItems.slice(0, pageSize).map((item) => (
-                  <StayCard key={item.id} item={item} isListView onSelect={handleBookingClick} />
+                  <StayCard key={item.id} item={item} isListView onSelect={() => handleViewDetail(item)} />
                 ))}
               </div>
             )}

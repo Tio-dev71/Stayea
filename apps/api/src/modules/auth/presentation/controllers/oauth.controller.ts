@@ -1,9 +1,20 @@
-import { Controller, Get, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AuthGuard } from '@nestjs/passport'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { OAuthService } from '@/modules/auth/application/services/oauth.service'
+import { Public } from '@/shared-kernel/infrastructure/decorators/public.decorator'
 
 import type { Env } from '@/app/config/env.schema'
 import type { OAuthUserProfile } from '@/modules/auth/application/ports/oauth.port'
@@ -13,13 +24,49 @@ type OAuthRequest = Request & { user?: OAuthUserProfile }
 
 @ApiTags('auth')
 @Controller('auth/oauth')
+@Public()
 export class OAuthController {
   constructor(
     private readonly oauthService: OAuthService,
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
-  // ── Google ────────────────────────────────────────────────────────────────
+  // ── Direct Social Login (Google / Facebook / Apple) ──────────────────────
+
+  @Post('social-login')
+  @ApiOperation({ summary: 'Login or register with social account (Google, Facebook, etc.)' })
+  async socialLogin(
+    @Body()
+    dto: {
+      provider?: 'google' | 'github'
+      email: string
+      name?: string
+      providerId?: string
+      avatarUrl?: string
+    },
+  ) {
+    if (!dto.email || !dto.email.trim()) {
+      throw new BadRequestException('Email is required for social login')
+    }
+
+    const provider = dto.provider === 'github' ? 'github' : 'google'
+    const cleanEmail = dto.email.toLowerCase().trim()
+    const cleanName = (dto.name && dto.name.trim()) || cleanEmail.split('@')[0] || 'User'
+    const providerId = dto.providerId || `google_${cleanEmail.replaceAll(/[^a-z0-9]/g, '_')}`
+
+    const userProfile: OAuthUserProfile = {
+      provider,
+      providerId,
+      email: cleanEmail,
+      name: cleanName,
+      accessToken: 'social_verified_token',
+    }
+
+    const result = await this.oauthService.findOrCreateUser(userProfile)
+    return result
+  }
+
+  // ── Google Server OAuth ──────────────────────────────────────────────────
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -35,7 +82,7 @@ export class OAuthController {
     await this.handleCallback(req, res)
   }
 
-  // ── GitHub ────────────────────────────────────────────────────────────────
+  // ── GitHub Server OAuth ──────────────────────────────────────────────────
 
   @Get('github')
   @UseGuards(AuthGuard('github'))

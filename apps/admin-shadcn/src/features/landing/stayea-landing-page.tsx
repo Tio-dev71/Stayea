@@ -1008,7 +1008,19 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setIsLoggedIn(true)
       setActiveItem("Trang cá nhân")
       setActiveDropdown(null)
-            window.scrollTo({ top: 0, behavior: "smooth" })
+      stayeaApi.getProfile().then((p) => {
+        if (p) {
+          const isAdmin = p.role === "ADMIN" || p.role === "admin"
+          setCurrentUser({
+            name: p.displayName || p.name || p.email?.split("@")[0] || "Thành viên STAYEA",
+            email: p.email,
+            avatarUrl: p.avatarUrl || "/profile/profile-avatar.jpg",
+            notificationsCount: 3,
+            role: isAdmin ? "admin" : "customer",
+          })
+        }
+      }).catch(() => {})
+      window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "logout" || item === "Đăng xuất") {
       stayeaApi.logout()
       setIsLoggedIn(false)

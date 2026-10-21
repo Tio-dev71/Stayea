@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@workspace/ui/components/dialog"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { ProfileSidebar } from "./profile-sidebar"
 import { AccountInfoHeroBanner } from "./account-info-hero-banner"
 import { AccountInfoHeaderCards } from "./account-info-header-cards"
@@ -63,6 +64,36 @@ export function AccountInfoPage({ onNavigate }: AccountInfoPageProps) {
 
   // 5. Toast notification state
   const [toastMessage, setToastMessage] = React.useState<string | null>(null)
+
+  // Load real user profile from NestJS
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const u = await stayeaApi.getProfile()
+        if (u) {
+          const name = u.displayName || u.name || u.email?.split("@")[0] || "Thành viên STAYEA"
+          setProfile((prev) => ({
+            ...prev,
+            id: u.id || prev.id,
+            name,
+            email: u.email || prev.email,
+            phone: u.phone || prev.phone,
+            bio: u.bio || prev.bio,
+            avatarUrl: u.avatarUrl || prev.avatarUrl,
+          }))
+          setFormData((prev) => ({
+            ...prev,
+            fullName: name,
+            email: u.email || prev.email,
+            phone: u.phone || prev.phone,
+          }))
+        }
+      } catch {
+        // fallback
+      }
+    }
+    loadUser()
+  }, [])
 
   function showToast(msg: string) {
     setToastMessage(msg)

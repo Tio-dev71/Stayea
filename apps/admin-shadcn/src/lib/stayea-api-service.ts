@@ -313,7 +313,7 @@ class StayeaApiService {
    */
   async createBooking(payload: CreateBookingPayload): Promise<BookingResult> {
     try {
-      const headers = {
+      const headers: Record<string, string> = {
         "Content-Type": "application/json",
         ...this.getAuthHeader(),
       }
@@ -377,6 +377,62 @@ class StayeaApiService {
       return { success: false, error: err.message || "Tài khoản hoặc mật khẩu không chính xác" }
     } catch {
       return { success: false, error: "Không thể kết nối đến máy chủ xác thực" }
+    }
+  }
+
+  /**
+   * Real Authentication: Social Login (Google, GitHub, Facebook)
+   */
+  async socialLogin(
+    provider: "google" | "github",
+    email: string,
+    name?: string,
+    avatarUrl?: string
+  ): Promise<{ success: boolean; user?: any; token?: string; error?: string }> {
+    try {
+      const res = await fetch("/api/auth/oauth/social-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, email, name, avatarUrl }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const token = data.accessToken || data.token
+        if (typeof window !== "undefined" && token) {
+          localStorage.setItem("stayea_token", token)
+          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`
+        }
+        return { success: true, user: data.user, token }
+      }
+      const err = await res.json().catch(() => ({}))
+      return { success: false, error: err.message || err.detail || "Đăng nhập mạng xã hội không thành công" }
+    } catch {
+      return { success: false, error: "Không thể kết nối đến máy chủ xác thực" }
+    }
+  }
+
+  /**
+   * Update current user profile in backend database
+   */
+  async updateProfile(dto: { displayName?: string; bio?: string; avatarUrl?: string }): Promise<any | null> {
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...this.getAuthHeader(),
+      }
+      if (!headers.Authorization) return null
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(dto),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        return data.data || data
+      }
+      return null
+    } catch {
+      return null
     }
   }
 

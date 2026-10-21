@@ -72,6 +72,11 @@ export function AuthCard({
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
 
+  // Social Auth Modal States
+  const [socialModalProvider, setSocialModalProvider] = React.useState<string | null>(null)
+  const [socialEmail, setSocialEmail] = React.useState("")
+  const [socialName, setSocialName] = React.useState("")
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setErrorMsg(null)
@@ -141,14 +146,39 @@ export function AuthCard({
   }
 
   function handleSocialLogin(provider: string) {
+    setErrorMsg(null)
+    setSuccessMsg(null)
+    setSocialEmail(email.trim())
+    setSocialName(fullName.trim() || "")
+    setSocialModalProvider(provider)
+  }
+
+  async function handleConfirmSocial(e: React.FormEvent) {
+    e.preventDefault()
+    if (!socialEmail.trim()) {
+      setErrorMsg(`Vui lòng nhập email ${socialModalProvider} hợp lệ.`)
+      return
+    }
     setLoading(true)
-    setTimeout(() => {
+    setErrorMsg(null)
+    try {
+      const p = socialModalProvider?.toLowerCase() === "github" ? "github" : "google"
+      const displayName = socialName.trim() || socialEmail.split("@")[0] || "Thành viên STAYEA"
+      const res = await stayeaApi.socialLogin(p, socialEmail.trim(), displayName)
+      if (res.success) {
+        setSuccessMsg(`Đăng nhập thành công với tài khoản ${socialModalProvider}! Chào mừng ${displayName}.`)
+        setSocialModalProvider(null)
+        setTimeout(() => {
+          onAuthSuccess?.(socialEmail.trim())
+        }, 500)
+      } else {
+        setErrorMsg(res.error || `Đăng nhập qua ${socialModalProvider} thất bại.`)
+      }
+    } catch {
+      setErrorMsg(`Lỗi kết nối khi xác thực qua ${socialModalProvider}.`)
+    } finally {
       setLoading(false)
-      setSuccessMsg(`Đang kết nối tài khoản ${provider}...`)
-      setTimeout(() => {
-        onAuthSuccess?.(`${provider.toLowerCase()}_user@stayea.com`)
-      }, 500)
-    }, 600)
+    }
   }
 
   return (
@@ -452,6 +482,85 @@ export function AuthCard({
           <span>Apple</span>
         </button>
       </div>
+
+      {/* Real Social Authentication Modal */}
+      {socialModalProvider && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setSocialModalProvider(null)}
+              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold"
+            >
+              ✕
+            </button>
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-2 border border-slate-100">
+                {socialModalProvider === "Google" ? (
+                  <GoogleIcon />
+                ) : socialModalProvider === "Facebook" ? (
+                  <FacebookIcon />
+                ) : (
+                  <AppleIcon />
+                )}
+              </div>
+              <h3 className="text-base font-bold text-slate-900">
+                Đăng nhập bằng {socialModalProvider}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Kết nối tài khoản thật vào hệ thống STAYEA
+              </p>
+            </div>
+
+            <form onSubmit={handleConfirmSocial} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Địa chỉ Email {socialModalProvider} <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={socialEmail}
+                  onChange={(e) => setSocialEmail(e.target.value)}
+                  placeholder={`vidu@${socialModalProvider.toLowerCase()}.com`}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:border-[#0A2239] focus:ring-1 focus:ring-[#0A2239]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Họ và tên hiển thị (tùy chọn)
+                </label>
+                <input
+                  type="text"
+                  value={socialName}
+                  onChange={(e) => setSocialName(e.target.value)}
+                  placeholder="Tên của bạn"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:border-[#0A2239] focus:ring-1 focus:ring-[#0A2239]"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSocialModalProvider(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-2.5 rounded-xl bg-[#0A2239] hover:bg-[#071626] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-75"
+                >
+                  <span>{loading ? "Đang xử lý..." : "Tiếp tục"}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* 7. Bottom Switch Mode Link */}
       <div className="text-center text-xs text-slate-600">

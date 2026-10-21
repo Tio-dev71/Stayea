@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { X, CheckCircle2, Shield, Calendar, MapPin, Users, Heart } from "lucide-react"
 import { ProfileHeroBanner } from "./profile-hero-banner"
 import { ProfileSidebar } from "./profile-sidebar"
@@ -48,6 +49,35 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
   const [editPhone, setEditPhone] = React.useState(profile.phone)
   const [editEmail, setEditEmail] = React.useState(profile.email)
 
+  // Load real authenticated profile from NestJS backend
+  React.useEffect(() => {
+    async function loadRealProfile() {
+      try {
+        const liveUser = await stayeaApi.getProfile()
+        if (liveUser) {
+          const displayName = liveUser.displayName || liveUser.name || liveUser.email?.split("@")[0] || "Thành viên STAYEA"
+          setProfile((prev) => ({
+            ...prev,
+            id: liveUser.id || prev.id,
+            name: displayName,
+            email: liveUser.email || prev.email,
+            phone: liveUser.phone || prev.phone,
+            bio: liveUser.bio || prev.bio || "Thành viên yêu thích khám phá vẻ đẹp đảo ngọc Phú Quốc.",
+            avatarUrl: liveUser.avatarUrl || prev.avatarUrl,
+            membershipTier: liveUser.role === "ADMIN" || liveUser.role === "admin" ? "Diamond Elite" : prev.membershipTier,
+          }))
+          setEditName(displayName)
+          setEditEmail(liveUser.email || "")
+          setEditBio(liveUser.bio || "")
+          if (liveUser.phone) setEditPhone(liveUser.phone)
+        }
+      } catch {
+        // graceful fallback
+      }
+    }
+    loadRealProfile()
+  }, [])
+
   function showToast(msg: string) {
     setNotificationMsg(msg)
     setTimeout(() => {
@@ -55,7 +85,7 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
     }, 3500)
   }
 
-  function handleSaveProfile(e: React.FormEvent) {
+  async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
     setProfile((prev) => ({
       ...prev,
@@ -64,6 +94,14 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
       phone: editPhone,
       email: editEmail,
     }))
+    try {
+      await stayeaApi.updateProfile({
+        displayName: editName,
+        bio: editBio,
+      })
+    } catch {
+      // fallback
+    }
     setIsEditProfileOpen(false)
     showToast("Hồ sơ của bạn đã được cập nhật thành công!")
   }

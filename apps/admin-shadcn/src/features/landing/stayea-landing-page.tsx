@@ -227,7 +227,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       // Safe fallback
     }
   }, [pageState, selectedServiceItem])
-  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(true)
+  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(false)
   const [currentUser, setCurrentUser] = React.useState<{
     name: string
     email?: string
@@ -235,10 +235,10 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     notificationsCount?: number
     role?: "customer" | "admin" | "host"
   }>({
-    name: "Nguyễn Minh",
-    email: "nguyenminh@gmail.com",
+    name: "Quý khách",
+    email: "",
     avatarUrl: "/profile/profile-avatar.jpg",
-    notificationsCount: 3,
+    notificationsCount: 0,
     role: "customer",
   })
 
@@ -247,19 +247,21 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     async function syncAuth() {
       try {
         const profile = await stayeaApi.getProfile()
-        if (profile) {
+        if (profile && (profile.id || profile.email)) {
           setIsLoggedIn(true)
           const isAdmin = profile.role === "ADMIN" || profile.role === "admin"
           setCurrentUser({
-            name: profile.displayName || profile.email?.split("@")[0] || "Quý khách",
+            name: profile.displayName || profile.name || profile.email?.split("@")[0] || "Thành viên STAYEA",
             email: profile.email,
             avatarUrl: profile.avatarUrl || "/profile/profile-avatar.jpg",
-            notificationsCount: 3,
+            notificationsCount: 0,
             role: isAdmin ? "admin" : "customer",
           })
+        } else {
+          setIsLoggedIn(false)
         }
       } catch {
-        // Fallback gracefully
+        setIsLoggedIn(false)
       }
     }
     syncAuth()
@@ -323,7 +325,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "tao-dat-phong"
       ) {
         setCurrentPage("admin-bookings")
-        setIsLoggedIn(true)
         setActiveItem("Đặt phòng")
       } else if (
         target === "customers" ||
@@ -332,7 +333,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "admin-customers"
       ) {
         setCurrentPage("admin-customers")
-        setIsLoggedIn(true)
         setActiveItem("Khách hàng")
       } else if (
         target === "hosts" ||
@@ -350,7 +350,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target.startsWith("chu-nha-")
       ) {
         setCurrentPage("admin-hosts")
-        setIsLoggedIn(true)
         setActiveItem("Chủ nhà/Đối tác")
       } else if (
         target === "properties" ||
@@ -376,7 +375,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "deal"
       ) {
         setCurrentPage("admin-deals")
-        setIsLoggedIn(true)
         setActiveItem("Ưu đãi & Khuyến mãi")
       } else if (
         target === "admin-experiences" ||
@@ -408,14 +406,12 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "seo-hien-thi"
       ) {
         setCurrentPage("admin-experiences")
-        setIsLoggedIn(true)
         setActiveItem("Trải nghiệm & Tour")
       } else if (
         target === "bat-dong-san" ||
         target === "admin-properties"
       ) {
         setCurrentPage("admin-properties")
-        setIsLoggedIn(true)
         setActiveItem("Bất động sản")
       } else if (
         target === "admin-revenue" ||
@@ -427,7 +423,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "bao-cao-doanh-thu"
       ) {
         setCurrentPage("admin-revenue")
-        setIsLoggedIn(true)
         setActiveItem("Doanh thu & Thanh toán")
       } else if (
         target === "admin-reviews" ||
@@ -436,7 +431,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "quan-ly-danh-gia"
       ) {
         setCurrentPage("admin-reviews")
-        setIsLoggedIn(true)
         setActiveItem("Đánh giá")
       } else if (
         target === "admin-reports" ||
@@ -451,7 +445,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "khach-hang"
       ) {
         setCurrentPage("admin-reports")
-        setIsLoggedIn(true)
         setActiveItem("Báo cáo")
       } else if (
         target === "admin-marketing" ||
@@ -471,7 +464,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "quan-ly-marketing" || target === "marketing-create" || target === "tao-chien-dich" || target === "create-campaign" || target === "marketing-step2" || target === "step2" || target === "noi-dung-kenh" || target === "marketing-step3" || target === "step3" || target === "doi-tuong-ngan-sach" || target === "marketing-step4" || target === "step4" || target === "marketing-lich-trinh" || target === "marketing-step5" || target === "step5" || target === "marketing-xuat-ban"
       ) {
         setCurrentPage("admin-marketing")
-        setIsLoggedIn(true)
         setActiveItem("Marketing")
       } else if (
         target === "admin-messages" ||
@@ -481,7 +473,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "quan-ly-tin-nhan"
       ) {
         setCurrentPage("admin-messages")
-        setIsLoggedIn(true)
         setActiveItem("Tin nhắn")
       } else if (
         target === "dashboard" ||
@@ -490,21 +481,18 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "quan-tri"
       ) {
         setCurrentPage("dashboard")
-        setIsLoggedIn(true)
         setActiveItem("Dashboard")
       } else if (
         target === "admin-settings" ||
         target === "cai-dat-admin"
       ) {
         setCurrentPage("admin-settings")
-        setIsLoggedIn(true)
         setActiveItem("Cài đặt")
       } else if (
         target === "settings" ||
         target === "cai-dat"
       ) {
         setCurrentPage("settings")
-        setIsLoggedIn(true)
         setActiveItem("Cài đặt")
       } else if (
         target === "flight-booking" ||
@@ -513,7 +501,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "flight"
       ) {
         setCurrentPage("flight-booking")
-        setIsLoggedIn(true)
         setActiveItem("Di chuyển")
       } else if (
         target === "stayea-club-claimed" ||
@@ -522,7 +509,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "nhan-uu-dai-club"
       ) {
         setCurrentPage("stayea-club-claimed")
-        setIsLoggedIn(true)
         setActiveItem("Stayea Club")
       } else if (
         target === "stayea-club" ||
@@ -530,7 +516,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "club"
       ) {
         setCurrentPage("stayea-club")
-        setIsLoggedIn(true)
         setActiveItem("Stayea Club")
       } else if (
         target === "my-deals" ||
@@ -539,7 +524,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "voucher-cua-toi"
       ) {
         setCurrentPage("my-deals")
-        setIsLoggedIn(true)
         setActiveItem("Ưu đãi của tôi")
       } else if (
         target === "add-payment" ||
@@ -548,7 +532,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "add-card"
       ) {
         setCurrentPage("add-payment")
-        setIsLoggedIn(true)
         setActiveItem("Phương thức thanh toán")
       } else if (
         target === "payment" ||
@@ -557,7 +540,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "billing"
       ) {
         setCurrentPage("payment")
-        setIsLoggedIn(true)
         setActiveItem("Phương thức thanh toán")
       } else if (
         target === "account-info" ||
@@ -567,7 +549,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "info"
       ) {
         setCurrentPage("account-info")
-        setIsLoggedIn(true)
         setActiveItem("Thông tin cá nhân")
       } else if (
         target === "reviews" ||
@@ -575,7 +556,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "my-reviews"
       ) {
         setCurrentPage("reviews")
-        setIsLoggedIn(true)
         setActiveItem("Đánh giá của tôi")
       } else if (
         target === "favorites" ||
@@ -584,7 +564,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "saved"
       ) {
         setCurrentPage("favorites")
-        setIsLoggedIn(true)
         setActiveItem("Yêu thích")
       } else if (
         target === "plans" ||
@@ -593,7 +572,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "my-plans"
       ) {
         setCurrentPage("plans")
-        setIsLoggedIn(true)
         setActiveItem("Kế hoạch của tôi")
       } else if (
         target === "new-booking" ||
@@ -601,7 +579,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "dat-dich-vu"
       ) {
         setCurrentPage("new-booking")
-        setIsLoggedIn(true)
         setActiveItem("Đơn đặt dịch vụ")
       } else if (
         target === "bookings" ||
@@ -610,7 +587,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "orders"
       ) {
         setCurrentPage("bookings")
-        setIsLoggedIn(true)
         setActiveItem("Đơn đặt dịch vụ")
       } else if (
         target === "profile" ||
@@ -619,7 +595,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         target === "account"
       ) {
         setCurrentPage("profile")
-        setIsLoggedIn(true)
         setActiveItem("Trang cá nhân")
       } else if (target === "login" || target === "dang-nhap" || target === "auth") {
         setCurrentPage("login")
@@ -781,7 +756,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "analytics"
     ) {
       setCurrentPage("admin-reports")
-      setIsLoggedIn(true)
       setActiveItem("Báo cáo")
             return
     }
@@ -791,7 +765,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "admin-marketing"
     ) {
       setCurrentPage("admin-marketing")
-      setIsLoggedIn(true)
       setActiveItem("Marketing")
             return
     }
@@ -801,7 +774,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "Quản lý đặt phòng"
     ) {
       setCurrentPage("admin-bookings")
-      setIsLoggedIn(true)
       setActiveItem("Đặt phòng")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -812,7 +784,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "customers"
     ) {
       setCurrentPage("admin-customers")
-      setIsLoggedIn(true)
       setActiveItem("Khách hàng")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -823,7 +794,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "experiences"
     ) {
       setCurrentPage("admin-experiences")
-      setIsLoggedIn(true)
       setActiveItem("Trải nghiệm & Tour")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -835,7 +805,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "doi-tac"
     ) {
       setCurrentPage("admin-hosts")
-      setIsLoggedIn(true)
       setActiveItem("Chủ nhà/Đối tác")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -847,7 +816,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "Quản trị"
     ) {
       setCurrentPage("dashboard")
-      setIsLoggedIn(true)
       setActiveItem("Dashboard")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -857,7 +825,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "Cài đặt"
     ) {
       setCurrentPage("settings")
-      setIsLoggedIn(true)
       setActiveItem("Cài đặt")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -868,7 +835,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "flight"
     ) {
       setCurrentPage("flight-booking")
-      setIsLoggedIn(true)
       setActiveItem("Di chuyển")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -878,7 +844,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "nhan-uu-dai"
     ) {
       setCurrentPage("stayea-club-claimed")
-      setIsLoggedIn(true)
       setActiveItem("Stayea Club")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -890,7 +855,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "club"
     ) {
       setCurrentPage("stayea-club")
-      setIsLoggedIn(true)
       setActiveItem("Stayea Club")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -902,7 +866,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "vi-uu-dai"
     ) {
       setCurrentPage("my-deals")
-      setIsLoggedIn(true)
       setActiveItem("Ưu đãi của tôi")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -913,7 +876,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "them-phuong-thuc-thanh-toan"
     ) {
       setCurrentPage("add-payment")
-      setIsLoggedIn(true)
       setActiveItem("Phương thức thanh toán")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -925,7 +887,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "billing"
     ) {
       setCurrentPage("payment")
-      setIsLoggedIn(true)
       setActiveItem("Phương thức thanh toán")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -938,7 +899,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "info"
     ) {
       setCurrentPage("account-info")
-      setIsLoggedIn(true)
       setActiveItem("Thông tin cá nhân")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -950,7 +910,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "my-reviews"
     ) {
       setCurrentPage("reviews")
-      setIsLoggedIn(true)
       setActiveItem("Đánh giá của tôi")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -961,7 +920,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "wishlist"
     ) {
       setCurrentPage("favorites")
-      setIsLoggedIn(true)
       setActiveItem("Yêu thích")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -973,7 +931,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "my-plans"
     ) {
       setCurrentPage("plans")
-      setIsLoggedIn(true)
       setActiveItem("Kế hoạch của tôi")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -983,7 +940,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "Đặt dịch vụ mới"
     ) {
       setCurrentPage("new-booking")
-      setIsLoggedIn(true)
       setActiveItem("Đơn đặt dịch vụ")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })
@@ -994,7 +950,6 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       item === "don-hang"
     ) {
       setCurrentPage("bookings")
-      setIsLoggedIn(true)
       setActiveItem("Đơn đặt dịch vụ")
       setActiveDropdown(null)
             window.scrollTo({ top: 0, behavior: "smooth" })

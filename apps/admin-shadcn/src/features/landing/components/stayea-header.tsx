@@ -38,10 +38,10 @@ export function StayeaHeader({
   onDropdownLeave,
   isLoggedIn = false,
   currentUser = {
-    name: "Nguyễn Minh",
-    email: "nguyenminh@gmail.com",
+    name: "Quý khách",
+    email: "",
     avatarUrl: "/profile/profile-avatar.jpg",
-    notificationsCount: 3,
+    notificationsCount: 0,
     role: "customer",
   },
 }: StayeaHeaderProps = {}) {

@@ -22,9 +22,9 @@ export function StayHero({ onSearch }: StayHeroProps) {
   }
 
   return (
-    <section className="relative w-full overflow-hidden bg-slate-900 min-h-[380px] sm:min-h-[420px] lg:min-h-[460px]">
+    <section className="relative z-20 w-full overflow-visible bg-slate-900 min-h-[380px] sm:min-h-[420px] lg:min-h-[460px]">
       {/* Background Image with Dark Contrast Overlays */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <Image
           src="/homepagemainbanner.png"
           alt="Tất cả lưu trú tại Phú Quốc"

@@ -27,9 +27,9 @@ interface StayeaHeroProps {
 
 export function StayeaHero({ onNavigate }: StayeaHeroProps = {}) {
   return (
-    <section className="relative w-full overflow-hidden bg-slate-900 min-h-[660px] sm:min-h-[720px] lg:min-h-[780px] flex flex-col justify-between">
+    <section className="relative z-20 w-full overflow-visible bg-slate-900 min-h-[660px] sm:min-h-[720px] lg:min-h-[780px] flex flex-col justify-between">
       {/* Full-width Edge-to-Edge Background Image */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <Image
           src="/homepagemainbanner.png"
           alt="Khám phá Phú Quốc theo cách của bạn"
@@ -92,7 +92,7 @@ export function StayeaHero({ onNavigate }: StayeaHeroProps = {}) {
           </p>
 
           {/* Centered Search Widget (Bảng Khám Phá) */}
-          <div className="w-full max-w-[880px] pt-2 sm:pt-3">
+          <div className="w-full max-w-[880px] pt-2 sm:pt-3 relative z-30">
             <SearchWidget onNavigate={onNavigate} />
           </div>
         </div>

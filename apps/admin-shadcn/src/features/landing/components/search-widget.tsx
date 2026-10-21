@@ -335,7 +335,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
   return (
     <div
       ref={widgetRef}
-      className="w-full bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.22)] p-2.5 sm:p-3 relative"
+      className="w-full bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.22)] p-2.5 sm:p-3 relative z-30"
     >
       {/* 4 Tabs above the inputs inside the white card */}
       <div className="flex items-center gap-1 sm:gap-2 mb-2 sm:mb-2.5 px-1 overflow-x-auto scrollbar-none">
@@ -796,7 +796,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
       {/* POPOVER 1: DESTINATION AUTOCOMPLETE / VERIFICATION        */}
       {/* ========================================================= */}
       {destPopoverOpen && (
-        <div className="absolute top-full left-0 w-full sm:w-[480px] mt-2 p-3 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 animate-in fade-in zoom-in-95">
+        <div className="absolute top-full left-0 w-full sm:w-[480px] max-w-[calc(100vw-2rem)] mt-2 p-3 bg-white rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] border border-slate-100 z-50 animate-in fade-in zoom-in-95">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-2.5">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-500" />
@@ -814,7 +814,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
           </div>
 
           {/* Quick preset chips */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 mb-2.5 overflow-x-auto scrollbar-none pb-0.5">
             {[
               "Toàn đảo Phú Quốc",
               "Bãi Trường",
@@ -830,7 +830,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
                   setDestination(chip === "Toàn đảo Phú Quốc" ? "Phú Quốc, Việt Nam" : `${chip}, Phú Quốc`)
                   setDestPopoverOpen(false)
                 }}
-                className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-[#0c3b40] hover:text-white transition-colors"
+                className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-[#0c3b40] hover:text-white transition-colors shrink-0"
               >
                 {chip}
               </button>
@@ -838,7 +838,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
           </div>
 
           {/* Destination items list */}
-          <div className="max-h-[280px] overflow-y-auto space-y-1.5 pr-1">
+          <div className="max-h-[180px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
             {filteredDestinations.map((dest) => (
               <button
                 key={dest.id}
@@ -891,7 +891,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
       {/* POPOVER 2: DATE RANGE PICKER CALENDAR                     */}
       {/* ========================================================= */}
       {datePopoverOpen && (
-        <div className="absolute top-full right-0 lg:right-auto lg:left-[240px] w-full sm:w-[380px] mt-2 p-3.5 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 animate-in fade-in zoom-in-95">
+        <div className="absolute top-full right-0 lg:right-auto lg:left-[240px] w-full sm:w-[380px] max-w-[calc(100vw-2rem)] mt-2 p-3.5 bg-white rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] border border-slate-100 z-50 animate-in fade-in zoom-in-95">
           {/* Calendar Header with navigation */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
@@ -938,7 +938,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
           </div>
 
           {/* Quick presets row */}
-          <div className="grid grid-cols-2 gap-1.5 my-2.5">
+          <div className="grid grid-cols-2 gap-1.5 my-2">
             <button
               type="button"
               onClick={() => applyDatePreset("tomorrow")}
@@ -996,7 +996,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
                   type="button"
                   disabled={cell.isPast}
                   onClick={() => handleDateClick(cell.date, cell.isPast)}
-                  className={`h-8 text-xs rounded-lg transition-all flex items-center justify-center relative font-medium ${
+                  className={`h-7 text-xs rounded-lg transition-all flex items-center justify-center relative font-medium ${
                     cell.isPast
                       ? "text-slate-300 cursor-not-allowed"
                       : isStart || isEnd
@@ -1044,7 +1044,7 @@ export function SearchWidget({ onNavigate }: SearchWidgetProps = {}) {
       {/* POPOVER 3: GUEST & ROOM COUNTER POPPER                    */}
       {/* ========================================================= */}
       {guestPopoverOpen && (
-        <div className="absolute top-full right-0 w-72 mt-2 p-3 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 animate-in fade-in zoom-in-95">
+        <div className="absolute top-full right-0 w-72 max-w-[calc(100vw-2rem)] mt-2 p-3 bg-white rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] border border-slate-100 z-50 animate-in fade-in zoom-in-95">
           <div className="text-xs font-bold text-slate-800 uppercase tracking-wider pb-2 border-b border-slate-100 mb-2">
             Số lượng khách & Phòng
           </div>

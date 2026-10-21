@@ -41,6 +41,12 @@ import { StayeaFlightBookingPage } from "./components/stayea-flight-booking-page
 import { StayeaSettingsPage } from "./components/stayea-settings-page"
 import { ServiceDetailPage } from "./components/service-detail-page"
 import type { ServiceType } from "./components/service-detail-page"
+import {
+  STAY_ACCOMMODATION_LISTINGS,
+  EXPERIENCE_LISTINGS,
+  PACKAGE_LISTINGS,
+  TRANSPORT_ITEMS,
+} from "./data/stayea-mock-data"
 import { StayeaAdminDashboardPage } from "@/features/admin-dashboard"
 import { StayeaAdminBookingsPage } from "@/features/admin-bookings"
 import { StayeaAdminPropertiesPage } from "@/features/admin-properties"
@@ -75,6 +81,24 @@ export interface StayeaLandingPageProps {
   readonly initialPage?: StayeaPageType
 }
 
+function resolveServiceCatalogItem(type: ServiceType, id?: string | null) {
+  if (!id) return null
+  const cleanId = id.trim().toLowerCase()
+  if (type === "stay") {
+    return STAY_ACCOMMODATION_LISTINGS.find((item) => item.id.toLowerCase() === cleanId) || null
+  }
+  if (type === "experience") {
+    return EXPERIENCE_LISTINGS.find((item) => item.id.toLowerCase() === cleanId) || null
+  }
+  if (type === "package") {
+    return PACKAGE_LISTINGS.find((item) => item.id.toLowerCase() === cleanId) || null
+  }
+  if (type === "transport") {
+    return TRANSPORT_ITEMS.find((item) => item.id.toLowerCase() === cleanId) || null
+  }
+  return null
+}
+
 export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) {
   type PageType = StayeaPageType
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
@@ -94,7 +118,27 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   const [selectedServiceItem, setSelectedServiceItem] = React.useState<{
     type: ServiceType
     item: any
-  } | null>(null)
+  } | null>(() => {
+    if (typeof window === "undefined") return null
+    try {
+      const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
+      const pathSegment = pathname.split("/")[0]
+      if (pathSegment === "service-detail" || pathSegment === "chi-tiet") {
+        const params = new URLSearchParams(window.location.search)
+        const type = (params.get("type") as ServiceType) || "stay"
+        const id = params.get("id")
+        if (id) {
+          const resolved = resolveServiceCatalogItem(type, id)
+          if (resolved) {
+            return { type, item: resolved }
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  })
 
   const [pageState, setPageState] = React.useState<PageType>(() => {
     if (initialPage) return initialPage
@@ -157,6 +201,19 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   React.useEffect(() => {
     if (typeof window === "undefined") return
     try {
+      if (pageState === "service-detail") {
+        const itemType = selectedServiceItem?.type || "stay"
+        const itemId = selectedServiceItem?.item?.id
+        const targetUrl = itemId
+          ? `/service-detail?type=${itemType}&id=${encodeURIComponent(itemId)}`
+          : "/service-detail"
+        const fullCurrentUrl = window.location.pathname + window.location.search
+        if (fullCurrentUrl !== targetUrl) {
+          window.history.pushState(null, "", targetUrl)
+        }
+        return
+      }
+
       const targetPath = pageState === "home" ? "/" : `/${pageState}`
       const currentPath = window.location.pathname
       const currentSearch = window.location.search
@@ -168,7 +225,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     } catch {
       // Safe fallback
     }
-  }, [pageState])
+  }, [pageState, selectedServiceItem])
   const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(true)
   const [activeItem, setActiveItem] = React.useState<string>("Stayea Club")
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null)
@@ -589,6 +646,21 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         setCurrentPage("transport")
         setActiveItem("Di chuyển")
       } else if (
+        target === "service-detail" ||
+        target === "chi-tiet" ||
+        target === "detail"
+      ) {
+        const itemType = (params.get("type") as ServiceType) || "stay"
+        const itemId = params.get("id")
+        if (itemId) {
+          const resolved = resolveServiceCatalogItem(itemType, itemId)
+          if (resolved) {
+            setSelectedServiceItem({ type: itemType, item: resolved })
+          }
+        }
+        setCurrentPage("service-detail")
+        setActiveItem("Lưu trú")
+      } else if (
         target === "phu-quoc" ||
         target === "phuquoc" ||
         target === "kham-pha" ||
@@ -654,7 +726,12 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       setActiveItem("Lưu trú")
       setActiveDropdown(null)
       if (typeof window !== "undefined") {
-        window.history.pushState(null, "", "/service-detail")
+        const itemType = itemData?.type || "stay"
+        const itemId = itemData?.item?.id
+        const targetUrl = itemId
+          ? `/service-detail?type=${itemType}&id=${encodeURIComponent(itemId)}`
+          : "/service-detail"
+        window.history.pushState(null, "", targetUrl)
         window.scrollTo({ top: 0, behavior: "smooth" })
       }
       return

@@ -153,14 +153,25 @@ export function ServiceDetailPage({
   const [customerNotes, setCustomerNotes] = React.useState("")
   const [paymentMethod, setPaymentMethod] = React.useState("vietqr")
 
-  // Copy share link
+  // Copy share link with deep-link query params
   const handleShare = () => {
     if (typeof window !== "undefined") {
-      navigator.clipboard?.writeText(window.location.href)
+      const shareUrl = `${window.location.origin}/service-detail?type=${type}&id=${encodeURIComponent(activeItem.id || "")}`
+      navigator.clipboard?.writeText(shareUrl)
       setCopiedLink(true)
       setTimeout(() => setCopiedLink(false), 2500)
     }
   }
+
+  // Update document title for SEO & browser tab consistency
+  React.useEffect(() => {
+    if (typeof document === "undefined" || !activeItem?.title) return
+    const originalTitle = document.title
+    document.title = `${activeItem.title} | STAYEA Phú Quốc`
+    return () => {
+      document.title = originalTitle
+    }
+  }, [activeItem?.title])
 
   // Calculate nights
   const numberOfNights = React.useMemo(() => {

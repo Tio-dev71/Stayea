@@ -517,7 +517,7 @@ export function AuthCard({
                   handleOneClickSocial(
                     socialModalProvider,
                     socialModalProvider === "Google"
-                      ? "tiodev@gmail.com"
+                      ? "thonguyen7106@gmail.com"
                       : `${socialModalProvider.toLowerCase()}_user@stayea.com`,
                     "Đình Thọ"
                   )
@@ -538,8 +538,8 @@ export function AuthCard({
                   </div>
                   <p className="text-xs text-slate-500 truncate">
                     {socialModalProvider === "Google"
-                      ? "tiodev@gmail.com"
-                      : "tiodev@stayea.com"}
+                      ? "thonguyen7106@gmail.com"
+                      : "thonguyen7106@gmail.com"}
                   </p>
                 </div>
                 <ArrowRight className="w-4 h-4 text-blue-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />

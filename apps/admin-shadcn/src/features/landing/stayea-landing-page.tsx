@@ -171,6 +171,9 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         if (pathSegment === "add-payment") return "add-payment"
         if (pathSegment === "stayea-club-claimed") return "stayea-club-claimed"
         if (pathSegment === "service-detail" || pathSegment === "chi-tiet") return "service-detail"
+        if (pathSegment === "login" || pathSegment === "dang-nhap") return "login"
+        if (pathSegment === "register" || pathSegment === "dang-ky") return "register"
+        if (pathSegment === "admin" || pathSegment === "dashboard" || pathSegment === "stayea") return "admin-bookings"
       }
       const params = new URLSearchParams(window.location.search)
       const pageParam = params.get("page")
@@ -218,6 +221,14 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       const targetPath = pageState === "home" ? "/" : `/${pageState}`
       const currentPath = window.location.pathname
       const currentSearch = window.location.search
+
+      if (pageState === "login" || pageState === "register") {
+        const fullTarget = currentSearch ? `${targetPath}${currentSearch}` : targetPath
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState(null, "", fullTarget)
+        }
+        return
+      }
 
       // Only pushState if we are not already at targetPath or if query params need clearing
       if (currentPath !== targetPath || currentSearch) {

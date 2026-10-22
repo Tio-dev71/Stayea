@@ -39,6 +39,14 @@ export function AuthPage({
         onAuthSuccess={(_user) => {
           // Redirect or notify
           setTimeout(() => {
+            if (typeof window !== "undefined") {
+              const params = new URLSearchParams(window.location.search)
+              const redirectTo = params.get("redirectTo")
+              if (redirectTo) {
+                window.location.href = redirectTo
+                return
+              }
+            }
             if (onNavigate) {
               onNavigate("profile")
             } else {

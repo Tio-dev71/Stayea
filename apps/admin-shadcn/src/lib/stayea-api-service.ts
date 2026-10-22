@@ -367,9 +367,17 @@ class StayeaApiService {
       if (res.ok) {
         const data = await res.json()
         const token = data.accessToken || data.token
-        if (typeof window !== "undefined" && token) {
-          localStorage.setItem("stayea_token", token)
-          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`
+        if (typeof window !== "undefined") {
+          const isProd = window.location.hostname.endsWith("stayea.com")
+          const domainPart = isProd ? "; domain=.stayea.com" : ""
+          if (token) {
+            localStorage.setItem("stayea_token", token)
+            document.cookie = `token=${token}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+          }
+          if (data.user) {
+            localStorage.setItem("stayea_user", JSON.stringify(data.user))
+            document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+          }
         }
         return { success: true, user: data.user, token }
       }
@@ -398,9 +406,17 @@ class StayeaApiService {
       if (res.ok) {
         const data = await res.json()
         const token = data.accessToken || data.token
-        if (typeof window !== "undefined" && token) {
-          localStorage.setItem("stayea_token", token)
-          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`
+        if (typeof window !== "undefined") {
+          const isProd = window.location.hostname.endsWith("stayea.com")
+          const domainPart = isProd ? "; domain=.stayea.com" : ""
+          if (token) {
+            localStorage.setItem("stayea_token", token)
+            document.cookie = `token=${token}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+          }
+          if (data.user) {
+            localStorage.setItem("stayea_user", JSON.stringify(data.user))
+            document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+          }
         }
         return { success: true, user: data.user, token }
       }
@@ -527,8 +543,14 @@ class StayeaApiService {
    */
   async logout(): Promise<void> {
     if (typeof window !== "undefined") {
+      const isProd = window.location.hostname.endsWith("stayea.com")
+      const domainPart = isProd ? "; domain=.stayea.com" : ""
       localStorage.removeItem("stayea_token")
+      localStorage.removeItem("stayea_user")
+      document.cookie = `token=; path=/${domainPart}; max-age=0`
       document.cookie = "token=; path=/; max-age=0"
+      document.cookie = `user=; path=/${domainPart}; max-age=0`
+      document.cookie = "user=; path=/; max-age=0"
     }
     try {
       const headers = this.getAuthHeader()

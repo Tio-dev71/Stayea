@@ -17,10 +17,15 @@ function getCookie(name: string): string | null {
 }
 
 function setCookie(name: string, value: string): void {
-  document.cookie = `${name}=${value}; path=/; SameSite=Lax`
+  const isProd = typeof window !== 'undefined' && window.location.hostname.endsWith('stayea.com')
+  const domainPart = isProd ? '; domain=.stayea.com' : ''
+  document.cookie = `${name}=${value}; path=/${domainPart}; SameSite=Lax`
 }
 
 function removeCookie(name: string): void {
+  const isProd = typeof window !== 'undefined' && window.location.hostname.endsWith('stayea.com')
+  const domainPart = isProd ? '; domain=.stayea.com' : ''
+  document.cookie = `${name}=; path=/${domainPart}; Max-Age=0`
   document.cookie = `${name}=; path=/; Max-Age=0`
 }
 

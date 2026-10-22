@@ -19,8 +19,22 @@ export function OAuthCallbackPage() {
         localStorage.setItem('stayea_token', token)
         localStorage.setItem('stayea_auth_state', 'logged_in')
       }
-      const returnUrl = searchParams.get('returnUrl') || '/'
-      window.location.href = returnUrl
+      const returnUrl = searchParams.get('returnUrl') || searchParams.get('redirectTo') || '/'
+      // Retrieve user profile to store user cookie with role (e.g. ADMIN)
+      import('@/lib/stayea-api-service').then(({ stayeaApi }) => {
+        stayeaApi.getProfile().then((profile) => {
+          if (profile && typeof window !== 'undefined') {
+            const isProd = window.location.hostname.endsWith('stayea.com')
+            const domainPart = isProd ? '; domain=.stayea.com' : ''
+            localStorage.setItem('stayea_user', JSON.stringify(profile))
+            document.cookie = `user=${encodeURIComponent(JSON.stringify(profile))}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+          }
+        }).finally(() => {
+          window.location.href = returnUrl
+        })
+      }).catch(() => {
+        window.location.href = returnUrl
+      })
     } else {
       window.location.href = '/login'
     }

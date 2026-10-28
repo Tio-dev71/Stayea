@@ -16,11 +16,13 @@ import { StayeaAdminBookingsPage } from "@/features/admin-bookings"
 interface StayeaAdminDashboardPageProps {
   onNavigateLanding?: () => void
   onNavigateTab?: (tabId: string) => void
+  onLogout?: () => void
 }
 
 export function StayeaAdminDashboardPage({
   onNavigateLanding,
   onNavigateTab,
+  onLogout,
 }: StayeaAdminDashboardPageProps) {
   const [activeTab, setActiveTab] = useState("tong-quan")
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -99,6 +101,7 @@ export function StayeaAdminDashboardPage({
       <StayeaAdminHeader
         onNavigateLanding={onNavigateLanding}
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+        onLogout={onLogout}
         onSearch={(query) => {
           if (query.trim()) {
             console.log("Tìm kiếm:", query)

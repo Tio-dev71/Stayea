@@ -2,13 +2,16 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Search, Bell, MessageSquare, Menu } from "lucide-react"
+import { Search, Bell, MessageSquare, Menu, LogOut } from "lucide-react"
 
 interface StayeaAdminHeaderProps {
   searchPlaceholder?: string
   onSearch?: (query: string) => void
   onNavigateLanding?: () => void
   onToggleSidebar?: () => void
+  onLogout?: () => void
+  userName?: string
+  userRole?: string
 }
 
 export function StayeaAdminHeader({
@@ -16,6 +19,9 @@ export function StayeaAdminHeader({
   onSearch,
   onNavigateLanding,
   onToggleSidebar,
+  onLogout,
+  userName = "Quản trị viên",
+  userRole = "Administrator",
 }: StayeaAdminHeaderProps) {
   const [searchVal, setSearchVal] = useState("")
 
@@ -99,24 +105,37 @@ export function StayeaAdminHeader({
         </button>
 
         {/* User Profile Pill */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
+        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
           <div className="relative w-9 h-9 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
             <Image
               src="/about/team-1.jpg"
-              alt="Nguyễn Minh"
+              alt={userName}
               fill
               className="object-cover"
             />
           </div>
           <div className="hidden sm:flex flex-col text-left">
-            <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors leading-tight">
-              Nguyễn Minh
+            <span className="text-xs font-bold text-slate-800 leading-tight">
+              {userName}
             </span>
-            <span className="text-[10px] text-slate-400 font-medium leading-none">
-              Quản trị viên
+            <span className="text-[10px] text-emerald-600 font-semibold leading-none">
+              {userRole}
             </span>
           </div>
         </div>
+
+        {/* Logout Button */}
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            title="Đăng xuất khỏi hệ thống"
+            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+            aria-label="Đăng xuất"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </header>
   )

@@ -16,12 +16,14 @@ interface StayeaAdminBookingsPageProps {
   onNavigateLanding?: () => void
   onNavigateTab?: (tabId: string) => void
   initialModalOpen?: boolean
+  onLogout?: () => void
 }
 
 export function StayeaAdminBookingsPage({
   onNavigateLanding,
   onNavigateTab,
   initialModalOpen = false,
+  onLogout,
 }: StayeaAdminBookingsPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
@@ -42,6 +44,7 @@ export function StayeaAdminBookingsPage({
       <StayeaAdminHeader
         onNavigateLanding={onNavigateLanding}
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+        onLogout={onLogout}
         onSearch={(query) => {
           if (query.trim()) {
             console.log("Tìm kiếm đặt phòng:", query)

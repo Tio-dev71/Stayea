@@ -68,6 +68,8 @@ import { ExploreSection } from "./components/explore-section"
 import { TransportationSection } from "./components/transportation-section"
 import { PromosAndPartnersSection } from "./components/promos-and-partners-section"
 import { StayeaFooter } from "./components/stayea-footer"
+import { AdminLoginPage } from "@/features/auth/components/admin-login-page"
+import { getUser } from "@/lib/token"
 
 export type StayeaPageType =
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
@@ -80,6 +82,7 @@ export type StayeaPageType =
 
 export interface StayeaLandingPageProps {
   readonly initialPage?: StayeaPageType
+  readonly isAdminPortal?: boolean
 }
 
 function resolveServiceCatalogItem(type: ServiceType, id?: string | null) {
@@ -100,7 +103,16 @@ function resolveServiceCatalogItem(type: ServiceType, id?: string | null) {
   return null
 }
 
-export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) {
+export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingPageProps = {}) {
+  const isDetectedAdmin = React.useMemo(() => {
+    if (isAdminPortal) return true
+    if (typeof window !== "undefined") {
+      const h = window.location.hostname.toLowerCase()
+      return h.startsWith("admin.") || h === "admin.localhost" || h.startsWith("hub.") || h.startsWith("partner.")
+    }
+    return false
+  }, [isAdminPortal])
+
   type PageType = StayeaPageType
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
     | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue"
@@ -142,6 +154,27 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   })
 
   const [pageState, setPageState] = React.useState<PageType>(() => {
+    if (isDetectedAdmin) {
+      if (typeof window !== "undefined") {
+        const u = getUser()
+        const isAdmin = u && (u.role === "ADMIN" || (u as any).role === "admin")
+        if (!isAdmin) return "login"
+
+        const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
+        if (pathname.includes("customer")) return "admin-customers"
+        if (pathname.includes("prop")) return "admin-properties"
+        if (pathname.includes("host")) return "admin-hosts"
+        if (pathname.includes("exp")) return "admin-experiences"
+        if (pathname.includes("deal")) return "admin-deals"
+        if (pathname.includes("rev")) return "admin-revenue"
+        if (pathname.includes("msg") || pathname.includes("message")) return "admin-messages"
+        if (pathname.includes("mark")) return "admin-marketing"
+        if (pathname.includes("rep")) return "admin-reports"
+        if (pathname.includes("dash")) return "dashboard"
+        return "admin-bookings"
+      }
+      return "login"
+    }
     if (initialPage) return initialPage
     if (typeof window !== "undefined") {
       const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
@@ -261,6 +294,12 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         if (profile && (profile.id || profile.email)) {
           setIsLoggedIn(true)
           const isAdmin = profile.role === "ADMIN" || profile.role === "admin"
+          if (isDetectedAdmin && !isAdmin) {
+            setIsLoggedIn(false)
+            setPageState("login")
+            return
+          }
+          setIsLoggedIn(true)
           setCurrentUser({
             name: profile.displayName || profile.name || profile.email?.split("@")[0] || "Thành viên STAYEA",
             email: profile.email,
@@ -270,12 +309,31 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
           })
         } else {
           setIsLoggedIn(false)
+          if (isDetectedAdmin) {
+            setPageState("login")
+          }
         }
       } catch {
         setIsLoggedIn(false)
+        if (isDetectedAdmin) {
+          setPageState("login")
+        }
       }
     }
     syncAuth()
+  }, [isDetectedAdmin])
+
+  const handleAdminLogout = React.useCallback(async () => {
+    await stayeaApi.logout()
+    setIsLoggedIn(false)
+    setCurrentUser({
+      name: "Quý khách",
+      email: "",
+      avatarUrl: "/profile/profile-avatar.jpg",
+      notificationsCount: 0,
+      role: "customer",
+    })
+    setPageState("login")
   }, [])
   const [activeItem, setActiveItem] = React.useState<string>("Stayea Club")
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null)
@@ -1116,6 +1174,10 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
 
   const handleAdminNavigateTab = (tabId: string) => {
     switch (tabId) {
+      case "logout":
+      case "dang-xuat":
+        handleAdminLogout()
+        break
       case "tong-quan":
       case "dashboard":
         setCurrentPage("dashboard")
@@ -1181,13 +1243,51 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     }
   }
 
+  const handleAdminLanding = React.useCallback(() => {
+    if (isDetectedAdmin) {
+      window.open("https://stayea.com", "_blank")
+    } else {
+      setCurrentPage("home")
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }, [isDetectedAdmin, setCurrentPage])
+
+  // Dedicated Admin Portal Guard (admin.stayea.com)
+  if (isDetectedAdmin) {
+    const isActuallyAdmin = isLoggedIn && currentUser.role === "admin"
+    if (!isActuallyAdmin || pageState === "login" || pageState === "register") {
+      return (
+        <AdminLoginPage
+          onLoginSuccess={(user) => {
+            setIsLoggedIn(true)
+            setCurrentUser({
+              name: user?.displayName || user?.name || "Quản trị viên",
+              email: user?.email,
+              avatarUrl: "/profile/profile-avatar.jpg",
+              notificationsCount: 0,
+              role: "admin",
+            })
+            setPageState("admin-bookings")
+          }}
+        />
+      )
+    }
+
+    if (currentPage === "home") {
+      return (
+        <StayeaAdminBookingsPage
+          onNavigateLanding={handleAdminLanding}
+          onNavigateTab={handleAdminNavigateTab}
+          onLogout={handleAdminLogout}
+        />
+      )
+    }
+  }
+
   if (currentPage === "admin-settings") {
     return (
       <StayeaAdminSettingsPage
-        onNavigateLanding={() => {
-          setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1196,10 +1296,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-reports") {
     return (
       <StayeaAdminReportsPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1208,10 +1305,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-marketing") {
     return (
       <StayeaAdminMarketingPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1220,10 +1314,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-messages") {
     return (
       <StayeaAdminMessagesPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1232,10 +1323,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-reviews") {
     return (
       <StayeaAdminReviewsPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1244,10 +1332,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-revenue") {
     return (
       <StayeaAdminRevenuePage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1295,10 +1380,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       <StayeaAdminDealsPage
         initialModalOpen={isCreateOpen}
         initialTab={initialTab}
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1364,10 +1446,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
         initialTab={initialModalTab}
         initialAddDayOpen={isAddDayOpen}
         initialCategoryTab={initialCategoryTab}
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1376,10 +1455,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-properties") {
     return (
       <StayeaAdminPropertiesPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1390,11 +1466,9 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
     return (
       <StayeaAdminBookingsPage
         initialModalOpen={isModalDefaultOpen}
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
+        onLogout={handleAdminLogout}
       />
     )
   }
@@ -1402,10 +1476,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "admin-customers") {
     return (
       <StayeaAdminCustomersPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1443,10 +1514,7 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
       <StayeaAdminHostsPage
         initialModalOpen={isModalDefaultOpen}
         initialModalTab={initialModalTab}
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
       />
     )
@@ -1455,11 +1523,9 @@ export function StayeaLandingPage({ initialPage }: StayeaLandingPageProps = {}) 
   if (currentPage === "dashboard" || currentPage === "admin") {
     return (
       <StayeaAdminDashboardPage
-        onNavigateLanding={() => {
-                    setCurrentPage("home")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
+        onNavigateLanding={handleAdminLanding}
         onNavigateTab={handleAdminNavigateTab}
+        onLogout={handleAdminLogout}
       />
     )
   }

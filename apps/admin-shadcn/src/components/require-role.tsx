@@ -1,8 +1,9 @@
 'use client'
 
-import { notFound } from 'next/navigation'
+import * as React from 'react'
+import { notFound, useRouter } from 'next/navigation'
 
-import { useHasRole } from '@/hooks/use-has-role'
+import { useCurrentUser, useHasRole } from '@/hooks/use-has-role'
 
 import type { RoleType } from '@/lib/rbac'
 
@@ -15,11 +16,20 @@ interface Props {
  * Page-level guard.
  *
  * Renders `children` when the current user satisfies `role`; otherwise
- * triggers Next.js `notFound()` so URL tampering fails closed with a 404.
- * The backend still returns 403 for API calls — this is UX, not enforcement.
+ * redirects to `/login` if not authenticated, or `notFound()` if unauthorized.
  */
 export function RequireRole({ role, children }: Props): React.ReactNode {
+  const router = useRouter()
+  const currentUser = useCurrentUser()
   const allowed = useHasRole(role)
+
+  React.useEffect(() => {
+    if (!currentUser) {
+      router.replace('/login')
+    }
+  }, [currentUser, router])
+
+  if (!currentUser) return null
   if (!allowed) notFound()
   return children
 }

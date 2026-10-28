@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { Separator } from '@workspace/ui/components/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@workspace/ui/components/sidebar'
 
@@ -8,6 +9,10 @@ import { getServerUser } from '@/lib/server-user'
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const user = await getServerUser()
+
+  if (!user || user.role !== 'ADMIN') {
+    redirect('/login')
+  }
 
   return (
     <UserProvider user={user}>

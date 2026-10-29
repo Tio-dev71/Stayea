@@ -63,6 +63,7 @@ import { StayeaAdminMarketingPage } from "@/features/admin-marketing"
 import { StayeaAdminReportsPage } from "@/features/admin-reports"
 import { StayeaAdminSettingsPage } from "@/features/admin-settings"
 import { PartnerPortalPage } from "@/features/partner-portal"
+import { AiConciergeWidget } from "@/features/ai-concierge"
 import { AccommodationSection } from "./components/accommodation-section"
 import { ExperiencesAndPackagesSection } from "./components/experiences-and-packages-section"
 import { ExploreSection } from "./components/explore-section"
@@ -1745,6 +1746,9 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         variant={currentPage === "home" ? "default" : "about"}
         onNavigate={handleNavigate}
       />
+
+      {/* Floating AI Concierge VIP Assistant */}
+      <AiConciergeWidget />
     </div>
   )
 }

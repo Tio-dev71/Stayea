@@ -12,13 +12,14 @@ export type RoleType = UserDatabase['role']
  */
 export const ROLES = {
   ADMIN: 'ADMIN',
+  PARTNER: 'PARTNER',
   USER: 'USER',
 } as const satisfies Record<RoleType, RoleType>
 
 /**
  * Role hierarchy (higher index means higher privilege)
  */
-export const ROLE_HIERARCHY: RoleType[] = ['USER', 'ADMIN']
+export const ROLE_HIERARCHY: RoleType[] = ['USER', 'PARTNER', 'ADMIN']
 
 /**
  * Checks whether a role satisfies the required minimum role.

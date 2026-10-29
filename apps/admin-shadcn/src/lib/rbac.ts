@@ -7,19 +7,20 @@ import type { components } from '@workspace/api-types'
  * turn reflects the DB `user_role` pgEnum. Backend counterpart:
  * `apps/api/src/shared-kernel/domain/value-objects/role.vo.ts`.
  */
-export type RoleType = components['schemas']['UserResponseDto']['role']
+export type RoleType = components['schemas']['UserResponseDto']['role'] | 'PARTNER'
 
 /**
  * Role string constants. Values must match the backend.
  */
 export const ROLES = {
   ADMIN: 'ADMIN',
+  PARTNER: 'PARTNER',
   USER: 'USER',
-} as const satisfies Record<RoleType, RoleType>
+} as const
 
 // Role hierarchy (higher index = higher privilege).
 // Mirrors backend ROLE_HIERARCHY.
-const ROLE_HIERARCHY: RoleType[] = ['USER', 'ADMIN']
+const ROLE_HIERARCHY: RoleType[] = ['USER', 'PARTNER', 'ADMIN']
 
 /**
  * Returns true when `actor` meets or exceeds the `required` role.

@@ -59,7 +59,7 @@ export function UserActionsMenu({ user }: UserActionsMenuProps) {
   function handleRoleChange(role: RoleType) {
     roleMutation.mutate({
       params: { path: { id: user.id } },
-      body: { role },
+      body: { role: role as any },
     })
   }
 

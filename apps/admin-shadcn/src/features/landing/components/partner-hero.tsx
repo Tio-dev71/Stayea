@@ -17,7 +17,11 @@ function scrollToBenefits() {
   }
 }
 
-export function PartnerHero() {
+interface PartnerHeroProps {
+  onGoToPartnerHub?: () => void
+}
+
+export function PartnerHero({ onGoToPartnerHub }: PartnerHeroProps = {}) {
   return (
     <section className="relative w-full overflow-hidden bg-slate-900 min-h-[560px] sm:min-h-[620px] lg:min-h-[660px]">
       {/* Background Image: Luxury infinity pool villa in sunset Phu Quoc */}
@@ -73,6 +77,21 @@ export function PartnerHero() {
               className="px-6 py-2.5 rounded-full border border-white/70 hover:border-white bg-black/25 hover:bg-white/10 text-white text-xs sm:text-sm font-medium transition-all backdrop-blur-xs active:scale-95"
             >
               Tìm hiểu quyền lợi
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onGoToPartnerHub) {
+                  onGoToPartnerHub()
+                } else {
+                  window.location.hash = "partner-portal"
+                }
+              }}
+              className="px-6 py-2.5 rounded-full bg-emerald-700/90 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold transition-all shadow-md inline-flex items-center gap-2 group active:scale-95 border border-emerald-500/50"
+            >
+              <span>Vào Cổng Đối Tác (Partner Hub)</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>

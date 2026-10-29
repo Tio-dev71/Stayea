@@ -10,6 +10,7 @@ import { HostsKpiCards } from "./components/hosts-kpi-cards"
 import { HostsFilterBar } from "./components/hosts-filter-bar"
 import { HostsDataTable } from "./components/hosts-data-table"
 import { HostsRightSidebar } from "./components/hosts-right-sidebar"
+import { AdminOrderApprovalQueue } from "./components/admin-order-approval-queue"
 import { CreateHostModal } from "./components/create-host-modal"
 
 import type { ModalSubTab } from "./components/create-host-modal"
@@ -28,6 +29,7 @@ export function StayeaAdminHostsPage({
   initialModalTab = "basic",
 }: StayeaAdminHostsPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [adminSection, setAdminSection] = useState<"hosts" | "approval_queue">("hosts")
   const [activeSegment, setActiveSegment] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
@@ -104,15 +106,29 @@ export function StayeaAdminHostsPage({
               {/* Title & Subtitle */}
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                  Chủ nhà/Đối tác
+                  Quản Trị Đối Tác & Điều Phối Đơn Hàng
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                  Quản lý chủ nhà, đối tác, hoa hồng và hiệu suất hợp tác trên Stayea.
+                  Quản lý chủ nhà, đối tác vận chuyển, phê duyệt đơn từ AI Agent và điều phối phục vụ.
                 </p>
               </div>
 
-              {/* Right Controls: Add Host Button */}
-              <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+              {/* Right Controls */}
+              <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onNavigateTab) {
+                      onNavigateTab("partner-portal")
+                    } else {
+                      window.location.hash = "partner-portal"
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all"
+                >
+                  <span>Mở Cổng Đối Tác (Partner Hub)</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={handleAddHost}
@@ -124,7 +140,48 @@ export function StayeaAdminHostsPage({
               </div>
             </div>
 
-            {/* Main Content Grid: 8 cols left, 4 cols right */}
+            {/* Sub-tabs: Switch between Partners Directory and Order Dispatch Queue */}
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+              <button
+                type="button"
+                onClick={() => setAdminSection("hosts")}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  adminSection === "hosts"
+                    ? "bg-[#1b7a4e] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Danh Sách Chủ Nhà &amp; Đối Tác
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminSection("approval_queue")}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
+                  adminSection === "approval_queue"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <span>Hàng Đợi Duyệt Đơn (AI &amp; Khách &rarr; Partner)</span>
+                <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+                  1 mới
+                </span>
+              </button>
+            </div>
+
+            {adminSection === "approval_queue" ? (
+              <AdminOrderApprovalQueue
+                onNavigatePartnerHub={() => {
+                  if (onNavigateTab) {
+                    onNavigateTab("partner-portal")
+                  } else {
+                    window.location.hash = "partner-portal"
+                  }
+                }}
+              />
+            ) : (
+            /* Main Content Grid: 8 cols left, 4 cols right */
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left Column (8 cols) */}
               <div className="lg:col-span-8 space-y-6">
@@ -209,6 +266,7 @@ export function StayeaAdminHostsPage({
                 />
               </div>
             </div>
+            )}
 
             {/* Footer */}
             <StayeaAdminFooter />

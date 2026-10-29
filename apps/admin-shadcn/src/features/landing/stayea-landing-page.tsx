@@ -62,6 +62,7 @@ import { StayeaAdminMessagesPage } from "@/features/admin-messages"
 import { StayeaAdminMarketingPage } from "@/features/admin-marketing"
 import { StayeaAdminReportsPage } from "@/features/admin-reports"
 import { StayeaAdminSettingsPage } from "@/features/admin-settings"
+import { PartnerPortalPage } from "@/features/partner-portal"
 import { AccommodationSection } from "./components/accommodation-section"
 import { ExperiencesAndPackagesSection } from "./components/experiences-and-packages-section"
 import { ExploreSection } from "./components/explore-section"
@@ -108,17 +109,30 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
     if (isAdminPortal) return true
     if (typeof window !== "undefined") {
       const h = window.location.hostname.toLowerCase()
-      return h.startsWith("admin.") || h === "admin.localhost" || h.startsWith("hub.") || h.startsWith("partner.")
+      return h.startsWith("admin.") || h === "admin.localhost"
     }
     return false
   }, [isAdminPortal])
+
+  const isDetectedPartner = React.useMemo(() => {
+    if (typeof window !== "undefined") {
+      const h = window.location.hostname.toLowerCase()
+      return (
+        h.startsWith("partner.") ||
+        h.startsWith("hub.") ||
+        h === "partner.localhost" ||
+        h === "hub.localhost"
+      )
+    }
+    return false
+  }, [])
 
   type PageType = StayeaPageType
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
     | "admin-deals" | "admin-experiences" | "admin-hosts" | "admin-properties" | "admin-revenue"
     | "admin-reviews" | "admin-messages" | "admin-marketing" | "admin-reports" | "bookings"
     | "dashboard" | "deals" | "experience" | "favorites" | "flight-booking" | "home" | "host"
-    | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "payment" | "phu-quoc"
+    | "login" | "my-deals" | "new-booking" | "packages" | "partner" | "partner-portal" | "payment" | "phu-quoc"
     | "plans" | "profile" | "register" | "reviews" | "service-detail" | "settings" | "stay" | "stayea-club"
     | "stayea-club-claimed" | "transport"
 
@@ -188,6 +202,7 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         if (pathSegment === "deals" || pathSegment === "uu-dai") return "deals"
         if (pathSegment === "host" || pathSegment === "chu-nha") return "host"
         if (pathSegment === "partner" || pathSegment === "doi-tac") return "partner"
+        if (pathSegment === "hub" || pathSegment === "partner-portal" || pathSegment === "portal") return "partner-portal"
         if (pathSegment === "about" || pathSegment === "ve-stayea") return "about"
         if (pathSegment === "stayea-club" || pathSegment === "club") return "stayea-club"
         if (pathSegment === "profile") return "profile"
@@ -214,6 +229,7 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       const hash = window.location.hash.replace("#", "").toLowerCase()
       if (hash === "host" || hash === "chu-nha") return "host"
       if (hash === "partner" || hash === "doi-tac") return "partner"
+      if (hash === "partner-portal" || hash === "partner-hub" || hash === "hub" || hash === "portal") return "partner-portal"
       if (hash === "about" || hash === "ve-stayea" || hash === "support" || hash === "ho-tro") return "about"
       if (hash === "club" || hash === "stayea-club") return "stayea-club"
       if (hash === "stay" || hash === "luu-tru" || hash === "villas" || hash === "apartments" || hash === "homestays") return "stay"
@@ -1199,6 +1215,11 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       case "hosts":
         setCurrentPage("admin-hosts")
         break
+      case "partner-portal":
+      case "partner-hub":
+      case "hub":
+        setCurrentPage("partner-portal")
+        break
       case "trai-nghiem-tour":
       case "experience":
       case "experiences":
@@ -1251,6 +1272,32 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }, [isDetectedAdmin, setCurrentPage])
+
+  // Dedicated Partner Portal Guard (partner.stayea.com / hub.stayea.com / currentPage === "partner-portal")
+  if (isDetectedPartner || currentPage === "partner-portal") {
+    return (
+      <PartnerPortalPage
+        onNavigateHome={() => {
+          if (isDetectedPartner) {
+            window.open("https://stayea.com", "_blank")
+          } else {
+            setCurrentPage("home")
+            window.scrollTo({ top: 0, behavior: "smooth" })
+          }
+        }}
+        onNavigateAdmin={() => {
+          window.open("https://admin.stayea.com", "_blank")
+        }}
+        onLogout={() => {
+          if (isDetectedPartner) {
+            window.location.reload()
+          } else {
+            setCurrentPage("partner")
+          }
+        }}
+      />
+    )
+  }
 
   // Dedicated Admin Portal Guard (admin.stayea.com)
   if (isDetectedAdmin) {
@@ -1632,7 +1679,7 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         ) : currentPage === "partner" ? (
           <>
             {/* 1. Hero Section: "Hợp tác cùng STAYEA" */}
-            <PartnerHero />
+            <PartnerHero onGoToPartnerHub={() => setCurrentPage("partner-portal")} />
 
             {/* 2. Benefits: 8-card grid */}
             <PartnerBenefits />

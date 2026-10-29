@@ -6,7 +6,7 @@ import { boolean, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, varchar 
  * Single source of truth for role values. Downstream types (backend RoleType,
  * frontend RBAC helpers) derive from this.
  */
-export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'USER'])
+export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'PARTNER', 'USER'])
 
 /**
  * User preferences

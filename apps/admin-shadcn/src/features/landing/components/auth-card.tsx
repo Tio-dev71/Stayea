@@ -72,6 +72,22 @@ export function AuthCard({
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const err = params.get("error")
+      if (err) {
+        if (err === "oauth_cancelled") {
+          setErrorMsg("Bạn đã huỷ quá trình đăng nhập qua Google.")
+        } else if (err === "oauth_failed" || err === "oauth_error") {
+          setErrorMsg(
+            "Đăng nhập tài khoản liên kết Google chưa thành công. Vui lòng thử lại hoặc đăng nhập bằng Email/Mật khẩu."
+          )
+        }
+      }
+    }
+  }, [])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setErrorMsg(null)

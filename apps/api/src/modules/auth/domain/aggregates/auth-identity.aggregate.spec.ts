@@ -84,4 +84,22 @@ describe('authIdentity aggregate', () => {
       expect(identity.password).toBe('new-hash')
     })
   })
+
+  describe('updateAccountId and updateTokens', () => {
+    it('updates accountId and tokens properly', () => {
+      const identity = AuthIdentity.createOAuthIdentity(
+        'id-1',
+        'user-1',
+        'google',
+        'old-account-id',
+      )
+
+      identity.updateAccountId('new-google-account-id')
+      expect(identity.accountId).toBe('new-google-account-id')
+
+      identity.updateTokens('new-access-token', 'new-refresh-token')
+      expect(identity.accessToken).toBe('new-access-token')
+      expect(identity.refreshToken).toBe('new-refresh-token')
+    })
+  })
 })

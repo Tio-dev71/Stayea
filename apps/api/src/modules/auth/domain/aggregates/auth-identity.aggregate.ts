@@ -18,7 +18,7 @@ export class AuthIdentity extends BaseAggregateRoot {
   readonly #id: string
   readonly #userId: string
   readonly #providerId: AuthProvider
-  readonly #accountId: string
+  #accountId: string
   #password: string | null
   #accessToken: string | null
   #refreshToken: string | null
@@ -190,13 +190,15 @@ export class AuthIdentity extends BaseAggregateRoot {
    * Update OAuth tokens
    */
   updateTokens(
-    accessToken: string,
+    accessToken?: string,
     refreshToken?: string,
     accessTokenExpiresAt?: Date,
     refreshTokenExpiresAt?: Date,
     scope?: string,
   ): void {
-    this.#accessToken = accessToken
+    if (accessToken !== undefined) {
+      this.#accessToken = accessToken
+    }
     if (refreshToken !== undefined) {
       this.#refreshToken = refreshToken
     }
@@ -209,6 +211,14 @@ export class AuthIdentity extends BaseAggregateRoot {
     if (scope !== undefined) {
       this.#scope = scope
     }
+    this.#updatedAt = new Date()
+  }
+
+  /**
+   * Update OAuth account ID (e.g. replacing placeholder or migration identifier with official provider ID)
+   */
+  updateAccountId(newAccountId: string): void {
+    this.#accountId = newAccountId
     this.#updatedAt = new Date()
   }
 

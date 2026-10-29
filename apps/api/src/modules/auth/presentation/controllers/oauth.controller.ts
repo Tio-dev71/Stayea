@@ -3,10 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Post,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -26,6 +26,8 @@ type OAuthRequest = Request & { user?: OAuthUserProfile }
 @Controller('auth/oauth')
 @Public()
 export class OAuthController {
+  private readonly logger = new Logger(OAuthController.name)
+
   constructor(
     private readonly oauthService: OAuthService,
     private readonly configService: ConfigService<Env, true>,
@@ -101,13 +103,21 @@ export class OAuthController {
   // ── Shared ────────────────────────────────────────────────────────────────
 
   private async handleCallback(req: OAuthRequest, res: Response) {
-    if (!req.user) {
-      throw new UnauthorizedException('OAuth authentication failed')
-    }
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL', { infer: true }) || 'https://stayea.com'
 
-    const { accessToken, refreshToken } = await this.oauthService.findOrCreateUser(req.user)
-    const frontendUrl = this.configService.get('FRONTEND_URL', { infer: true })
-    const callbackUrl = `${frontendUrl}/oauth/callback?token=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`
-    res.redirect(callbackUrl)
+    try {
+      if (!req.user) {
+        return res.redirect(`${frontendUrl}/login?error=oauth_failed`)
+      }
+
+      const { accessToken, refreshToken } = await this.oauthService.findOrCreateUser(req.user)
+      const callbackUrl = `${frontendUrl}/oauth/callback?token=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`
+      return res.redirect(callbackUrl)
+    } catch (error: unknown) {
+      const err = error as Error
+      this.logger.error(`OAuth callback failed: ${err?.message}`, err?.stack)
+      return res.redirect(`${frontendUrl}/login?error=oauth_error`)
+    }
   }
 }

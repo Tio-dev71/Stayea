@@ -54,6 +54,8 @@ export class OAuthService {
     refreshToken: string
     user: { id: string; email: string; role: RoleType | null }
   }> {
+    const cleanEmail = profile.email.toLowerCase().trim()
+
     // Step 1: look for existing OAuth identity
     const existingOAuthIdentity = await this.authIdentityRepo.findByProviderAndIdentifier(
       profile.provider,
@@ -62,11 +64,11 @@ export class OAuthService {
 
     if (existingOAuthIdentity) {
       const role = await this.userRoleRepo.getRole(existingOAuthIdentity.userId)
-      const tokens = await this.generateTokens(existingOAuthIdentity.userId, profile.email, role)
+      const tokens = await this.generateTokens(existingOAuthIdentity.userId, cleanEmail, role)
       void this.eventPublisher.publish(
         new UserLoggedInViaOAuthEvent(
           existingOAuthIdentity.userId,
-          profile.email,
+          cleanEmail,
           profile.provider,
           false,
         ),
@@ -74,36 +76,54 @@ export class OAuthService {
       return tokens
     }
 
-    // Step 2: look for same-email user via email identity
-    const emailIdentity = await this.authIdentityRepo.findByProviderAndIdentifier(
-      'email',
-      profile.email,
-    )
+    // Step 2: look for same-email user (check users table first, then email identity)
+    const existingUser = await this.userRepo.findByEmail(cleanEmail)
+    const emailIdentity = existingUser
+      ? null
+      : await this.authIdentityRepo.findByProviderAndIdentifier('email', cleanEmail)
+
+    const existingUserId = existingUser?.id ?? emailIdentity?.userId
 
     let userId: string
 
-    if (emailIdentity) {
+    if (existingUserId) {
       // Link OAuth identity to existing user
-      userId = emailIdentity.userId
-      const oauthIdentityId = randomUUID()
-      const linkedIdentity = AuthIdentity.createOAuthIdentity(
-        oauthIdentityId,
+      userId = existingUserId
+
+      const existingProviderIdentity = await this.authIdentityRepo.findByUserIdAndProvider(
         userId,
         profile.provider,
-        profile.providerId,
-        profile.accessToken,
-        profile.refreshToken,
-        profile.accessTokenExpiresAt,
       )
-      await this.authIdentityRepo.save(linkedIdentity)
+
+      if (existingProviderIdentity) {
+        existingProviderIdentity.updateAccountId(profile.providerId)
+        existingProviderIdentity.updateTokens(
+          profile.accessToken,
+          profile.refreshToken,
+          profile.accessTokenExpiresAt,
+        )
+        await this.authIdentityRepo.save(existingProviderIdentity)
+      } else {
+        const oauthIdentityId = randomUUID()
+        const linkedIdentity = AuthIdentity.createOAuthIdentity(
+          oauthIdentityId,
+          userId,
+          profile.provider,
+          profile.providerId,
+          profile.accessToken,
+          profile.refreshToken,
+          profile.accessTokenExpiresAt,
+        )
+        await this.authIdentityRepo.save(linkedIdentity)
+      }
 
       void this.eventPublisher.publish(
-        new UserLoggedInViaOAuthEvent(userId, profile.email, profile.provider, true),
+        new UserLoggedInViaOAuthEvent(userId, cleanEmail, profile.provider, true),
       )
     } else {
       // Step 3: create new user + OAuth identity
       userId = randomUUID()
-      await this.userRepo.create({ id: userId, name: profile.name, email: profile.email })
+      await this.userRepo.create({ id: userId, name: profile.name, email: cleanEmail })
 
       const oauthIdentityId = randomUUID()
       const newIdentity = AuthIdentity.createOAuthIdentity(
@@ -118,12 +138,12 @@ export class OAuthService {
       await this.authIdentityRepo.save(newIdentity)
 
       void this.eventPublisher.publish(
-        new UserRegisteredViaOAuthEvent(userId, profile.email, profile.provider),
+        new UserRegisteredViaOAuthEvent(userId, cleanEmail, profile.provider),
       )
     }
 
     const role = await this.userRoleRepo.getRole(userId)
-    return this.generateTokens(userId, profile.email, role)
+    return this.generateTokens(userId, cleanEmail, role)
   }
 
   private async generateTokens(userId: string, email: string, role: RoleType | null) {

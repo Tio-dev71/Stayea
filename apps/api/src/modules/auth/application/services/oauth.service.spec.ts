@@ -35,6 +35,8 @@ describe('oAuthService', () => {
     mocks.jwtService.sign.mockReturnValue('mock-access-token')
     mocks.authSessionRepo.save.mockResolvedValue(undefined)
     mocks.eventPublisher.publish.mockResolvedValue(undefined)
+    mocks.userRepo.findByEmail.mockResolvedValue(null)
+    mocks.userRepo.findByUsername.mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -114,6 +116,68 @@ describe('oAuthService', () => {
         const event = mocks.eventPublisher.publish.mock.calls[0]?.[0]
         expect(event).toBeInstanceOf(UserRegisteredViaOAuthEvent)
       })
+    })
+
+    it('user exists in users table by email (e.g. from seed or DB) → links OAuth identity and logs in without creating a new user', async () => {
+      mocks.authIdentityRepo.findByProviderAndIdentifier.mockResolvedValue(null)
+      mocks.userRepo.findByEmail.mockResolvedValue({
+        id: 'existing-user-id',
+        name: 'Existing User',
+        email: 'oauth@example.com',
+        emailVerified: true,
+        image: null,
+        role: 'USER',
+        banned: false,
+        banReason: null,
+        banExpires: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      mocks.authIdentityRepo.findByUserIdAndProvider.mockResolvedValue(null)
+      mocks.authIdentityRepo.save.mockResolvedValue(undefined)
+      mocks.userRoleRepo.getRole.mockResolvedValue('USER')
+
+      const result = await service.findOrCreateUser(googleProfile)
+
+      expect(result.accessToken).toBe('mock-access-token')
+      expect(mocks.userRepo.create).not.toHaveBeenCalled()
+      expect(mocks.authIdentityRepo.save).toHaveBeenCalledOnce()
+      await vi.waitFor(() => {
+        expect(mocks.eventPublisher.publish).toHaveBeenCalledWith(
+          expect.objectContaining({ userId: 'existing-user-id', provider: 'google', linked: true }),
+        )
+      })
+    })
+
+    it('user exists in users table and already has a provider identity with placeholder ID → updates accountId and tokens', async () => {
+      mocks.authIdentityRepo.findByProviderAndIdentifier.mockResolvedValue(null)
+      mocks.userRepo.findByEmail.mockResolvedValue({
+        id: 'existing-user-id',
+        name: 'Existing User',
+        email: 'oauth@example.com',
+        emailVerified: true,
+        image: null,
+        role: 'USER',
+        banned: false,
+        banReason: null,
+        banExpires: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      const existingProviderIdentity = AuthFixtures.oauthIdentity('google', {
+        userId: 'existing-user-id',
+        accountId: 'old-placeholder-id',
+      })
+      mocks.authIdentityRepo.findByUserIdAndProvider.mockResolvedValue(existingProviderIdentity)
+      mocks.authIdentityRepo.save.mockResolvedValue(undefined)
+      mocks.userRoleRepo.getRole.mockResolvedValue('USER')
+
+      const result = await service.findOrCreateUser(googleProfile)
+
+      expect(result.accessToken).toBe('mock-access-token')
+      expect(existingProviderIdentity.accountId).toBe('google-123')
+      expect(mocks.authIdentityRepo.save).toHaveBeenCalledWith(existingProviderIdentity)
+      expect(mocks.userRepo.create).not.toHaveBeenCalled()
     })
   })
 })

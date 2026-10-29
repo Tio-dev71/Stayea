@@ -34,11 +34,12 @@ export class GoogleStrategy extends PassportStrategy(GoogleOAuth2Strategy, 'goog
       return
     }
 
+    const cleanEmail = email.toLowerCase().trim()
     const oauthProfile: OAuthUserProfile = {
       provider: 'google',
       providerId: profile.id,
-      email,
-      name: profile.displayName,
+      email: cleanEmail,
+      name: profile.displayName?.trim() || cleanEmail.split('@')[0] || 'User',
       accessToken,
       refreshToken,
     }

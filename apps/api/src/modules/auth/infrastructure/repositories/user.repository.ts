@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { usersTable } from '@workspace/database'
-import { eq, and } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 
 import { DB_TOKEN } from '@/app/database/db.port'
 
@@ -26,16 +26,21 @@ export class UserRepositoryImpl implements UserRepository {
 
   async create(data: CreateUserData): Promise<User> {
     const now = new Date()
+    const cleanEmail = data.email.toLowerCase().trim()
+    const baseUsername =
+      cleanEmail.split('@')[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') || 'user'
+    const uniqueUsername = await this.generateUniqueUsername(baseUsername)
+
     const result = await this.db
       .insert(usersTable)
       .values({
         id: data.id,
         name: data.name,
-        email: data.email,
-        username: data.email.split('@')[0] ?? data.email, // derive username from email
-        displayUsername: data.name, // use name as display username
+        email: cleanEmail,
+        username: uniqueUsername,
+        displayUsername: data.name || uniqueUsername,
         role: data.role ?? 'USER',
-        emailVerified: false,
+        emailVerified: true,
         banned: false,
         createdAt: now,
         updatedAt: now,
@@ -53,6 +58,50 @@ export class UserRepositoryImpl implements UserRepository {
     }
 
     return this.toEntity(result[0]!)
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const cleanEmail = email.toLowerCase().trim()
+    const result = await this.db
+      .select()
+      .from(usersTable)
+      .where(eq(sql`lower(${usersTable.email})`, cleanEmail))
+      .limit(1)
+
+    if (result.length === 0) {
+      return null
+    }
+
+    return this.toEntity(result[0]!)
+  }
+
+  async findByUsername(username: string): Promise<User | null> {
+    const cleanUsername = username.toLowerCase().trim()
+    const result = await this.db
+      .select()
+      .from(usersTable)
+      .where(eq(sql`lower(${usersTable.username})`, cleanUsername))
+      .limit(1)
+
+    if (result.length === 0) {
+      return null
+    }
+
+    return this.toEntity(result[0]!)
+  }
+
+  private async generateUniqueUsername(base: string): Promise<string> {
+    let candidate = base
+    let attempts = 0
+    while (attempts < 10) {
+      const existing = await this.findByUsername(candidate)
+      if (!existing) {
+        return candidate
+      }
+      attempts++
+      candidate = `${base}_${Math.floor(1000 + Math.random() * 9000)}`
+    }
+    return `${base}_${Date.now().toString(36)}`
   }
 
   async exists(id: string): Promise<boolean> {

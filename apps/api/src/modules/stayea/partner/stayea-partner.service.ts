@@ -426,6 +426,23 @@ export class StayeaPartnerService {
    * Step 1: AI Agent or Customer creates draft order -> enters `pending_admin` queue.
    */
   async createDraftOrder(dto: CreateDraftOrderDto) {
+    // Validate customer phone: strip whitespace, hyphens, dots
+    const cleanPhone = (dto.customerPhone || "").replace(/[\s.-]/g, "")
+    const vnPhoneRegex = /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/
+    if (!vnPhoneRegex.test(cleanPhone)) {
+      throw new BadRequestException(
+        `Số điện thoại không hợp lệ ("${dto.customerPhone}"). Vui lòng cung cấp số di động Việt Nam hợp lệ (ví dụ: 0912345678 hoặc +84912345678).`
+      )
+    }
+
+    // Validate start date: must not be in the past
+    const todayStr = new Date().toISOString().slice(0, 10)
+    if (dto.startDate && dto.startDate < todayStr) {
+      throw new BadRequestException(
+        `Ngày bắt đầu dịch vụ ("${dto.startDate}") không thể ở trong quá khứ. Vui lòng chọn ngày từ hôm nay (${todayStr}) trở đi.`
+      )
+    }
+
     const partner = await this.getProfileById(dto.partnerId)
     const orderId = generateUid("pord")
     const orderCode = `STY-ORD-${Date.now().toString().slice(-6)}-${randomUUID().slice(0, 4).toUpperCase()}`
@@ -442,7 +459,7 @@ export class StayeaPartnerService {
         partnerId: dto.partnerId,
         serviceId: dto.serviceId,
         customerName: dto.customerName,
-        customerPhone: dto.customerPhone,
+        customerPhone: cleanPhone,
         customerEmail: dto.customerEmail || null,
         serviceTitle: dto.serviceTitle,
         serviceType: dto.serviceType,
@@ -517,7 +534,36 @@ export class StayeaPartnerService {
       .update(partnerOrdersTable)
       .set({
         status: "sent_to_partner",
+        ...(dto?.reassignPartnerId ? { partnerId: dto.reassignPartnerId } : {}),
         adminNotes: dto?.adminNotes || order.adminNotes,
+      })
+      .where(eq(partnerOrdersTable.id, orderId))
+      .returning()
+
+    return updated
+  }
+
+  /**
+   * Step 2b: Admin cancels or rejects an order
+   */
+  async adminRejectOrder(orderId: string, reason?: string) {
+    const [order] = await this.db
+      .select()
+      .from(partnerOrdersTable)
+      .where(eq(partnerOrdersTable.id, orderId))
+      .limit(1)
+
+    if (!order) {
+      throw new NotFoundException("Đơn hàng không tồn tại")
+    }
+
+    const [updated] = await this.db
+      .update(partnerOrdersTable)
+      .set({
+        status: "cancelled",
+        adminNotes: reason
+          ? `Admin từ chối đơn: ${reason}`
+          : order.adminNotes || "Admin đã từ chối duyệt đơn.",
       })
       .where(eq(partnerOrdersTable.id, orderId))
       .returning()
@@ -582,27 +628,40 @@ export class StayeaPartnerService {
       )
     }
 
-    const nextStatus = dto.action === "accept" ? "partner_accepted" : "partner_rejected"
+    if (dto.action === "reject") {
+      const rejectReason = dto.note || "Đối tác báo hết phòng/xe"
+      const [updated] = await this.db
+        .update(partnerOrdersTable)
+        .set({
+          // Rebound back to Admin Queue so the order is never trapped or lost!
+          status: "pending_admin",
+          rejectionReason: rejectReason,
+          partnerNotes: `Đối tác từ chối nhận khách: ${rejectReason}`,
+          adminNotes: `⚠️ ĐỐI TÁC TỪ CHỐI (Lý do: "${rejectReason}"). Cần Admin đổi đối tác khác để điều phối lại!`,
+        })
+        .where(eq(partnerOrdersTable.id, orderId))
+        .returning()
+
+      return updated
+    }
 
     const [updated] = await this.db
       .update(partnerOrdersTable)
       .set({
-        status: nextStatus,
+        status: "partner_accepted",
         partnerNotes: dto.note || order.partnerNotes,
-        rejectionReason: dto.action === "reject" ? dto.note : null,
+        rejectionReason: null,
       })
       .where(eq(partnerOrdersTable.id, orderId))
       .returning()
 
-    if (dto.action === "accept") {
-      // Increment partner completed/accepted order counter
-      await this.db
-        .update(partnerProfilesTable)
-        .set({
-          totalOrders: sql`${partnerProfilesTable.totalOrders} + 1`,
-        })
-        .where(eq(partnerProfilesTable.id, partnerId))
-    }
+    // Increment partner completed/accepted order counter
+    await this.db
+      .update(partnerProfilesTable)
+      .set({
+        totalOrders: sql`${partnerProfilesTable.totalOrders} + 1`,
+      })
+      .where(eq(partnerProfilesTable.id, partnerId))
 
     return updated
   }

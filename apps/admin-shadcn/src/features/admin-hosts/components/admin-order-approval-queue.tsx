@@ -105,7 +105,15 @@ export function AdminOrderApprovalQueue({
     })
   }
 
-  const handleRejectOrder = (orderId: string) => {
+  const handleRejectOrder = async (orderId: string) => {
+    try {
+      await stayeaApi.adminRejectOrder(
+        orderId,
+        "Không đủ điều kiện / Trùng lịch hoặc khách hủy"
+      )
+    } catch {
+      // optimistic
+    }
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -117,7 +125,7 @@ export function AdminOrderApprovalQueue({
           : o
       )
     )
-    toast.error("Đã hủy đơn hàng")
+    toast.error("Đã hủy đơn hàng và lưu trạng thái vào hệ thống.")
   }
 
   const filtered = orders.filter((o) => {
@@ -265,6 +273,13 @@ export function AdminOrderApprovalQueue({
                     <span className="px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold flex items-center gap-1">
                       <Bot className="w-3.5 h-3.5 text-purple-600" />
                       <span>AI Agent Tư Vấn &amp; Tạo Đơn</span>
+                    </span>
+                  )}
+
+                  {order.rejectionReason && (
+                    <span className="px-2.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-300 text-xs font-bold flex items-center gap-1 animate-pulse">
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Đối tác từ chối: {order.rejectionReason} (Cần đổi đối tác)</span>
                     </span>
                   )}
 

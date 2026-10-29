@@ -34,7 +34,7 @@ function renderHostKpiIcon(iconType: HostKpiItem["iconType"]) {
 
 export function HostsKpiCards() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {HOSTS_KPI_DATA.map((item) => (
         <div
           key={item.id}

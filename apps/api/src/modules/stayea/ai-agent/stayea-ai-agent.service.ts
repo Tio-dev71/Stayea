@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 
+import { StayeaCatalogService } from "@/modules/stayea/catalog/stayea-catalog.service"
 import { StayeaPartnerService } from "@/modules/stayea/partner/stayea-partner.service"
 import type {
   AiChatRequestDto,
@@ -132,6 +133,7 @@ export class StayeaAiAgentService {
 
   constructor(
     private readonly partnerService: StayeaPartnerService,
+    private readonly catalogService: StayeaCatalogService,
     private readonly configService: ConfigService
   ) {
     this.routerUrl =
@@ -155,8 +157,24 @@ export class StayeaAiAgentService {
     const rawMessages = dto.messages || []
     let createdBooking: BookingPreviewCard | null = null
 
-    // 1. Fetch available services to include in context if needed
-    const activeServices = await this.partnerService.getAllActiveServices()
+    // 1. Fetch available partner services and accommodations to include in context
+    const [activeServices, accResult] = await Promise.all([
+      this.partnerService.getAllActiveServices(),
+      this.catalogService.findAccommodations({}).catch(() => ({ items: [] })),
+    ])
+
+    const platformAccommodations: any[] = Array.isArray(accResult)
+      ? accResult
+      : (accResult as any)?.items || []
+
+    const accommodationsSummary = platformAccommodations
+      .slice(0, 15)
+      .map(
+        (a: any) =>
+          `• [ID: ${a.id}] [Loại: Biệt thự/Homestay] "${a.title}" - Giá: ${Number(a.pricePerNight).toLocaleString("vi-VN")}đ/đêm - Khu vực: ${a.location}. ${a.bedrooms ? `${a.bedrooms} PN` : ""}`
+      )
+      .join("\n")
+
     const servicesSummary = activeServices
       .map(
         (s) =>
@@ -166,7 +184,11 @@ export class StayeaAiAgentService {
 
     const dynamicSystemPrompt = `${SYSTEM_PROMPT}
 
-DANH MỤC DỊCH VỤ HIỆN SẴN CÓ TRÊN HỆ THỐNG STAYEA:
+DANH MỤC DỊCH VỤ & LƯU TRÚ HIỆN SẴN CÓ TRÊN HỆ THỐNG STAYEA:
+--- BIỆT THỰ / HOMESTAY NGHỈ DƯỠNG ---
+${accommodationsSummary || "Đang cập nhật danh mục biệt thự..."}
+
+--- DỊCH VỤ ĐỐI TÁC (XE TỰ LÁI, TOUR CANO, TRẢI NGHIỆM) ---
 ${servicesSummary || "Hiện chưa có dịch vụ nào trực tuyến."}
 
 LƯU Ý KHI GỌI HÀM:
@@ -206,23 +228,48 @@ LƯU Ý KHI GỌI HÀM:
           }
 
           if (fnName === "search_services") {
-            const results = await this.partnerService.getAllActiveServices({
-              type: fnArgs.type,
-              search: fnArgs.search,
-              location: fnArgs.location,
-            })
-            const toolOutput = JSON.stringify(
-              results.map((r) => ({
-                id: r.id,
-                partnerId: r.partnerId,
-                title: r.title,
-                type: r.serviceType,
-                price: Number(r.price),
-                unit: r.unit,
-                location: r.location,
-                attributes: r.attributes,
-              }))
-            )
+            const [results, accData] = await Promise.all([
+              this.partnerService.getAllActiveServices({
+                type: fnArgs.type,
+                search: fnArgs.search,
+                location: fnArgs.location,
+              }),
+              (!fnArgs.type || fnArgs.type === "homestay")
+                ? this.catalogService
+                    .findAccommodations({
+                      search: fnArgs.search,
+                    })
+                    .catch(() => ({ items: [] }))
+                : Promise.resolve({ items: [] }),
+            ])
+
+            const accList = Array.isArray(accData)
+              ? accData
+              : (accData as any)?.items || []
+
+            const mappedPartner = results.map((r) => ({
+              id: r.id,
+              partnerId: r.partnerId,
+              title: r.title,
+              type: r.serviceType,
+              price: Number(r.price),
+              unit: r.unit,
+              location: r.location,
+              attributes: r.attributes,
+            }))
+
+            const mappedAcc = accList.map((a: any) => ({
+              id: a.id,
+              partnerId: "prt_stayea_host",
+              title: a.title,
+              type: "homestay",
+              price: Number(a.pricePerNight),
+              unit: "đêm",
+              location: a.location,
+              attributes: { bedrooms: a.bedrooms, bathrooms: a.bathrooms },
+            }))
+
+            const toolOutput = JSON.stringify([...mappedAcc, ...mappedPartner])
 
             outboundMessages.push({
               role: "assistant",
@@ -236,18 +283,36 @@ LƯU Ý KHI GỌI HÀM:
             })
           } else if (fnName === "create_booking_draft") {
             const matchedService = activeServices.find((s) => s.id === fnArgs.serviceId)
-            const unitPrice = matchedService ? Number(matchedService.price) : 1000000
+            const matchedAcc = !matchedService
+              ? (platformAccommodations as any[]).find((a) => a.id === fnArgs.serviceId)
+              : null
+
+            const unitPrice = matchedService
+              ? Number(matchedService.price)
+              : matchedAcc
+              ? Number(matchedAcc.pricePerNight)
+              : 1000000
             const qty = fnArgs.quantity || 1
             const totalAmount = unitPrice * qty
+            const serviceTitle =
+              matchedService?.title ||
+              matchedAcc?.title ||
+              fnArgs.serviceTitle ||
+              "Dịch vụ STAYEA"
+            const serviceType =
+              matchedService?.serviceType || (matchedAcc ? "homestay" : "homestay")
+            const partnerId =
+              matchedService?.partnerId ||
+              (matchedAcc ? "prt_stayea_host" : fnArgs.partnerId || "prt_demo")
 
             const order = await this.partnerService.createDraftOrder({
-              partnerId: matchedService?.partnerId || fnArgs.partnerId || "prt_demo",
+              partnerId,
               serviceId: fnArgs.serviceId,
               customerName: fnArgs.customerName,
               customerPhone: fnArgs.customerPhone,
               customerEmail: fnArgs.customerEmail,
-              serviceTitle: matchedService?.title || fnArgs.serviceTitle || "Dịch vụ STAYEA",
-              serviceType: (matchedService?.serviceType as any) || "homestay",
+              serviceTitle,
+              serviceType: serviceType as any,
               startDate: fnArgs.startDate,
               endDate: fnArgs.endDate,
               quantity: qty,

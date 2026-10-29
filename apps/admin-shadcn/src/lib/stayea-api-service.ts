@@ -749,12 +749,12 @@ class StayeaApiService {
   /**
    * Admin: Approve order and dispatch to partner
    */
-  async adminApproveOrder(orderId: string, adminNotes?: string): Promise<any> {
+  async adminApproveOrder(orderId: string, adminNotes?: string, reassignPartnerId?: string): Promise<any> {
     try {
       const res = await fetch(`/api/stayea/admin/partners/orders/${orderId}/approve`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
-        body: JSON.stringify({ adminNotes }),
+        body: JSON.stringify({ adminNotes, reassignPartnerId }),
       })
       if (res.ok) {
         const json = await res.json()
@@ -764,6 +764,22 @@ class StayeaApiService {
       // ignore
     }
     return null
+  }
+
+  /**
+   * Admin: Reject or cancel an order
+   */
+  async adminRejectOrder(orderId: string, reason?: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/admin/partners/orders/${orderId}/reject`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ reason }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
   }
 
   /**

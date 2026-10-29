@@ -63,7 +63,7 @@ export function AdsKpiCards({ items }: AdsKpiCardsProps) {
           <div className="flex items-start gap-3">
             {renderKpiIcon(kpi.iconType)}
             <div className="min-w-0 flex-1">
-              <span className="text-xs text-slate-500 font-medium line-clamp-1">
+              <span className="text-xs text-slate-500 font-medium line-clamp-2">
                 {kpi.title}
               </span>
               <div className="text-xl font-bold text-slate-900 mt-1 tracking-tight truncate">

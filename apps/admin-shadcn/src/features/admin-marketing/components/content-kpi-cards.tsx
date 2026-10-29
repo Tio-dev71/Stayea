@@ -62,7 +62,7 @@ export function ContentKpiCards({
   onKpiClick,
 }: ContentKpiCardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
       {items.map((kpi) => {
         const { icon: IconComp, bg, text } = getIconConfig(kpi.iconType)
 
@@ -70,30 +70,34 @@ export function ContentKpiCards({
           <div
             key={kpi.id}
             onClick={() => onKpiClick?.(kpi.id)}
-            className="bg-white rounded-2xl border border-slate-100 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md hover:border-slate-200 transition-all cursor-pointer flex items-center gap-3.5"
+            className="group relative bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer flex flex-col justify-between gap-2.5 text-left"
           >
-            {/* Left Circular Icon Badge */}
-            <div
-              className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center ${bg} ${text}`}
-            >
-              <IconComp className="w-5 h-5" />
+            {/* Top Row: Title on Left, Icon Badge on Top-Right */}
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-xs sm:text-[13px] font-semibold text-slate-600 leading-snug line-clamp-2">
+                {kpi.label}
+              </span>
+              <div
+                className={`w-8 h-8 shrink-0 rounded-xl flex items-center justify-center ${bg} ${text}`}
+              >
+                <IconComp className="w-4 h-4" />
+              </div>
             </div>
 
-            {/* Right Details */}
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-slate-500 truncate">
-                {kpi.label}
-              </p>
-              <p className="text-2xl font-bold text-slate-900 tracking-tight mt-0.5">
+            {/* Middle: Big Value */}
+            <div className="my-0.5">
+              <span className="text-xl sm:text-2xl 2xl:text-3xl font-black text-slate-900 tracking-tight tabular-nums truncate block">
                 {kpi.value}
-              </p>
-              <div className="flex items-center gap-1 mt-1 text-[11px] font-medium text-emerald-600">
-                <TrendingUp className="w-3 h-3 shrink-0" />
-                <span className="font-semibold">{kpi.trend}</span>
-                <span className="text-slate-400 truncate font-normal">
-                  {kpi.comparisonText}
-                </span>
-              </div>
+              </span>
+            </div>
+
+            {/* Bottom: Trend */}
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-emerald-600">
+              <TrendingUp className="w-3.5 h-3.5 shrink-0 stroke-[2.5]" />
+              <span className="font-bold">{kpi.trend}</span>
+              <span className="text-slate-400 font-medium truncate">
+                {kpi.comparisonText}
+              </span>
             </div>
           </div>
         )

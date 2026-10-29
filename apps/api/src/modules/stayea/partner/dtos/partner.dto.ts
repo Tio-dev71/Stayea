@@ -332,6 +332,11 @@ export class AdminApproveOrderDto {
   @IsString()
   @IsOptional()
   adminNotes?: string
+
+  @ApiPropertyOptional({ example: "ptn_carrent_02" })
+  @IsString()
+  @IsOptional()
+  reassignPartnerId?: string
 }
 
 export class AdminUpdatePartnerStatusDto {

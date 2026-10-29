@@ -57,38 +57,42 @@ function getThemeStyles(theme: ReviewKpiItem["colorTheme"]) {
 
 export function ReviewsKpiCards({ stats = MOCK_REVIEWS_KPIS }: ReviewsKpiCardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {stats.map((item) => {
         const theme = getThemeStyles(item.colorTheme)
         return (
           <div
             key={item.id}
-            className="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 sm:gap-3.5 hover:shadow-md transition-shadow"
+            className="group relative bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-2.5 text-left"
           >
-            {/* Left: Icon inside soft background rounded container */}
-            <div
-              className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 ${theme.iconBg}`}
-            >
-              {getKpiIcon(item.icon)}
-            </div>
-
-            {/* Right: Title, Value, Trend */}
-            <div className="flex-1 min-w-0">
-              <span className="text-[11px] sm:text-xs font-medium text-slate-500 block truncate">
+            {/* Top Row: Title on Left, Icon Badge on Top-Right */}
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-xs sm:text-[13px] font-semibold text-slate-600 leading-snug line-clamp-2">
                 {item.title}
               </span>
-              <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none mt-1">
+              <div
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${theme.iconBg}`}
+              >
+                {getKpiIcon(item.icon)}
+              </div>
+            </div>
+
+            {/* Middle: Big Value */}
+            <div className="my-0.5">
+              <span className="text-xl sm:text-2xl 2xl:text-3xl font-black text-slate-900 tracking-tight tabular-nums truncate block">
                 {item.value}
-              </div>
-              <div className="mt-1 flex items-center gap-1 text-[11px] sm:text-xs">
-                <span className="inline-flex items-center gap-0.5 font-semibold text-[#007a48] shrink-0">
-                  <ArrowUp className="w-3 h-3 stroke-[2.5]" />
-                  <span>{item.trendPercent}</span>
-                </span>
-                <span className="text-slate-400 font-normal truncate">
-                  {item.trendLabel}
-                </span>
-              </div>
+              </span>
+            </div>
+
+            {/* Bottom: Trend */}
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+              <span className="inline-flex items-center gap-0.5 font-semibold text-[#007a48] shrink-0">
+                <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{item.trendPercent}</span>
+              </span>
+              <span className="text-slate-400 font-medium truncate">
+                {item.trendLabel}
+              </span>
             </div>
           </div>
         )

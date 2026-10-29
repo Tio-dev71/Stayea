@@ -10,6 +10,7 @@ import {
   Home,
   Maximize2,
   Minimize2,
+  RotateCcw,
   Send,
   Ship,
   Sparkles,
@@ -46,20 +47,66 @@ const QUICK_PROMPTS = [
   { label: "✨ Đặt giữ chỗ xe Xpander", query: "Tôi muốn đặt xe 7 chỗ Mitsubishi Xpander từ ngày mai. Tên tôi là Nguyễn Văn Tuấn, SĐT 0987654321." },
 ]
 
+const CHAT_STORAGE_KEY = "stayea_ai_chat_history"
+
+const DEFAULT_WELCOME_MESSAGE: ChatMessage = {
+  id: "welcome-1",
+  role: "assistant",
+  content:
+    "Dạ em chào Quý khách! Em là STAYEA Luxury Concierge — Cố vấn kỳ nghỉ và trải nghiệm độc bản tại Đảo Ngọc Phú Quốc.\n\nEm có thể giúp Quý khách:\n• 🏡 Tra cứu biệt thự nghỉ dưỡng, homestay ven biển còn phòng\n• 🚗 Đặt thuê xe tự lái hoặc có tài xế riêng\n• 🚤 Tư vấn tour cano ngắm hoàng hôn & lặn san hô\n• 📋 Tạo phiếu đặt giữ chỗ chuyển Admin STAYEA duyệt điều phối ngay\n\nQuý khách đang quan tâm dịch vụ nào cho chuyến đi sắp tới ạ?",
+  timestamp: "Vừa xong",
+}
+
 export function AiConciergeWidget() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [inputMessage, setInputMessage] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
-  const [messages, setMessages] = React.useState<ChatMessage[]>([
-    {
-      id: "welcome-1",
-      role: "assistant",
-      content:
-        "Dạ em chào Quý khách! Em là STAYEA Luxury Concierge — Cố vấn kỳ nghỉ và trải nghiệm độc bản tại Đảo Ngọc Phú Quốc.\n\nEm có thể giúp Quý khách:\n• 🏡 Tra cứu biệt thự nghỉ dưỡng, homestay ven biển còn phòng\n• 🚗 Đặt thuê xe tự lái hoặc có tài xế riêng\n• 🚤 Tư vấn tour cano ngắm hoàng hôn & lặn san hô\n• 📋 Tạo phiếu đặt giữ chỗ chuyển Admin STAYEA duyệt điều phối ngay\n\nQuý khách đang quan tâm dịch vụ nào cho chuyến đi sắp tới ạ?",
-      timestamp: "Vừa xong",
-    },
-  ])
+  const [messages, setMessages] = React.useState<ChatMessage[]>([DEFAULT_WELCOME_MESSAGE])
+
+  // Hydrate from sessionStorage once mounted (client-side only)
+  React.useEffect(() => {
+    try {
+      const stored = window.sessionStorage.getItem(CHAT_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed)
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // Sync to sessionStorage on change
+  React.useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        window.sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages))
+      }
+    } catch {
+      // ignore
+    }
+  }, [messages])
+
+  const handleResetChat = () => {
+    try {
+      window.sessionStorage.removeItem(CHAT_STORAGE_KEY)
+    } catch {
+      // ignore
+    }
+    setMessages([
+      {
+        ...DEFAULT_WELCOME_MESSAGE,
+        id: `welcome-${Date.now()}`,
+        timestamp: new Date().toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ])
+  }
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
@@ -203,6 +250,14 @@ export function AiConciergeWidget() {
             </div>
 
             <div className="flex items-center gap-1 text-slate-400">
+              <button
+                onClick={handleResetChat}
+                className="p-1.5 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                title="Làm mới cuộc trò chuyện"
+                aria-label="Làm mới cuộc trò chuyện"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="p-1.5 hover:text-white hover:bg-white/10 rounded-lg transition-colors hidden sm:block"

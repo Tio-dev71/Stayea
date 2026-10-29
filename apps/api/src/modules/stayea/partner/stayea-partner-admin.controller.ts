@@ -75,6 +75,16 @@ export class StayeaPartnerAdminController {
     return this.partnerService.adminApproveOrder(orderId, dto)
   }
 
+  @Patch("orders/:id/reject")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Admin cancels or rejects an order" })
+  async rejectOrder(
+    @Param("id") orderId: string,
+    @Body("reason") reason?: string
+  ) {
+    return this.partnerService.adminRejectOrder(orderId, reason)
+  }
+
   @Patch("orders/:id/complete")
   @UseEnvelope()
   @ApiOperation({ summary: "Mark order as completed" })

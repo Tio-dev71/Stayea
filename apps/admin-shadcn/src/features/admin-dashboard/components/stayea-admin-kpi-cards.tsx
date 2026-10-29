@@ -67,7 +67,7 @@ export function StayeaAdminKpiCards({
   kpis = ADMIN_KPIS_VI,
 }: StayeaAdminKpiCardsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {kpis.map((kpi) => (
         <div
           key={kpi.id}

@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus } from "lucide-react"
+import { stayeaApi } from "@/lib/stayea-api-service"
+import { HOSTS_MOCK_LIST } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
+import type { HostPartnerItem } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
@@ -35,6 +38,50 @@ export function StayeaAdminHostsPage({
   const [activeSegment, setActiveSegment] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
+  const [livePartners, setLivePartners] = useState<HostPartnerItem[]>(
+    HOSTS_MOCK_LIST as HostPartnerItem[]
+  )
+
+  useEffect(() => {
+    stayeaApi
+      .getAdminPartners()
+      .then((res) => {
+        if (res && res.length > 0) {
+          const mapped: HostPartnerItem[] = res.map((p: any) => ({
+            id: p.id,
+            name: p.contactName || p.businessName,
+            email: p.email,
+            avatar: "/avatars/avatar-1.jpg",
+            partnerType:
+              p.businessType === "transport" ? "management_company" : "individual",
+            partnerTypeLabel: p.businessName || "Chủ nhà đối tác",
+            propertiesCount: 1,
+            region: p.city || "Phú Quốc",
+            joinedDate: p.createdAt
+              ? new Date(p.createdAt).toLocaleDateString("vi-VN")
+              : "Hôm nay",
+            revenue: "0 ₫",
+            status:
+              p.status === "approved"
+                ? "active"
+                : p.status === "suspended"
+                ? "paused"
+                : "pending",
+            statusLabel:
+              p.status === "approved"
+                ? "Đang hoạt động"
+                : p.status === "suspended"
+                ? "Tạm dừng"
+                : "Chờ duyệt",
+            commission: `${p.commissionRate || 10}%`,
+          }))
+          const liveIds = new Set(mapped.map((m) => m.id))
+          const remaining = HOSTS_MOCK_LIST.filter((h) => !liveIds.has(h.id))
+          setLivePartners([...mapped, ...remaining])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleAddHost = () => {
     setIsCreateModalOpen(true)
@@ -169,7 +216,8 @@ export function StayeaAdminHostsPage({
 
                 {/* Hosts Data Table */}
                 <HostsDataTable
-                  onHostAction={(action, host) => {
+                  hosts={livePartners}
+                  onHostAction={async (action, host) => {
                     if (action === "view") {
                       toast.info(`Xem hồ sơ đối tác: ${host.name}`, {
                         description: `Email: ${host.email} • Khu vực: ${host.region} • BĐS: ${host.propertiesCount}`,
@@ -181,7 +229,33 @@ export function StayeaAdminHostsPage({
                     } else if (action === "commission") {
                       toast.info(`Thiết lập hoa hồng: ${host.name}`)
                     } else if (action === "suspend") {
-                      toast.warning(`Tạm dừng hợp tác với: ${host.name}`)
+                      try {
+                        await stayeaApi.adminUpdatePartnerStatus(
+                          host.id,
+                          host.status === "paused" ? "approved" : "suspended"
+                        )
+                      } catch {
+                        // ignore
+                      }
+                      setLivePartners((prev) =>
+                        prev.map((h) =>
+                          h.id === host.id
+                            ? {
+                                ...h,
+                                status: h.status === "paused" ? "active" : "paused",
+                                statusLabel:
+                                  h.status === "paused"
+                                    ? "Đang hoạt động"
+                                    : "Tạm dừng",
+                              }
+                            : h
+                        )
+                      )
+                      toast.warning(
+                        host.status === "paused"
+                          ? `Đã kích hoạt lại đối tác: ${host.name}`
+                          : `Tạm dừng hợp tác với: ${host.name}`
+                      )
                     }
                   }}
                 />
@@ -248,10 +322,51 @@ export function StayeaAdminHostsPage({
         isOpen={isCreateModalOpen}
         initialTab={initialModalTab}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmitSuccess={(data) => {
+        onSubmitSuccess={async (data: any) => {
           setIsCreateModalOpen(false)
+          try {
+            await stayeaApi.adminCreatePartner({
+              businessName: data.businessName || data.fullName,
+              businessType:
+                data.partnerType === "car_rental"
+                  ? "transport"
+                  : data.partnerType === "tour_operator"
+                  ? "tour"
+                  : "homestay",
+              contactName: data.fullName,
+              phone: data.phoneNumber,
+              email: data.email,
+              address: `${data.address || ""}, ${data.ward || ""}, ${data.district || ""}, ${data.province || ""}`,
+              taxId: data.taxCode,
+              bankName: data.bankName,
+              bankAccount: data.bankAccount,
+              bankAccountHolder: data.bankAccountHolder,
+              status: data.isActiveNow ? "approved" : "pending",
+            })
+          } catch {
+            // ignore
+          }
+          const newPartnerItem: HostPartnerItem = {
+            id: `ptn_${Date.now()}`,
+            name: data.fullName,
+            email: data.email,
+            avatar: "/avatars/avatar-1.jpg",
+            partnerType:
+              data.partnerType === "management_company"
+                ? "management_company"
+                : "individual",
+            partnerTypeLabel: data.businessName || data.fullName,
+            propertiesCount: 1,
+            region: data.province || "Phú Quốc",
+            joinedDate: "Hôm nay",
+            revenue: "0 ₫",
+            status: data.isActiveNow ? "active" : "pending",
+            statusLabel: data.isActiveNow ? "Đang hoạt động" : "Chờ duyệt",
+            commission: "10%",
+          }
+          setLivePartners((prev) => [newPartnerItem, ...prev])
           toast.success("Tạo tài khoản chủ nhà/đối tác thành công!", {
-            description: `Hồ sơ ${data.fullName} (${data.partnerType === "management_company" ? "Công ty quản lý" : data.partnerType === "agency" ? "Đối tác đại lý" : "Chủ nhà cá nhân"}) tại ${data.ward}, ${data.district} đã được kích hoạt.`,
+            description: `Hồ sơ ${data.fullName} đã được ghi nhận vào hệ thống STAYEA.`,
           })
         }}
       />

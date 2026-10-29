@@ -81,7 +81,7 @@ export function CustomersKpiCards({
   kpiData = CUSTOMERS_KPI_DATA,
 }: CustomersKpiCardsProps = {}) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
       {kpiData.map((kpi) => (
         <div
           key={kpi.id}

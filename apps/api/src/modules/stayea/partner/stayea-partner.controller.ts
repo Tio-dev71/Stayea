@@ -65,6 +65,34 @@ export class StayeaPartnerController {
     return this.partnerService.getInventory(serviceId, startDate, endDate)
   }
 
+  @Public()
+  @Get("public/orders")
+  @ApiOperation({ summary: "Get orders for a partner (for Partner Hub portal)" })
+  async getPublicPartnerOrders(
+    @Query("partnerId") partnerId?: string,
+    @Query("status") status?: string
+  ) {
+    if (partnerId) {
+      return this.partnerService.getPartnerOrders(partnerId, status)
+    }
+    return this.partnerService.getAdminOrders({ status })
+  }
+
+  @Public()
+  @Patch("public/orders/:id/respond")
+  @ApiOperation({ summary: "Partner responds to order (accept or decline)" })
+  async publicRespondOrder(
+    @Param("id") orderId: string,
+    @Body() dto: PartnerOrderRespondDto,
+    @Query("partnerId") partnerId?: string
+  ) {
+    return this.partnerService.partnerRespondOrder(
+      partnerId || "prt_demo",
+      orderId,
+      dto
+    )
+  }
+
   // -------------------------------------------------------------
   // Partner Authenticated / Self-Service Endpoints
   // -------------------------------------------------------------

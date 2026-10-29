@@ -184,8 +184,8 @@ LƯU Ý KHI GỌI HÀM:
     ]
 
     try {
-      // First round: ask 9Router
-      const response = await this.call9Router(outboundMessages, TOOLS_DEFINITION)
+      // First round: ask AI Gateway
+      const response = await this.callAiGateway(outboundMessages, TOOLS_DEFINITION)
 
       const choice = response.choices?.[0]
       if (!choice) {
@@ -295,7 +295,7 @@ LƯU Ý KHI GỌI HÀM:
         }
 
         // Second turn to summarize tool execution to customer
-        const secondResponse = await this.call9Router(outboundMessages)
+        const secondResponse = await this.callAiGateway(outboundMessages)
         const finalReply =
           secondResponse.choices?.[0]?.message?.content ||
           "Dạ em đã ghi nhận thông tin đặt dịch vụ của anh/chị và gửi tới Admin STAYEA để duyệt điều phối đối tác ạ!"
@@ -371,7 +371,7 @@ LƯU Ý KHI GỌI HÀM:
         ],
       }
     } catch (error: any) {
-      this.logger.error(`AI 9Router error: ${error?.message || error}`, error?.stack)
+      this.logger.error(`AI Gateway error: ${error?.message || error}`, error?.stack)
 
       // Fallback: Smart local rule responder
       return this.generateSmartFallback(rawMessages, activeServices)
@@ -379,9 +379,9 @@ LƯU Ý KHI GỌI HÀM:
   }
 
   /**
-   * Calls 9Router on VPS port 20128
+   * Calls AI Gateway on VPS port 20128
    */
-  private async call9Router(
+  private async callAiGateway(
     messages: ChatMessage[],
     tools?: FunctionToolDef[]
   ): Promise<any> {
@@ -414,7 +414,7 @@ LƯU Ý KHI GỌI HÀM:
 
     if (!res.ok) {
       const errText = await res.text()
-      throw new Error(`9Router error HTTP ${res.status}: ${errText.slice(0, 200)}`)
+      throw new Error(`AI Gateway error HTTP ${res.status}: ${errText.slice(0, 200)}`)
     }
 
     return res.json()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   AlertTriangle,
   ArrowRight,
@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react"
 
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { PartnerHeader } from "./components/partner-header"
 import { PartnerInventoryCalendar } from "./components/partner-inventory-calendar"
 import { PartnerKpiCards } from "./components/partner-kpi-cards"
@@ -61,6 +62,45 @@ export function PartnerPortalPage({
   // Orders State (filtered to current partner)
   const [allOrders, setAllOrders] =
     useState<PartnerOrderData[]>(DEMO_PARTNER_ORDERS)
+
+  useEffect(() => {
+    stayeaApi
+      .getPartnerOrders({ partnerId: currentProfile.id })
+      .then((live) => {
+        if (live && live.length > 0) {
+          const mapped: PartnerOrderData[] = live.map((o: any) => ({
+            id: o.id,
+            orderCode: o.orderCode,
+            partnerId: o.partnerId,
+            serviceId: o.serviceId,
+            bookingId: o.bookingId,
+            customerName: o.customerName,
+            customerPhone: o.customerPhone,
+            customerEmail: o.customerEmail,
+            serviceTitle: o.serviceTitle,
+            serviceType: o.serviceType,
+            startDate: o.startDate,
+            endDate: o.endDate,
+            quantity: o.quantity || 1,
+            unitPrice: o.unitPrice,
+            totalAmount: o.totalAmount,
+            commissionAmount: o.commissionAmount || "0",
+            partnerPayoutAmount:
+              o.partnerPayoutAmount || String(Number(o.totalAmount || 0) * 0.9),
+            status: o.status,
+            adminNotes: o.adminNotes,
+            partnerNotes: o.partnerNotes,
+            source: o.source,
+            createdAt: o.createdAt,
+          }))
+          const liveIds = new Set(mapped.map((m) => m.id))
+          const remaining = DEMO_PARTNER_ORDERS.filter((d) => !liveIds.has(d.id))
+          setAllOrders([...mapped, ...remaining])
+        }
+      })
+      .catch(() => {})
+  }, [currentProfile.id])
+
   const currentOrders = allOrders.filter(
     (o) => o.partnerId === currentProfile.id
   )
@@ -70,7 +110,17 @@ export function PartnerPortalPage({
   ).length
 
   // Quick Action: Accept Order
-  const handleAcceptOrder = (orderId: string) => {
+  const handleAcceptOrder = async (orderId: string) => {
+    try {
+      await stayeaApi.partnerRespondOrder(
+        orderId,
+        "accept",
+        undefined,
+        currentProfile.id
+      )
+    } catch {
+      // optimistic
+    }
     setAllOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -85,7 +135,17 @@ export function PartnerPortalPage({
   }
 
   // Quick Action: Reject Order
-  const handleRejectOrder = (orderId: string, reason: string) => {
+  const handleRejectOrder = async (orderId: string, reason: string) => {
+    try {
+      await stayeaApi.partnerRespondOrder(
+        orderId,
+        "reject",
+        reason,
+        currentProfile.id
+      )
+    } catch {
+      // optimistic
+    }
     setAllOrders((prev) =>
       prev.map((o) =>
         o.id === orderId

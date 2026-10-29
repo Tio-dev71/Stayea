@@ -725,6 +725,162 @@ class StayeaApiService {
   }
 
   /**
+   * Admin: Get partner orders approval queue
+   */
+  async getAdminOrdersQueue(params?: { status?: string; search?: string }): Promise<any[]> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (params?.status) searchParams.set("status", params.status)
+      if (params?.search) searchParams.set("search", params.search)
+      const res = await fetch(`/api/stayea/admin/partners/orders/queue?${searchParams.toString()}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Admin: Approve order and dispatch to partner
+   */
+  async adminApproveOrder(orderId: string, adminNotes?: string): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/admin/partners/orders/${orderId}/approve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ adminNotes }),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Admin: Complete an order
+   */
+  async adminCompleteOrder(orderId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/admin/partners/orders/${orderId}/complete`, {
+        method: "PATCH",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Admin: Get all partners
+   */
+  async getAdminPartners(params?: { search?: string; status?: string; type?: string }): Promise<any[]> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.status) searchParams.set("status", params.status)
+      if (params?.type) searchParams.set("type", params.type)
+      const res = await fetch(`/api/stayea/admin/partners?${searchParams.toString()}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Admin: Create a new partner profile
+   */
+  async adminCreatePartner(dto: any): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/admin/partners`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(dto),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Admin: Update partner status or commission
+   */
+  async adminUpdatePartnerStatus(id: string, status: string, commissionRate?: number): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/admin/partners/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ status, commissionRate }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Partner Hub: Get orders
+   */
+  async getPartnerOrders(params?: { partnerId?: string; status?: string }): Promise<any[]> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (params?.partnerId) searchParams.set("partnerId", params.partnerId)
+      if (params?.status) searchParams.set("status", params.status)
+      const res = await fetch(`/api/stayea/partner/public/orders?${searchParams.toString()}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Partner Hub: Respond to order
+   */
+  async partnerRespondOrder(orderId: string, action: "accept" | "reject", reason?: string, partnerId?: string): Promise<boolean> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (partnerId) searchParams.set("partnerId", partnerId)
+      const res = await fetch(`/api/stayea/partner/public/orders/${orderId}/respond?${searchParams.toString()}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ action, note: reason }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Validate a promotional coupon code
    */
   async validatePromo(code: string, subtotal?: number, category?: string) {

@@ -344,3 +344,73 @@ export class AdminUpdatePartnerStatusDto {
   @IsOptional()
   commissionRate?: number
 }
+
+export class AdminCreatePartnerDto {
+  @ApiProperty({ example: "Phú Quốc Sunshine Homestay" })
+  @IsString()
+  @IsNotEmpty()
+  businessName: string
+
+  @ApiPropertyOptional({
+    enum: ["homestay", "transport", "tour", "combo", "multi"],
+    example: "homestay",
+  })
+  @IsEnum(["homestay", "transport", "tour", "combo", "multi"])
+  @IsOptional()
+  businessType?: "homestay" | "transport" | "tour" | "combo" | "multi"
+
+  @ApiProperty({ example: "Nguyễn Văn Phát" })
+  @IsString()
+  @IsNotEmpty()
+  contactName: string
+
+  @ApiProperty({ example: "0912345678" })
+  @IsString()
+  @IsNotEmpty()
+  phone: string
+
+  @ApiProperty({ example: "phat.homestay@gmail.com" })
+  @IsString()
+  @IsNotEmpty()
+  email: string
+
+  @ApiPropertyOptional({ example: "Đường Trần Hưng Đạo, Dương Đông, Phú Quốc" })
+  @IsString()
+  @IsOptional()
+  address?: string
+
+  @ApiPropertyOptional({ example: "Phú Quốc" })
+  @IsString()
+  @IsOptional()
+  city?: string
+
+  @ApiPropertyOptional({ example: "0312456789" })
+  @IsString()
+  @IsOptional()
+  taxId?: string
+
+  @ApiPropertyOptional({ example: "Vietcombank" })
+  @IsString()
+  @IsOptional()
+  bankName?: string
+
+  @ApiPropertyOptional({ example: "0071001234567" })
+  @IsString()
+  @IsOptional()
+  bankAccount?: string
+
+  @ApiPropertyOptional({ example: "NGUYEN VAN PHAT" })
+  @IsString()
+  @IsOptional()
+  bankAccountHolder?: string
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsNumber()
+  @IsOptional()
+  commissionRate?: number
+
+  @ApiPropertyOptional({ example: "approved" })
+  @IsString()
+  @IsOptional()
+  status?: "pending" | "approved" | "rejected" | "suspended"
+}

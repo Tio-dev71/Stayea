@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
 } from "@nestjs/common"
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger"
@@ -13,6 +14,7 @@ import { UseEnvelope } from "@/shared-kernel/infrastructure/decorators/use-envel
 
 import {
   AdminApproveOrderDto,
+  AdminCreatePartnerDto,
   AdminUpdatePartnerStatusDto,
 } from "@/modules/stayea/partner/dtos/partner.dto"
 import { StayeaPartnerService } from "@/modules/stayea/partner/stayea-partner.service"
@@ -23,6 +25,13 @@ import { StayeaPartnerService } from "@/modules/stayea/partner/stayea-partner.se
 @Roles("ADMIN")
 export class StayeaPartnerAdminController {
   constructor(private readonly partnerService: StayeaPartnerService) {}
+
+  @Post()
+  @UseEnvelope()
+  @ApiOperation({ summary: "Create a new partner profile directly (Admin only)" })
+  async createPartner(@Body() dto: AdminCreatePartnerDto) {
+    return this.partnerService.adminCreatePartner(dto)
+  }
 
   @Get()
   @UseEnvelope()

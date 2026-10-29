@@ -17,6 +17,7 @@ import { and, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm"
 import { DB_TOKEN } from "@/app/database/db.port"
 import type {
   AdminApproveOrderDto,
+  AdminCreatePartnerDto,
   AdminUpdatePartnerStatusDto,
   BulkUpdateInventoryDto,
   CreateDraftOrderDto,
@@ -177,6 +178,37 @@ export class StayeaPartnerService {
       .returning()
 
     return updated
+  }
+
+  async adminCreatePartner(dto: AdminCreatePartnerDto) {
+    const partnerId = generateUid("ptn")
+    const userId = generateUid("usr_partner")
+
+    const [newProfile] = await this.db
+      .insert(partnerProfilesTable)
+      .values({
+        id: partnerId,
+        userId,
+        businessName: dto.businessName,
+        businessType: dto.businessType || "homestay",
+        contactName: dto.contactName,
+        phone: dto.phone,
+        email: dto.email,
+        address: dto.address,
+        city: dto.city || "Phú Quốc",
+        taxId: dto.taxId,
+        bankName: dto.bankName,
+        bankAccount: dto.bankAccount,
+        bankAccountHolder: dto.bankAccountHolder,
+        status: dto.status || "approved",
+        commissionRate: (dto.commissionRate || 10).toFixed(2),
+        rating: "5.00",
+        totalOrders: 0,
+        metadata: {},
+      })
+      .returning()
+
+    return newProfile
   }
 
   // ==========================================

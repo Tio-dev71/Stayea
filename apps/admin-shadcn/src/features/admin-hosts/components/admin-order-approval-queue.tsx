@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   AlertTriangle,
   Bot,
@@ -9,11 +9,13 @@ import {
   ExternalLink,
   MessageSquare,
   Phone,
+  RefreshCw,
   Send,
   User,
   XCircle,
 } from "lucide-react"
 import { toast } from "sonner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { DEMO_PARTNER_ORDERS } from "@/features/partner-portal/mock-partners"
 import type { PartnerOrderData } from "@/features/partner-portal/types"
 
@@ -25,13 +27,66 @@ export function AdminOrderApprovalQueue({
   onNavigatePartnerHub,
 }: AdminOrderApprovalQueueProps) {
   const [orders, setOrders] = useState<PartnerOrderData[]>(DEMO_PARTNER_ORDERS)
+  const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<
     "all" | "pending_admin" | "sent_to_partner" | "partner_accepted" | "completed"
   >("pending_admin")
 
+  const fetchLiveOrders = async () => {
+    setIsLoading(true)
+    try {
+      const liveOrders = await stayeaApi.getAdminOrdersQueue()
+      if (liveOrders && liveOrders.length > 0) {
+        const liveMapped: PartnerOrderData[] = liveOrders.map((o: any) => ({
+          id: o.id,
+          orderCode: o.orderCode,
+          partnerId: o.partnerId,
+          serviceId: o.serviceId,
+          bookingId: o.bookingId,
+          customerName: o.customerName,
+          customerPhone: o.customerPhone,
+          customerEmail: o.customerEmail,
+          serviceTitle: o.serviceTitle,
+          serviceType: o.serviceType,
+          startDate: o.startDate,
+          endDate: o.endDate,
+          quantity: o.quantity || 1,
+          unitPrice: o.unitPrice,
+          totalAmount: o.totalAmount,
+          commissionAmount: o.commissionAmount || "0",
+          partnerPayoutAmount: o.partnerPayoutAmount || String(Number(o.totalAmount || 0) * 0.9),
+          status: o.status,
+          adminNotes: o.adminNotes,
+          source: o.source,
+          createdAt: o.createdAt,
+        }))
+        const liveIds = new Set(liveMapped.map((x) => x.id))
+        const remainingDemos = DEMO_PARTNER_ORDERS.filter((d) => !liveIds.has(d.id))
+        setOrders([...liveMapped, ...remainingDemos])
+      }
+    } catch {
+      // Fallback to demo orders
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLiveOrders()
+  }, [])
+
   const pendingAdminCount = orders.filter((o) => o.status === "pending_admin").length
 
-  const handleApproveAndDispatch = (orderId: string) => {
+  const handleApproveAndDispatch = async (orderId: string) => {
+    try {
+      await stayeaApi.adminApproveOrder(
+        orderId,
+        "Admin đã kiểm tra cọc và duyệt điều phối đơn tới đối tác."
+      )
+    } catch {
+      // optimistic
+    }
+
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -93,15 +148,29 @@ export function AdminOrderApprovalQueue({
             </p>
           </div>
 
-          {onNavigatePartnerHub && (
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
-              onClick={onNavigatePartnerHub}
-              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 flex items-center gap-2 shrink-0 transition-all"
+              onClick={() => {
+                fetchLiveOrders()
+                toast.info("Đang làm mới hàng đợi duyệt đơn...")
+              }}
+              disabled={isLoading}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all disabled:opacity-50"
             >
-              <span>Mở Cổng Đối Tác (Partner Hub)</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-emerald-400" : ""}`} />
+              <span>Làm mới</span>
             </button>
-          )}
+
+            {onNavigatePartnerHub && (
+              <button
+                onClick={onNavigatePartnerHub}
+                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 flex items-center gap-2 shrink-0 transition-all"
+              >
+                <span>Mở Cổng Đối Tác (Partner Hub)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

@@ -82,7 +82,7 @@ interface ReportsKpiCardsProps {
 
 export function ReportsKpiCards({ kpis = MOCK_REPORT_KPIS }: ReportsKpiCardsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
       {kpis.map((card) => {
         return (
           <div

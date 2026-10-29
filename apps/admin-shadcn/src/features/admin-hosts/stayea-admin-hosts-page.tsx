@@ -65,14 +65,14 @@ export function StayeaAdminHostsPage({
               p.status === "approved"
                 ? "active"
                 : p.status === "suspended"
-                ? "paused"
-                : "pending",
+                  ? "paused"
+                  : "pending",
             statusLabel:
               p.status === "approved"
                 ? "Đang hoạt động"
                 : p.status === "suspended"
-                ? "Tạm dừng"
-                : "Chờ duyệt",
+                  ? "Tạm dừng"
+                  : "Chờ duyệt",
             commission: `${p.commissionRate || 10}%`,
           }))
           const liveIds = new Set(mapped.map((m) => m.id))
@@ -80,7 +80,7 @@ export function StayeaAdminHostsPage({
           setLivePartners([...mapped, ...remaining])
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const handleAddHost = () => {
@@ -167,11 +167,10 @@ export function StayeaAdminHostsPage({
               <button
                 type="button"
                 onClick={() => setAdminSection("hosts")}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                  adminSection === "hosts"
-                    ? "bg-[#1b7a4e] text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${adminSection === "hosts"
+                  ? "bg-[#1b7a4e] text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
               >
                 Danh Sách Chủ Nhà &amp; Đối Tác
               </button>
@@ -179,11 +178,10 @@ export function StayeaAdminHostsPage({
               <button
                 type="button"
                 onClick={() => setAdminSection("approval_queue")}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
-                  adminSection === "approval_queue"
-                    ? "bg-amber-600 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${adminSection === "approval_queue"
+                  ? "bg-amber-600 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
               >
                 <span>Hàng Đợi Duyệt Đơn (AI &amp; Khách &rarr; Partner)</span>
                 <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
@@ -197,50 +195,50 @@ export function StayeaAdminHostsPage({
                 onNavigatePartnerHub={() => router.push("/hub")}
               />
             ) : (
-            /* Main Content Grid: 8 cols left, 4 cols right */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column (8 cols) */}
-              <div className="lg:col-span-8 space-y-6">
-                {/* 4 KPI Cards */}
-                <HostsKpiCards />
+              /* Main Content Grid: 8 cols left, 4 cols right */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left Column (8 cols) */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* 4 KPI Cards */}
+                  <HostsKpiCards />
 
-                {/* Filter and Segment Bar */}
-                <HostsFilterBar
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  activeSegment={activeSegment}
-                  onSegmentChange={setActiveSegment}
-                  onAdvancedFilter={handleAdvancedFilter}
-                  onExport={handleExport}
-                />
+                  {/* Filter and Segment Bar */}
+                  <HostsFilterBar
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    activeSegment={activeSegment}
+                    onSegmentChange={setActiveSegment}
+                    onAdvancedFilter={handleAdvancedFilter}
+                    onExport={handleExport}
+                  />
 
-                {/* Hosts Data Table */}
-                <HostsDataTable
-                  hosts={livePartners}
-                  onHostAction={async (action, host) => {
-                    if (action === "view") {
-                      toast.info(`Xem hồ sơ đối tác: ${host.name}`, {
-                        description: `Email: ${host.email} • Khu vực: ${host.region} • BĐS: ${host.propertiesCount}`,
-                      })
-                    } else if (action === "contract") {
-                      toast.info(`Hợp đồng hợp tác: ${host.name}`, {
-                        description: `Mức hoa hồng hiện hành: ${host.commission}`,
-                      })
-                    } else if (action === "commission") {
-                      toast.info(`Thiết lập hoa hồng: ${host.name}`)
-                    } else if (action === "suspend") {
-                      try {
-                        await stayeaApi.adminUpdatePartnerStatus(
-                          host.id,
-                          host.status === "paused" ? "approved" : "suspended"
-                        )
-                      } catch {
-                        // ignore
-                      }
-                      setLivePartners((prev) =>
-                        prev.map((h) =>
-                          h.id === host.id
-                            ? {
+                  {/* Hosts Data Table */}
+                  <HostsDataTable
+                    hosts={livePartners}
+                    onHostAction={async (action, host) => {
+                      if (action === "view") {
+                        toast.info(`Xem hồ sơ đối tác: ${host.name}`, {
+                          description: `Email: ${host.email} • Khu vực: ${host.region} • BĐS: ${host.propertiesCount}`,
+                        })
+                      } else if (action === "contract") {
+                        toast.info(`Hợp đồng hợp tác: ${host.name}`, {
+                          description: `Mức hoa hồng hiện hành: ${host.commission}`,
+                        })
+                      } else if (action === "commission") {
+                        toast.info(`Thiết lập hoa hồng: ${host.name}`)
+                      } else if (action === "suspend") {
+                        try {
+                          await stayeaApi.adminUpdatePartnerStatus(
+                            host.id,
+                            host.status === "paused" ? "approved" : "suspended"
+                          )
+                        } catch {
+                          // ignore
+                        }
+                        setLivePartners((prev) =>
+                          prev.map((h) =>
+                            h.id === host.id
+                              ? {
                                 ...h,
                                 status: h.status === "paused" ? "active" : "paused",
                                 statusLabel:
@@ -248,67 +246,67 @@ export function StayeaAdminHostsPage({
                                     ? "Đang hoạt động"
                                     : "Tạm dừng",
                               }
-                            : h
+                              : h
+                          )
                         )
-                      )
-                      toast.warning(
-                        host.status === "paused"
-                          ? `Đã kích hoạt lại đối tác: ${host.name}`
-                          : `Tạm dừng hợp tác với: ${host.name}`
-                      )
-                    }
-                  }}
-                />
-              </div>
+                        toast.warning(
+                          host.status === "paused"
+                            ? `Đã kích hoạt lại đối tác: ${host.name}`
+                            : `Tạm dừng hợp tác với: ${host.name}`
+                        )
+                      }
+                    }}
+                  />
+                </div>
 
-              {/* Right Column (4 cols) */}
-              <div className="lg:col-span-4">
-                <HostsRightSidebar
-                  onBannerAction={() => {
-                    toast.info("Hành trình cùng đối tác Stayea", {
-                      description: "Chương trình liên minh chia sẻ lợi nhuận và mở rộng mạng lưới lưu trú.",
-                    })
-                  }}
-                  onViewRegionalDetails={() => {
-                    toast.info("Chi tiết hiệu suất theo khu vực", {
-                      description: "Thống kê mật độ đối tác tập trung tại Dương Đông, An Thới, Gành Dầu, Cửa Cạn.",
-                    })
-                  }}
-                  onViewAllTopHosts={() => {
-                    toast.info("Bảng xếp hạng đối tác xuất sắc", {
-                      description: "Danh sách 20 đối tác đạt doanh thu cao nhất năm 2024.",
-                    })
-                  }}
-                  onQuickAction={(actionId) => {
-                    switch (actionId) {
-                      case "add-host":
-                        handleAddHost()
-                        break
-                      case "invite-partner":
-                        toast.info("Gửi lời mời hợp tác", {
-                          description: "Gửi thư ngỏ điện tử và bộ tài liệu giới thiệu giải pháp vận hành Stayea.",
-                        })
-                        break
-                      case "manage-contracts":
-                        toast.info("Quản lý hợp đồng", {
-                          description: "Xem kho lưu trữ hợp đồng điện tử và phụ lục hoa hồng ký gửi.",
-                        })
-                        break
-                      case "set-commission":
-                        toast.info("Thiết lập hoa hồng", {
-                          description: "Cấu hình khung chia sẻ doanh thu cho từng phân hạng đối tác.",
-                        })
-                        break
-                      case "export-partners":
-                        handleExport()
-                        break
-                      default:
-                        break
-                    }
-                  }}
-                />
+                {/* Right Column (4 cols) */}
+                <div className="lg:col-span-4">
+                  <HostsRightSidebar
+                    onBannerAction={() => {
+                      toast.info("Hành trình cùng đối tác Stayea", {
+                        description: "Chương trình liên minh chia sẻ lợi nhuận và mở rộng mạng lưới lưu trú.",
+                      })
+                    }}
+                    onViewRegionalDetails={() => {
+                      toast.info("Chi tiết hiệu suất theo khu vực", {
+                        description: "Thống kê mật độ đối tác tập trung tại Dương Đông, An Thới, Gành Dầu, Cửa Cạn.",
+                      })
+                    }}
+                    onViewAllTopHosts={() => {
+                      toast.info("Bảng xếp hạng đối tác xuất sắc", {
+                        description: "Danh sách 20 đối tác đạt doanh thu cao nhất năm 2024.",
+                      })
+                    }}
+                    onQuickAction={(actionId) => {
+                      switch (actionId) {
+                        case "add-host":
+                          handleAddHost()
+                          break
+                        case "invite-partner":
+                          toast.info("Gửi lời mời hợp tác", {
+                            description: "Gửi thư ngỏ điện tử và bộ tài liệu giới thiệu giải pháp vận hành Stayea.",
+                          })
+                          break
+                        case "manage-contracts":
+                          toast.info("Quản lý hợp đồng", {
+                            description: "Xem kho lưu trữ hợp đồng điện tử và phụ lục hoa hồng ký gửi.",
+                          })
+                          break
+                        case "set-commission":
+                          toast.info("Thiết lập hoa hồng", {
+                            description: "Cấu hình khung chia sẻ doanh thu cho từng phân hạng đối tác.",
+                          })
+                          break
+                        case "export-partners":
+                          handleExport()
+                          break
+                        default:
+                          break
+                      }
+                    }}
+                  />
+                </div>
               </div>
-            </div>
             )}
 
             {/* Footer */}
@@ -331,8 +329,8 @@ export function StayeaAdminHostsPage({
                 data.partnerType === "car_rental"
                   ? "transport"
                   : data.partnerType === "tour_operator"
-                  ? "tour"
-                  : "homestay",
+                    ? "tour"
+                    : "homestay",
               contactName: data.fullName,
               phone: data.phoneNumber,
               email: data.email,

@@ -14,7 +14,13 @@ const notFoundMock = vi.hoisted(() =>
   }),
 )
 
-vi.mock('next/navigation', () => ({ notFound: notFoundMock }))
+const replaceMock = vi.fn()
+const pushMock = vi.fn()
+
+vi.mock('next/navigation', () => ({
+  notFound: notFoundMock,
+  useRouter: () => ({ push: pushMock, replace: replaceMock }),
+}))
 
 function renderWithUser(user: StoredUser | null, ui: React.ReactElement) {
   return render(<UserProvider user={user}>{ui}</UserProvider>)

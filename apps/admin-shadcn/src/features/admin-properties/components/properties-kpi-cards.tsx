@@ -12,32 +12,32 @@ import type { PropertyKpiItem } from "@/features/admin-properties/stayea-admin-p
 import { PROPERTIES_KPI_DATA } from "@/features/admin-properties/stayea-admin-properties-mock-data"
 
 function getKpiIcon(type: PropertyKpiItem["iconType"]) {
-  const iconClass = "w-5 h-5 shrink-0"
+  const iconClass = "w-4 h-4 shrink-0"
   switch (type) {
     case "total": {
       return (
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
           <Home className={iconClass} />
         </div>
       )
     }
     case "active": {
       return (
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
           <Building2 className={iconClass} />
         </div>
       )
     }
     case "paused": {
       return (
-        <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
           <Pause className={iconClass} />
         </div>
       )
     }
     case "pending": {
       return (
-        <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
           <Clock className={iconClass} />
         </div>
       )
@@ -53,31 +53,33 @@ export function PropertiesKpiCards({
   kpiData = PROPERTIES_KPI_DATA,
 }: PropertiesKpiCardsProps = {}) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {kpiData.map((kpi) => (
         <div
           key={kpi.id}
-          className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between gap-3 hover:shadow-md hover:border-slate-300 transition-all text-left"
+          className="group relative bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between gap-2.5 hover:shadow-md hover:border-slate-300 transition-all text-left"
         >
-          {/* Top Row: Icon & Title */}
-          <div className="flex items-center gap-3">
-            {getKpiIcon(kpi.iconType)}
-            <span className="text-xs sm:text-sm font-medium text-slate-700 leading-snug">
+          {/* Top Row: Title on Left, Icon Badge on Top-Right */}
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 leading-snug line-clamp-2">
               {kpi.title}
             </span>
+            <div className="shrink-0">
+              {getKpiIcon(kpi.iconType)}
+            </div>
           </div>
 
           {/* Middle: Big Value */}
-          <div className="mt-0.5">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          <div className="my-0.5">
+            <span className="text-xl sm:text-2xl 2xl:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
               {kpi.value}
             </span>
           </div>
 
           {/* Bottom: Delta & Subtext */}
-          <div className="flex items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
             <span
-              className={`font-semibold inline-flex items-center gap-0.5 ${
+              className={`font-bold inline-flex items-center gap-0.5 shrink-0 ${
                 kpi.isPositive ? "text-emerald-600" : "text-rose-500"
               }`}
             >
@@ -88,7 +90,7 @@ export function PropertiesKpiCards({
               )}
               {kpi.change}
             </span>
-            <span className="text-slate-400 font-normal">
+            <span className="text-slate-400 font-medium truncate">
               {kpi.comparisonText}
             </span>
           </div>

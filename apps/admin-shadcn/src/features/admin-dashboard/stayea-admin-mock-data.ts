@@ -26,7 +26,7 @@ export const ADMIN_KPIS_VI: readonly AdminKpiItem[] = [
   {
     id: "total-revenue",
     title: "Doanh thu",
-    value: "1.268.590.000 đ",
+    value: "1.268.590.000 ₫",
     change: "+18%",
     comparisonText: "so với tuần trước",
     isPositive: true,

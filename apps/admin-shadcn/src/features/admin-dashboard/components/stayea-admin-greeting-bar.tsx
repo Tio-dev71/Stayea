@@ -10,7 +10,7 @@ interface StayeaAdminGreetingBarProps {
 }
 
 export function StayeaAdminGreetingBar({
-  adminName = "Nguyễn Minh",
+  adminName = "Quản trị viên",
   dateRange = "21/04/2025 - 27/04/2025",
   onDateRangeClick,
   onCreateNew,

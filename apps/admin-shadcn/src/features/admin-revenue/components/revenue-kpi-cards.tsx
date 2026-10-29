@@ -14,7 +14,7 @@ interface RevenueKpiCardsProps {
 }
 
 function getKpiIcon(icon: RevenueKpiItem["icon"]) {
-  const iconClass = "w-5 h-5 stroke-[2.2]"
+  const iconClass = "w-4 h-4 stroke-[2.2]"
   switch (icon) {
     case "wallet":
       return <Banknote className={iconClass} />
@@ -59,42 +59,75 @@ function getThemeStyles(theme: RevenueKpiItem["colorTheme"]) {
   }
 }
 
+function renderRevenueKpiValue(value: string) {
+  const trimmed = value.trim()
+  const match = trimmed.match(/^([\d.,]+)\s*([₫đđD]|\S+)?$/i)
+  if (match && match[1]) {
+    const numPart = match[1]
+    const suffix = match[2] || ""
+    const isLong = numPart.length > 7
+    return (
+      <div className="flex items-baseline gap-1 overflow-hidden" title={value}>
+        <span
+          className={`font-black text-slate-900 tracking-tight tabular-nums truncate ${
+            isLong
+              ? "text-base sm:text-lg xl:text-[17px] 2xl:text-[20px]"
+              : "text-xl sm:text-2xl 2xl:text-3xl"
+          }`}
+        >
+          {numPart}
+        </span>
+        {suffix && (
+          <span className="text-xs sm:text-sm font-bold text-emerald-800/80 shrink-0 select-none">
+            {suffix}
+          </span>
+        )}
+      </div>
+    )
+  }
+  return (
+    <div className="overflow-hidden" title={value}>
+      <span className="text-xl sm:text-2xl 2xl:text-3xl font-black text-slate-900 tracking-tight tabular-nums truncate">
+        {value}
+      </span>
+    </div>
+  )
+}
+
 export function RevenueKpiCards({ stats }: RevenueKpiCardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {stats.map((item) => {
         const theme = getThemeStyles(item.colorTheme)
         return (
           <div
             key={item.id}
-            className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow"
+            className="group relative bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-2.5 text-left"
           >
-            {/* Top row: Icon container + Title */}
-            <div className="flex items-center gap-3">
+            {/* Top row: Title on left, Icon Badge on Top-Right */}
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-xs sm:text-[13px] font-semibold text-slate-600 leading-snug line-clamp-2">
+                {item.title}
+              </span>
               <div
-                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${theme.iconBg}`}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${theme.iconBg}`}
               >
                 {getKpiIcon(item.icon)}
               </div>
-              <span className="text-xs sm:text-sm font-medium text-slate-500 leading-tight">
-                {item.title}
-              </span>
             </div>
 
             {/* Middle: Big Revenue Amount */}
-            <div className="mt-4">
-              <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {item.value}
-              </span>
+            <div className="my-0.5">
+              {renderRevenueKpiValue(item.value)}
             </div>
 
-            {/* Bottom: Trend Indicator */}
-            <div className="mt-2.5 flex items-center gap-1.5 text-xs">
-              <div className="inline-flex items-center gap-0.5 font-bold text-emerald-600">
+            {/* Bottom: Trend percent and comparison text */}
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+              <span className="inline-flex items-center font-bold text-emerald-600 shrink-0">
                 <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>{item.trendPercent}</span>
-              </div>
-              <span className="text-slate-400 font-normal truncate">
+              </span>
+              <span className="text-slate-400 font-medium truncate">
                 {item.trendLabel}
               </span>
             </div>

@@ -34,36 +34,43 @@ function renderHostKpiIcon(iconType: HostKpiItem["iconType"]) {
 
 export function HostsKpiCards() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {HOSTS_KPI_DATA.map((item) => (
         <div
           key={item.id}
-          className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs flex items-center gap-3.5 hover:border-slate-300 transition-colors"
+          className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-3 text-left"
         >
-          {renderHostKpiIcon(item.iconType)}
-          <div className="min-w-0 flex-1">
-            <span className="text-xs font-medium text-slate-500 block truncate">
+          {/* Top Row: Icon & Title */}
+          <div className="flex items-center gap-3">
+            {renderHostKpiIcon(item.iconType)}
+            <span className="text-xs sm:text-sm font-medium text-slate-700 leading-snug">
               {item.title}
             </span>
-            <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight mt-0.5">
+          </div>
+
+          {/* Middle: Big Value */}
+          <div className="mt-0.5">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight whitespace-nowrap">
               {item.value}
-            </div>
-            <div className="flex items-center gap-1 mt-1 text-[11px]">
-              {item.isPositive ? (
-                <span className="font-semibold text-emerald-600 flex items-center gap-0.5">
-                  <TrendingUp className="w-3 h-3 stroke-[2.5]" />
-                  <span>{item.change}</span>
-                </span>
-              ) : (
-                <span className="font-semibold text-rose-600 flex items-center gap-0.5">
-                  <TrendingDown className="w-3 h-3 stroke-[2.5]" />
-                  <span>{item.change}</span>
-                </span>
-              )}
-              <span className="text-slate-400 font-normal truncate">
-                {item.comparisonText}
+            </span>
+          </div>
+
+          {/* Bottom Row: Trend & Subtext */}
+          <div className="flex items-center gap-1.5 text-xs">
+            {item.isPositive ? (
+              <span className="font-semibold text-emerald-600 inline-flex items-center gap-0.5">
+                <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{item.change}</span>
               </span>
-            </div>
+            ) : (
+              <span className="font-semibold text-rose-600 inline-flex items-center gap-0.5">
+                <TrendingDown className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{item.change}</span>
+              </span>
+            )}
+            <span className="text-slate-400 font-normal">
+              {item.comparisonText}
+            </span>
           </div>
         </div>
       ))}

@@ -34,11 +34,11 @@ export function StayeaAdminGreetingBar({
         <button
           type="button"
           onClick={onDateRangeClick}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 shadow-xs transition-all"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 shadow-xs transition-all whitespace-nowrap shrink-0"
         >
-          <Calendar className="w-4 h-4 text-slate-500" />
-          <span>{dateRange}</span>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+          <span className="whitespace-nowrap">{dateRange}</span>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         </button>
 
         {/* Primary Action Button: Tạo mới */}

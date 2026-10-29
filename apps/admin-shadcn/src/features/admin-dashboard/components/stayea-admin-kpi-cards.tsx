@@ -60,7 +60,7 @@ export function StayeaAdminKpiCards({
 
           {/* Middle: Big Value */}
           <div className="mt-1">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <span className="text-lg sm:text-xl xl:text-2xl font-black text-slate-900 tracking-tight whitespace-nowrap">
               {kpi.value}
             </span>
           </div>

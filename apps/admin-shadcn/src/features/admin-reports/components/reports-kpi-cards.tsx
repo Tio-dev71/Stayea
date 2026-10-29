@@ -46,40 +46,43 @@ interface ReportsKpiCardsProps {
 
 export function ReportsKpiCards({ kpis = MOCK_REPORT_KPIS }: ReportsKpiCardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {kpis.map((card) => {
         return (
           <div
             key={card.id}
-            className="bg-white border border-slate-200/85 rounded-2xl p-4 sm:p-4.5 shadow-2xs hover:shadow-xs transition-all flex items-start gap-3.5"
+            className="bg-white border border-slate-200/85 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-3 text-left"
           >
-            {/* Left circular/rounded badge icon */}
-            <div
-              className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${getIconWrapperBg(
-                card.icon
-              )}`}
-            >
-              {getIcon(card.icon)}
-            </div>
-
-            {/* Right card content */}
-            <div className="flex-1 min-w-0">
-              <span className="text-[12px] sm:text-[13px] font-medium text-slate-500 block truncate">
+            {/* Top Row: Icon & Title */}
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${getIconWrapperBg(
+                  card.icon
+                )}`}
+              >
+                {getIcon(card.icon)}
+              </div>
+              <span className="text-xs sm:text-sm font-medium text-slate-700 leading-snug">
                 {card.title}
               </span>
-              <div className="text-[19px] sm:text-[21px] font-bold text-slate-900 tracking-tight mt-0.5 leading-snug">
-                {card.value}
-              </div>
+            </div>
 
-              <div className="flex items-center flex-wrap gap-1 mt-1 text-xs">
-                <span className="font-bold text-emerald-600 flex items-center gap-0.5">
-                  <TrendingUp className="w-3.5 h-3.5 shrink-0" />
-                  {card.changePercent}
-                </span>
-                <span className="text-[11px] text-slate-400 font-normal">
-                  {card.subText}
-                </span>
-              </div>
+            {/* Middle: Big Value */}
+            <div className="mt-0.5">
+              <span className="text-lg sm:text-xl xl:text-2xl font-black text-slate-900 tracking-tight whitespace-nowrap">
+                {card.value}
+              </span>
+            </div>
+
+            {/* Bottom Row: Trend and Subtext */}
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="font-bold text-emerald-600 inline-flex items-center gap-0.5">
+                <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+                <span>{card.changePercent}</span>
+              </span>
+              <span className="text-slate-400 font-normal">
+                {card.subText}
+              </span>
             </div>
           </div>
         )

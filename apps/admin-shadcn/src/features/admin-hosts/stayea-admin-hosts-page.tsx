@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus } from "lucide-react"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
@@ -28,6 +29,7 @@ export function StayeaAdminHostsPage({
   initialModalOpen = false,
   initialModalTab = "basic",
 }: StayeaAdminHostsPageProps) {
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [adminSection, setAdminSection] = useState<"hosts" | "approval_queue">("hosts")
   const [activeSegment, setActiveSegment] = useState("all")
@@ -73,28 +75,7 @@ export function StayeaAdminHostsPage({
             promoTitle="Phú Quốc"
             promoSubtitle="Cơ hội hợp tác cùng Stayea"
             promoButtonText="Trở thành đối tác"
-            onSelectTab={(tabId) => {
-              if (onNavigateTab) {
-                onNavigateTab(tabId)
-              } else if (tabId === "tong-quan") {
-                window.location.hash = "admin"
-              } else if (tabId === "dat-phong") {
-                window.location.hash = "admin-bookings"
-              } else if (tabId === "bat-dong-san") {
-                window.location.hash = "properties"
-              } else if (tabId === "khach-hang") {
-                window.location.hash = "customers"
-              } else {
-                toast.info(`Điều hướng đến mục "${tabId}"`, {
-                  description: "Hiển thị dữ liệu quản lý tương ứng.",
-                })
-              }
-            }}
-            onExplorePhuQuoc={() => {
-              toast.info("Khám phá cơ hội hợp tác Phú Quốc", {
-                description: "Chuyển tới cổng thông tin đối tác và ký gửi bất động sản du lịch.",
-              })
-            }}
+            onSelectTab={onNavigateTab}
           />
         </div>
 
@@ -117,13 +98,7 @@ export function StayeaAdminHostsPage({
               <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (onNavigateTab) {
-                      onNavigateTab("partner-portal")
-                    } else {
-                      window.location.hash = "partner-portal"
-                    }
-                  }}
+                  onClick={() => router.push("/hub")}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all"
                 >
                   <span>Mở Cổng Đối Tác (Partner Hub)</span>
@@ -172,13 +147,7 @@ export function StayeaAdminHostsPage({
 
             {adminSection === "approval_queue" ? (
               <AdminOrderApprovalQueue
-                onNavigatePartnerHub={() => {
-                  if (onNavigateTab) {
-                    onNavigateTab("partner-portal")
-                  } else {
-                    window.location.hash = "partner-portal"
-                  }
-                }}
+                onNavigatePartnerHub={() => router.push("/hub")}
               />
             ) : (
             /* Main Content Grid: 8 cols left, 4 cols right */

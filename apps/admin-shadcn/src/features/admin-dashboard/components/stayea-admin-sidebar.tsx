@@ -84,7 +84,7 @@ const DEFAULT_TAB_ROUTES: Record<string, string> = {
   "dat-phong": "/stayea/bookings",
   "bat-dong-san": "/stayea/properties",
   "khach-hang": "/stayea/customers",
-  "chu-nha-doi-tac": "/hub",
+  "chu-nha-doi-tac": "/stayea/partners",
   "trai-nghiem-tour": "/stayea/experiences",
   "uu-dai-khuyen-mai": "/stayea/deals",
   "doanh-thu-thanh-toan": "/stayea/revenue",
@@ -151,7 +151,7 @@ export function StayeaAdminSidebar({
       if (pathname.startsWith("/stayea/bookings")) return "dat-phong"
       if (pathname.startsWith("/stayea/properties")) return "bat-dong-san"
       if (pathname.startsWith("/stayea/customers")) return "khach-hang"
-      if (pathname.startsWith("/hub")) return "chu-nha-doi-tac"
+      if (pathname.startsWith("/stayea/partners") || pathname.startsWith("/stayea/hosts") || pathname.startsWith("/hub")) return "chu-nha-doi-tac"
       if (pathname.startsWith("/stayea/experiences")) return "trai-nghiem-tour"
       if (pathname.startsWith("/stayea/deals")) return "uu-dai-khuyen-mai"
       if (pathname.startsWith("/stayea/revenue")) return "doanh-thu-thanh-toan"

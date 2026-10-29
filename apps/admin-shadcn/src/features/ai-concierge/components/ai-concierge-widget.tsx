@@ -344,8 +344,11 @@ export function AiConciergeWidget() {
               </button>
             </form>
             <div className="flex items-center justify-between text-[10px] text-slate-400 mt-2 px-1">
-              <span>Được bảo vệ bởi giao thức AI Sandbox STAYEA</span>
-              <span className="text-emerald-400/80 font-medium">9Router AI Online</span>
+              <span>Bảo mật chuẩn STAYEA Luxury AI</span>
+              <span className="inline-flex items-center gap-1.5 text-emerald-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Trực tuyến 24/7</span>
+              </span>
             </div>
           </div>
         </div>

@@ -484,7 +484,7 @@ LƯU Ý KHI GỌI HÀM:
   }
 
   /**
-   * Health status of 9Router
+   * Health status of AI Engine (White-labeled)
    */
   async checkHealth() {
     try {
@@ -496,16 +496,16 @@ LƯU Ý KHI GỌI HÀM:
       const isOnline = res.ok
       return {
         status: isOnline ? "online" : "degraded",
-        routerUrl: this.routerUrl,
-        activeModel: this.modelName,
+        service: "STAYEA AI Engine",
         available: isOnline,
+        timestamp: new Date().toISOString(),
       }
     } catch {
       return {
         status: "offline",
-        routerUrl: this.routerUrl,
-        activeModel: this.modelName,
+        service: "STAYEA AI Engine",
         available: false,
+        timestamp: new Date().toISOString(),
       }
     }
   }

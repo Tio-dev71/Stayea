@@ -23,7 +23,7 @@ export class StayeaAiAgentController {
 
   @Public()
   @Get("health")
-  @ApiOperation({ summary: "Kiểm tra kết nối tới 9Router AI cluster trên VPS" })
+  @ApiOperation({ summary: "Kiểm tra kết nối tới hệ thống STAYEA AI Engine" })
   async health() {
     return this.aiService.checkHealth()
   }

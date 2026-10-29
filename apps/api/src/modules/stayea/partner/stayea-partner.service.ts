@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import {
   BadRequestException,
   Inject,
@@ -12,7 +13,6 @@ import {
   usersTable,
 } from "@workspace/database"
 import { and, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm"
-import { nanoid } from "nanoid"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import type {
@@ -28,6 +28,10 @@ import type {
 } from "@/modules/stayea/partner/dtos/partner.dto"
 
 import type { DrizzleDb } from "@/app/database/db.port"
+
+function generateUid(prefix: string) {
+  return `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 12)}`
+}
 
 @Injectable()
 export class StayeaPartnerService {
@@ -66,7 +70,7 @@ export class StayeaPartnerService {
       throw new BadRequestException("Tài khoản này đã đăng ký đối tác STAYEA")
     }
 
-    const partnerId = `ptn_${nanoid(12)}`
+    const partnerId = generateUid("ptn")
 
     const [newProfile] = await this.db
       .insert(partnerProfilesTable)
@@ -219,7 +223,7 @@ export class StayeaPartnerService {
   }
 
   async createService(partnerId: string, dto: CreatePartnerServiceDto) {
-    const serviceId = `svc_${nanoid(12)}`
+    const serviceId = generateUid("svc")
 
     const [service] = await this.db
       .insert(partnerServicesTable)
@@ -345,7 +349,7 @@ export class StayeaPartnerService {
 
     const results = []
     for (const item of dto.dates) {
-      const invId = `inv_${nanoid(12)}`
+      const invId = generateUid("inv")
       const [upserted] = await this.db
         .insert(partnerInventoryTable)
         .values({
@@ -391,8 +395,8 @@ export class StayeaPartnerService {
    */
   async createDraftOrder(dto: CreateDraftOrderDto) {
     const partner = await this.getProfileById(dto.partnerId)
-    const orderId = `pord_${nanoid(12)}`
-    const orderCode = `STY-ORD-${Date.now().toString().slice(-6)}-${nanoid(4).toUpperCase()}`
+    const orderId = generateUid("pord")
+    const orderCode = `STY-ORD-${Date.now().toString().slice(-6)}-${randomUUID().slice(0, 4).toUpperCase()}`
 
     const commissionRate = Number.parseFloat(partner.commissionRate || "10.00") / 100
     const commissionAmount = Math.round(dto.totalAmount * commissionRate)

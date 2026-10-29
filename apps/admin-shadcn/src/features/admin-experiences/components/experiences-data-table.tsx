@@ -95,7 +95,7 @@ export function ExperiencesDataTable({
       {/* Table Header Bar */}
       <div className="p-4 sm:px-5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-3">
         <h3 className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">
-          Danh sách trải nghiệm & Tour (156)
+          Danh sách trải nghiệm & Tour ({items.length})
         </h3>
 
         {/* Sort select */}
@@ -145,15 +145,22 @@ export function ExperiencesDataTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {items.map((item) => {
-              const isSelected = selectedIds.includes(item.id)
-              return (
-                <tr
-                  key={item.id}
-                  className={`hover:bg-slate-50/70 transition-colors ${
-                    isSelected ? "bg-emerald-50/30" : ""
-                  }`}
-                >
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-12 text-center text-sm text-slate-500">
+                  Chưa có trải nghiệm hoặc tour nào trong hệ thống.
+                </td>
+              </tr>
+            ) : (
+              items.map((item) => {
+                const isSelected = selectedIds.includes(item.id)
+                return (
+                  <tr
+                    key={item.id}
+                    className={`hover:bg-slate-50/70 transition-colors ${
+                      isSelected ? "bg-emerald-50/30" : ""
+                    }`}
+                  >
                   {/* Checkbox */}
                   <td className="py-3.5 pl-4 pr-2">
                     <input
@@ -238,126 +245,60 @@ export function ExperiencesDataTable({
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-4 sm:px-5 sm:py-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-        <div>
-          Hiển thị 1 - 10 của 156 trải nghiệm &amp; tour
+      {items.length > 0 && (
+        <div className="p-4 sm:px-5 sm:py-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <div>
+            Hiển thị 1 - {Math.min(pageSize, items.length)} của {items.length} trải nghiệm &amp; tour
+          </div>
+
+          {/* Page buttons */}
+          <div className="flex items-center gap-1 font-medium">
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              type="button"
+              className="w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center bg-[#1b7a4e] text-white shadow-2xs"
+            >
+              1
+            </button>
+
+            <button
+              type="button"
+              disabled
+              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Page size select */}
+          <div className="relative">
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="appearance-none pl-3 pr-7 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none cursor-pointer"
+            >
+              <option value={10}>10 / trang</option>
+              <option value={20}>20 / trang</option>
+              <option value={50}>50 / trang</option>
+            </select>
+            <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
-
-        {/* Page buttons */}
-        <div className="flex items-center gap-1 font-medium">
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(1)}
-            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-              currentPage === 1
-                ? "bg-[#1b7a4e] text-white shadow-2xs"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            1
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(2)}
-            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-              currentPage === 2
-                ? "bg-[#1b7a4e] text-white shadow-2xs"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            2
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(3)}
-            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-              currentPage === 3
-                ? "bg-[#1b7a4e] text-white shadow-2xs"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            3
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(4)}
-            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-              currentPage === 4
-                ? "bg-[#1b7a4e] text-white shadow-2xs"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            4
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(5)}
-            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-              currentPage === 5
-                ? "bg-[#1b7a4e] text-white shadow-2xs"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            5
-          </button>
-
-          <span className="px-1 text-slate-400">...</span>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(16)}
-            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-              currentPage === 16
-                ? "bg-[#1b7a4e] text-white shadow-2xs"
-                : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            16
-          </button>
-
-          <button
-            type="button"
-            disabled={currentPage === 16}
-            onClick={() => setCurrentPage((p) => Math.min(16, p + 1))}
-            className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Page size select */}
-        <div className="relative">
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="appearance-none pl-3 pr-7 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none cursor-pointer"
-          >
-            <option value={10}>10 / trang</option>
-            <option value={20}>20 / trang</option>
-            <option value={50}>50 / trang</option>
-          </select>
-          <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
-      </div>
+      )}
     </div>
   )
 }

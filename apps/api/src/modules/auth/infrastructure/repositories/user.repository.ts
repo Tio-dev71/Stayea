@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { usersTable } from '@workspace/database'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, or, ilike } from 'drizzle-orm'
 
 import { DB_TOKEN } from '@/app/database/db.port'
 
@@ -29,25 +29,50 @@ export class UserRepositoryImpl implements UserRepository {
     const cleanEmail = data.email.toLowerCase().trim()
     const baseUsername =
       cleanEmail.split('@')[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') || 'user'
-    const uniqueUsername = await this.generateUniqueUsername(baseUsername)
+    let uniqueUsername = await this.generateUniqueUsername(baseUsername)
 
-    const result = await this.db
-      .insert(usersTable)
-      .values({
-        id: data.id,
-        name: data.name,
-        email: cleanEmail,
-        username: uniqueUsername,
-        displayUsername: data.name || uniqueUsername,
-        role: data.role ?? 'USER',
-        emailVerified: true,
-        banned: false,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning()
+    try {
+      const result = await this.db
+        .insert(usersTable)
+        .values({
+          id: data.id,
+          name: data.name,
+          email: cleanEmail,
+          username: uniqueUsername,
+          displayUsername: data.name || uniqueUsername,
+          role: data.role ?? 'USER',
+          emailVerified: true,
+          banned: false,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning()
 
-    return this.toEntity(result[0]!)
+      return this.toEntity(result[0]!)
+    } catch (err: any) {
+      if (err?.code === '23505' && err?.constraint?.includes('username')) {
+        // Fallback with timestamp-based unique username
+        uniqueUsername = `${baseUsername}_${Date.now().toString(36)}_${Math.floor(Math.random() * 1000)}`
+        const retryResult = await this.db
+          .insert(usersTable)
+          .values({
+            id: data.id,
+            name: data.name,
+            email: cleanEmail,
+            username: uniqueUsername,
+            displayUsername: data.name || uniqueUsername,
+            role: data.role ?? 'USER',
+            emailVerified: true,
+            banned: false,
+            createdAt: now,
+            updatedAt: now,
+          })
+          .returning()
+
+        return this.toEntity(retryResult[0]!)
+      }
+      throw err
+    }
   }
 
   async findById(id: string): Promise<User | null> {
@@ -65,7 +90,7 @@ export class UserRepositoryImpl implements UserRepository {
     const result = await this.db
       .select()
       .from(usersTable)
-      .where(eq(sql`lower(${usersTable.email})`, cleanEmail))
+      .where(or(eq(usersTable.email, cleanEmail), ilike(usersTable.email, cleanEmail)))
       .limit(1)
 
     if (result.length === 0) {
@@ -80,7 +105,7 @@ export class UserRepositoryImpl implements UserRepository {
     const result = await this.db
       .select()
       .from(usersTable)
-      .where(eq(sql`lower(${usersTable.username})`, cleanUsername))
+      .where(or(eq(usersTable.username, cleanUsername), ilike(usersTable.username, cleanUsername)))
       .limit(1)
 
     if (result.length === 0) {

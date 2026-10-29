@@ -25,10 +25,7 @@ import { MyReviewsToolbar } from "./my-reviews-toolbar"
 import type { ReviewSortOption } from "./my-reviews-toolbar"
 import { MyReviewsList } from "./my-reviews-list"
 import { MyReviewsCtaBanner } from "./my-reviews-cta-banner"
-import {
-  MY_REVIEWS_ITEMS,
-  MY_REVIEWS_SUMMARY,
-} from "@/features/landing/data/stayea-mock-data"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import type {
   UserReviewItem,
   ReviewCategory,
@@ -45,7 +42,35 @@ export function MyReviewsPage({ onNavigate }: MyReviewsPageProps) {
   const [sortBy, setSortBy] = React.useState<ReviewSortOption>("newest")
 
   // 2. Reviews state
-  const [reviewsList, setReviewsList] = React.useState<readonly UserReviewItem[]>(MY_REVIEWS_ITEMS)
+  const [reviewsList, setReviewsList] = React.useState<readonly UserReviewItem[]>([])
+
+  // Load real reviews from backend
+  React.useEffect(() => {
+    async function loadReviews() {
+      try {
+        const raw = await stayeaApi.getUserReviews()
+        if (Array.isArray(raw) && raw.length > 0) {
+          const mapped: UserReviewItem[] = raw.map((r: any) => ({
+            id: r.id,
+            title: r.serviceName || r.title || "Dịch vụ đã trải nghiệm",
+            category: (r.itemType || "stay") as ReviewCategory,
+            categoryTagLabel: r.itemType === "experience" ? "Trải nghiệm" : r.itemType === "transport" ? "Di chuyển" : "Khách sạn",
+            categoryTagVariant: "sky",
+            date: r.createdAt ? new Date(r.createdAt).toLocaleDateString("vi-VN") : "Gần đây",
+            location: r.location || "Phú Quốc",
+            rating: Number(r.rating) || 5,
+            comment: r.content || r.comment || "",
+            imageUrl: r.images?.[0] || "/auth/auth-villa-bg.jpg",
+            targetRoute: "stay",
+          }))
+          setReviewsList(mapped)
+        }
+      } catch {
+        // fallback
+      }
+    }
+    loadReviews()
+  }, [])
 
   // 3. Modals state
   const [editingReview, setEditingReview] = React.useState<UserReviewItem | null>(null)
@@ -199,7 +224,7 @@ export function MyReviewsPage({ onNavigate }: MyReviewsPageProps) {
           {/* Left Sidebar Menu */}
           <ProfileSidebar
             activeTab="reviews"
-            hideBadges
+            reviewsCount={reviewsList.length}
             onSelectTab={handleSelectSidebarTab}
             onLogout={() => {
               showToast("Đã đăng xuất thành công!", "info")
@@ -213,7 +238,11 @@ export function MyReviewsPage({ onNavigate }: MyReviewsPageProps) {
             <MyReviewsHeaderAndScore
               averageRating={averageRating}
               totalReviews={reviewsList.length}
-              thankYouMessage={MY_REVIEWS_SUMMARY.thankYouMessage}
+              thankYouMessage={
+                reviewsList.length > 0
+                  ? "Cảm ơn bạn đã chia sẻ những trải nghiệm tuyệt vời cùng STAYEA!"
+                  : "Bạn chưa có đánh giá nào. Hãy chia sẻ cảm nhận sau những kỳ nghỉ đáng nhớ nhé!"
+              }
             />
 
             {/* Category Tabs & Sort Dropdown */}

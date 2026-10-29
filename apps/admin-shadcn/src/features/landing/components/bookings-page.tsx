@@ -21,7 +21,6 @@ import { BookingsTabs } from "./bookings-tabs"
 import { BookingCard } from "./booking-card"
 import { BookingsSupportBanner } from "./bookings-support-banner"
 import { stayeaApi } from "@/lib/stayea-api-service"
-import { SERVICE_BOOKINGS_DATA } from "@/features/landing/data/stayea-mock-data"
 import type { ServiceBookingItem } from "@/features/landing/data/stayea-mock-data"
 
 interface BookingsPageProps {
@@ -94,9 +93,9 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
     }, 3500)
   }
 
-  // Combined items (Live DB bookings prepended to standard list)
+  // Combined items: only real live bookings
   const allBookings = React.useMemo(() => {
-    return [...liveBookings, ...SERVICE_BOOKINGS_DATA]
+    return liveBookings
   }, [liveBookings])
 
   // Filter items based on active tab
@@ -159,6 +158,7 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
           {/* Left Sidebar Menu */}
           <ProfileSidebar
             activeTab="bookings"
+            bookingsCount={liveBookings.length}
             onSelectTab={(tabId) => {
               if (tabId === "deals" || tabId === "my-deals") {
                 onNavigate?.("my-deals")
@@ -235,59 +235,45 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
               )}
             </div>
 
-            {/* 4. Centered Pagination Row */}
-            <div className="flex items-center justify-center gap-2 pt-4">
-              {/* Previous Page */}
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                aria-label="Trang trước"
-                className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 bg-white flex items-center justify-center text-slate-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
+            {/* 4. Centered Pagination Row (only if > 5 items) */}
+            {filteredBookings.length > 5 && (
+              <div className="flex items-center justify-center gap-2 pt-4">
+                {/* Previous Page */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Trang trước"
+                  className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 bg-white flex items-center justify-center text-slate-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
 
-              {/* Page 1 */}
-              <button
-                type="button"
-                onClick={() => setCurrentPage(1)}
-                className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all ${
-                  currentPage === 1
-                    ? "bg-[#0A2239] text-white shadow-xs"
-                    : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300"
-                }`}
-              >
-                1
-              </button>
+                {/* Page 1 */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(1)}
+                  className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all ${
+                    currentPage === 1
+                      ? "bg-[#0A2239] text-white shadow-xs"
+                      : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  1
+                </button>
 
-              {/* Page 2 */}
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentPage(2)
-                  showToast("Bạn đang ở trang danh sách đơn đặt dịch vụ số 2")
-                }}
-                className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all ${
-                  currentPage === 2
-                    ? "bg-[#0A2239] text-white shadow-xs"
-                    : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300"
-                }`}
-              >
-                2
-              </button>
-
-              {/* Next Page */}
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(2, p + 1))}
-                disabled={currentPage === 2}
-                aria-label="Trang kế tiếp"
-                className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 bg-white flex items-center justify-center text-slate-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+                {/* Next Page */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(2, p + 1))}
+                  disabled={currentPage === 2}
+                  aria-label="Trang kế tiếp"
+                  className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 bg-white flex items-center justify-center text-slate-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* 5. Support Callout Banner */}
             <BookingsSupportBanner

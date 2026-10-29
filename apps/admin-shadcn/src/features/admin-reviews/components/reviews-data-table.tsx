@@ -105,15 +105,22 @@ export function ReviewsDataTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {reviews.map((review) => {
-              const isSelected = selectedIds.includes(review.id)
-              return (
-                <tr
-                  key={review.id}
-                  className={`hover:bg-slate-50/70 transition-colors ${
-                    isSelected ? "bg-emerald-50/30" : ""
-                  }`}
-                >
+            {reviews.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-sm text-slate-500">
+                  Chưa có đánh giá nào trong hệ thống.
+                </td>
+              </tr>
+            ) : (
+              reviews.map((review) => {
+                const isSelected = selectedIds.includes(review.id)
+                return (
+                  <tr
+                    key={review.id}
+                    className={`hover:bg-slate-50/70 transition-colors ${
+                      isSelected ? "bg-emerald-50/30" : ""
+                    }`}
+                  >
                   {/* Checkbox */}
                   <td className="py-3.5 px-3.5">
                     <input
@@ -259,84 +266,67 @@ export function ReviewsDataTable({
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-4 sm:p-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-slate-500 font-medium">
-        {/* Count string */}
-        <div>
-          <span>Hiển thị 1 - 10 của 1.248 đánh giá</span>
-        </div>
-
-        {/* Pagination buttons & per page dropdown */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              aria-label="Trang trước"
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            {[1, 2, 3, 4, 5].map((page) => {
-              const isCurrent = currentPage === page
-              return (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-7 h-7 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors ${
-                    isCurrent
-                      ? "bg-[#007a48] text-white"
-                      : "text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  {page}
-                </button>
-              )
-            })}
-
-            <span className="px-1 text-slate-400">...</span>
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage(125)}
-              className="w-8 h-7 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
-            >
-              125
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.min(125, p + 1))}
-              aria-label="Trang sau"
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+      {reviews.length > 0 && (
+        <div className="p-4 sm:p-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-slate-500 font-medium">
+          {/* Count string */}
+          <div>
+            <span>
+              Hiển thị 1 - {Math.min(itemsPerPage, reviews.length)} của {reviews.length} đánh giá
+            </span>
           </div>
 
-          {/* Per Page Select */}
-          <div className="relative">
-            <select
-              value={itemsPerPage}
-              onChange={(e) => setItemsPerPage(Number(e.target.value))}
-              className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 pr-7 text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
-            >
-              <option value={10}>10 / trang</option>
-              <option value={20}>20 / trang</option>
-              <option value={50}>50 / trang</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Pagination buttons & per page dropdown */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                aria-label="Trang trước"
+                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                className="w-7 h-7 rounded-lg text-xs font-semibold flex items-center justify-center bg-[#007a48] text-white"
+              >
+                1
+              </button>
+
+              <button
+                type="button"
+                disabled
+                aria-label="Trang sau"
+                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Per Page Select */}
+            <div className="relative">
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 pr-7 text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
+              >
+                <option value={10}>10 / trang</option>
+                <option value={20}>20 / trang</option>
+                <option value={50}>50 / trang</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

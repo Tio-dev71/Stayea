@@ -12,7 +12,6 @@ import { PropertiesDataTable } from "./components/properties-data-table"
 import { PropertiesRightSidebar } from "./components/properties-right-sidebar"
 import { CreatePropertyModal } from "./components/create-property-modal"
 import {
-  PROPERTIES_MOCK_LIST,
   type PropertyItem,
   type PropertyKpiItem,
 } from "./stayea-admin-properties-mock-data"
@@ -32,9 +31,7 @@ export function StayeaAdminPropertiesPage({
   const [viewMode, setViewMode] = useState<"list" | "map">("list")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-  const [propertiesList, setPropertiesList] = useState<PropertyItem[]>(
-    PROPERTIES_MOCK_LIST as PropertyItem[]
-  )
+  const [propertiesList, setPropertiesList] = useState<PropertyItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Filters
@@ -75,17 +72,18 @@ export function StayeaAdminPropertiesPage({
             priceFrom: formattedPrice,
             status: isPaused ? ("paused" as const) : ("active" as const),
             statusLabel: isPaused ? "Tạm dừng" : "Đang hoạt động",
-            views: `${(4.5 + (idx % 5) * 1.2).toFixed(1)}K`,
-            bookingsCount: 30 + idx * 8,
+            views: "0",
+            bookingsCount: 0,
             imageUrl: item.heroImage || "/stay/tropical-garden.jpg",
           }
         })
 
-        // Prepend real items to list
-        setPropertiesList([...mapped, ...(PROPERTIES_MOCK_LIST as PropertyItem[])])
+        setPropertiesList(mapped)
+      } else {
+        setPropertiesList([])
       }
     } catch {
-      // Fallback to initial mock list
+      setPropertiesList([])
     } finally {
       setIsLoading(false)
     }

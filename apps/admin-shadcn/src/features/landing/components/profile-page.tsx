@@ -13,9 +13,6 @@ import { ProfileFavorites } from "./profile-favorites"
 import { ProfileStayaClubBanner } from "./profile-staya-club-banner"
 import {
   CURRENT_USER_PROFILE,
-  UPCOMING_TRIP,
-  PAST_TRIPS,
-  FAVORITE_DESTINATIONS,
 } from "@/features/landing/data/stayea-mock-data"
 import type {
   UserProfileInfo,
@@ -32,7 +29,10 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
   // 1. State
   const [profile, setProfile] = React.useState<UserProfileInfo>(CURRENT_USER_PROFILE)
   const [activeTab, setActiveTab] = React.useState<string>("profile")
-  const [favoritesList, setFavoritesList] = React.useState<readonly FavoriteDestination[]>(FAVORITE_DESTINATIONS)
+  const [favoritesList, setFavoritesList] = React.useState<readonly FavoriteDestination[]>([])
+  const [upcomingTrip, setUpcomingTrip] = React.useState<UpcomingTrip | null>(null)
+  const [pastTrips, setPastTrips] = React.useState<readonly PastTrip[]>([])
+  const [reviewsCount, setReviewsCount] = React.useState<number>(0)
   
   // Modals
   const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false)
@@ -49,11 +49,64 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
   const [editPhone, setEditPhone] = React.useState(profile.phone)
   const [editEmail, setEditEmail] = React.useState(profile.email)
 
-  // Load real authenticated profile from NestJS backend
+  // Load real authenticated profile, bookings, favorites, reviews from NestJS backend
   React.useEffect(() => {
     async function loadRealProfile() {
       try {
-        const liveUser = await stayeaApi.getProfile()
+        const [liveUser, liveBookings, liveFavorites, liveReviews] = await Promise.all([
+          stayeaApi.getProfile().catch(() => null),
+          stayeaApi.getUserBookings().catch(() => []),
+          stayeaApi.getUserFavorites().catch(() => []),
+          stayeaApi.getUserReviews().catch(() => []),
+        ])
+
+        const bookingsArr = Array.isArray(liveBookings) ? liveBookings : []
+        const favsArr = Array.isArray(liveFavorites) ? liveFavorites : []
+        const revsArr = Array.isArray(liveReviews) ? liveReviews : []
+
+        setReviewsCount(revsArr.length)
+
+        // Map real favorites
+        const mappedFavs: FavoriteDestination[] = favsArr.map((f: any) => ({
+          id: f.id || f.itemId,
+          title: f.title || "Địa điểm yêu thích",
+          imageUrl: f.imageUrl || "/profile/bai-sao.jpg",
+          isFavorite: true,
+        }))
+        setFavoritesList(mappedFavs)
+
+        // Map upcoming & past trips from bookings
+        const upcoming = bookingsArr.find((b: any) => {
+          const st = (b.status || "").toUpperCase()
+          return st === "CONFIRMED" || st === "PENDING" || st === "PAID" || st === "UPCOMING"
+        })
+        if (upcoming) {
+          setUpcomingTrip({
+            id: upcoming.id,
+            title: upcoming.title || "Kỳ nghỉ STAYEA Phú Quốc",
+            statusBadge: upcoming.status === "CONFIRMED" ? "Đã xác nhận" : "Sắp diễn ra",
+            dates: upcoming.dates || (upcoming.checkInDate ? `${new Date(upcoming.checkInDate).toLocaleDateString("vi-VN")} - ${new Date(upcoming.checkOutDate).toLocaleDateString("vi-VN")}` : "Kỳ nghỉ sắp tới"),
+            guests: `${upcoming.guestCount || 2} người`,
+            tripType: upcoming.details?.packageName || "Nghỉ dưỡng & Trải nghiệm",
+            imageUrl: upcoming.details?.imageUrl || "/profile/phu-quoc-upcoming.jpg",
+            bookingCode: upcoming.bookingCode || upcoming.id,
+          })
+        } else {
+          setUpcomingTrip(null)
+        }
+
+        const past = bookingsArr.filter((b: any) => {
+          const st = (b.status || "").toUpperCase()
+          return st === "COMPLETED"
+        }).map((b: any) => ({
+          id: b.id,
+          title: b.title || "Kỳ nghỉ Phú Quốc",
+          dates: b.dates || (b.checkInDate ? `${new Date(b.checkInDate).toLocaleDateString("vi-VN")} - ${new Date(b.checkOutDate).toLocaleDateString("vi-VN")}` : "Đã hoàn thành"),
+          location: b.details?.location || "Phú Quốc",
+          imageUrl: b.details?.imageUrl || "/profile/sunset-sanato.jpg",
+        }))
+        setPastTrips(past)
+
         if (liveUser) {
           const displayName = liveUser.displayName || liveUser.name || liveUser.email?.split("@")[0] || "Thành viên STAYEA"
           setProfile((prev) => ({
@@ -65,11 +118,27 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
             bio: liveUser.bio || prev.bio || "Thành viên yêu thích khám phá vẻ đẹp đảo ngọc Phú Quốc.",
             avatarUrl: liveUser.avatarUrl || prev.avatarUrl,
             membershipTier: liveUser.role === "ADMIN" || liveUser.role === "admin" ? "Diamond Elite" : prev.membershipTier,
+            stats: {
+              trips: bookingsArr.length,
+              favorites: favsArr.length,
+              reviews: revsArr.length,
+              tierName: bookingsArr.length >= 10 ? "Diamond" : bookingsArr.length >= 5 ? "Gold" : "Thành viên",
+            },
           }))
           setEditName(displayName)
           setEditEmail(liveUser.email || "")
           setEditBio(liveUser.bio || "")
           if (liveUser.phone) setEditPhone(liveUser.phone)
+        } else {
+          setProfile((prev) => ({
+            ...prev,
+            stats: {
+              trips: bookingsArr.length,
+              favorites: favsArr.length,
+              reviews: revsArr.length,
+              tierName: "Thành viên",
+            },
+          }))
         }
       } catch {
         // graceful fallback
@@ -106,15 +175,20 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
     showToast("Hồ sơ của bạn đã được cập nhật thành công!")
   }
 
-  function handleToggleFavorite(favId: string) {
+  async function handleToggleFavorite(favId: string) {
     setFavoritesList((prev) => {
       const exists = prev.some((item) => item.id === favId)
       if (exists) {
-        showToast("Đã cập nhật danh sách yêu thích!")
+        showToast("Đã xóa khỏi danh sách yêu thích!")
         return prev.filter((item) => item.id !== favId)
       }
       return prev
     })
+    try {
+      await stayeaApi.removeFavorite(favId)
+    } catch {
+      // fallback
+    }
   }
 
   function handleLogout() {
@@ -146,6 +220,9 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
           {/* Left Sidebar */}
           <ProfileSidebar
             activeTab={activeTab}
+            favoritesCount={favoritesList.length}
+            reviewsCount={reviewsCount}
+            bookingsCount={profile.stats.trips}
             onSelectTab={(tabId) => {
               setActiveTab(tabId)
               if (tabId === "deals" || tabId === "my-deals") {
@@ -185,17 +262,18 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
 
             {/* 3. Upcoming Trips */}
             <ProfileUpcomingTrip
-              trip={UPCOMING_TRIP}
+              trip={upcomingTrip}
               onViewDetails={(trip) => setSelectedTripDetails(trip)}
               onManageBooking={() => onNavigate?.("bookings")}
-              onViewAll={() => showToast("Đang tải danh sách toàn bộ chuyến đi sắp tới...")}
+              onBookNow={() => onNavigate?.("stay")}
+              onViewAll={() => onNavigate?.("bookings")}
             />
 
             {/* 4. Past Trips */}
             <ProfilePastTrips
-              trips={PAST_TRIPS}
+              trips={pastTrips}
               onSelectTrip={(trip) => setSelectedPastTrip(trip)}
-              onViewAll={() => showToast("Đang tải lịch sử chuyến đi đã hoàn thành...")}
+              onViewAll={() => onNavigate?.("bookings")}
             />
 
             {/* 5. Favorite Destinations */}
@@ -205,7 +283,7 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
               onSelectDestination={(dest) => {
                 showToast(`Đang xem điểm đến: ${dest.title}`)
               }}
-              onViewAll={() => showToast("Đang mở danh sách 28 địa điểm yêu thích...")}
+              onViewAll={() => showToast(`Đang mở danh sách ${favoritesList.length} địa điểm yêu thích...`)}
             />
 
             {/* 6. Staya Club Loyalty Banner */}

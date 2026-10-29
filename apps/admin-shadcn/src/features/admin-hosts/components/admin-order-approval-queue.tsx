@@ -16,7 +16,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { stayeaApi } from "@/lib/stayea-api-service"
-import { DEMO_PARTNER_ORDERS } from "@/features/partner-portal/mock-partners"
 import type { PartnerOrderData } from "@/features/partner-portal/types"
 
 interface AdminOrderApprovalQueueProps {
@@ -26,7 +25,7 @@ interface AdminOrderApprovalQueueProps {
 export function AdminOrderApprovalQueue({
   onNavigatePartnerHub,
 }: AdminOrderApprovalQueueProps) {
-  const [orders, setOrders] = useState<PartnerOrderData[]>(DEMO_PARTNER_ORDERS)
+  const [orders, setOrders] = useState<PartnerOrderData[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<
     "all" | "pending_admin" | "sent_to_partner" | "partner_accepted" | "completed"
@@ -60,12 +59,12 @@ export function AdminOrderApprovalQueue({
           source: o.source,
           createdAt: o.createdAt,
         }))
-        const liveIds = new Set(liveMapped.map((x) => x.id))
-        const remainingDemos = DEMO_PARTNER_ORDERS.filter((d) => !liveIds.has(d.id))
-        setOrders([...liveMapped, ...remainingDemos])
+        setOrders(liveMapped)
+      } else {
+        setOrders([])
       }
     } catch {
-      // Fallback to demo orders
+      setOrders([])
     } finally {
       setIsLoading(false)
     }
@@ -250,7 +249,16 @@ export function AdminOrderApprovalQueue({
 
       {/* Orders List */}
       <div className="space-y-4">
-        {filtered.map((order) => {
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
+            <Bot className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-slate-700">Chưa có đơn hàng nào trong hàng đợi duyệt</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Khi khách hàng hoặc AI Concierge tạo đơn dịch vụ mới, thông tin sẽ hiển thị tại đây để Admin kiểm tra.
+            </p>
+          </div>
+        ) : (
+          filtered.map((order) => {
           const isPendingAdmin = order.status === "pending_admin"
 
           return (
@@ -395,7 +403,8 @@ export function AdminOrderApprovalQueue({
               )}
             </div>
           )
-        })}
+        })
+      )}
       </div>
     </div>
   )

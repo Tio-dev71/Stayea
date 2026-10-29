@@ -539,6 +539,206 @@ class StayeaApiService {
   }
 
   /**
+   * Get user favorites / wishlist from live NestJS API
+   */
+  async getUserFavorites(itemType?: string): Promise<any[]> {
+    try {
+      const headers = this.getAuthHeader()
+      const query = itemType ? `?itemType=${encodeURIComponent(itemType)}` : ""
+      const res = await fetch(`${this.baseUrl}/user/favorites${query}`, { headers })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // fallback
+    }
+    return []
+  }
+
+  /**
+   * Add or toggle favorite
+   */
+  async addFavorite(item: {
+    itemId: string
+    itemType: string
+    title: string
+    imageUrl?: string
+    price?: number
+    location?: string
+    rating?: number
+  }): Promise<any> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/favorites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(item),
+      })
+      if (res.ok) return await res.json()
+    } catch {
+      // fallback
+    }
+    return null
+  }
+
+  /**
+   * Remove favorite
+   */
+  async removeFavorite(idOrItemId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/favorites/${encodeURIComponent(idOrItemId)}`, {
+        method: "DELETE",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Get user trip plans
+   */
+  async getUserPlans(): Promise<any[]> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/plans`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // fallback
+    }
+    return []
+  }
+
+  /**
+   * Create customized trip plan
+   */
+  async createPlan(plan: {
+    title: string
+    destination: string
+    startDate: string
+    endDate: string
+    days?: any[]
+    budget?: number
+    companions?: string
+    note?: string
+  }): Promise<any> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/plans`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(plan),
+      })
+      if (res.ok) return await res.json()
+    } catch {
+      // fallback
+    }
+    return null
+  }
+
+  /**
+   * Delete trip plan
+   */
+  async deletePlan(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/plans/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Get user reviews
+   */
+  async getUserReviews(): Promise<any[]> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/reviews`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // fallback
+    }
+    return []
+  }
+
+  /**
+   * Submit new review
+   */
+  async createReview(review: {
+    itemId: string
+    itemType: string
+    bookingId?: string
+    serviceName: string
+    rating: number
+    title?: string
+    content: string
+    images?: string[]
+  }): Promise<any> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(review),
+      })
+      if (res.ok) return await res.json()
+    } catch {
+      // fallback
+    }
+    return null
+  }
+
+  /**
+   * Get user personal vouchers
+   */
+  async getUserVouchers(): Promise<any[]> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/vouchers`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // fallback
+    }
+    return []
+  }
+
+  /**
+   * Claim voucher
+   */
+  async claimVoucher(code: string): Promise<any> {
+    try {
+      const res = await fetch(`${this.baseUrl}/user/vouchers/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ code }),
+      })
+      if (res.ok) return await res.json()
+    } catch {
+      // fallback
+    }
+    return null
+  }
+
+  /**
    * Logout customer
    */
   async logout(): Promise<void> {

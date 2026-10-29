@@ -79,73 +79,81 @@ export function StayeaAdminRecentBookingsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100/80">
-            {bookings.map((b) => (
-              <tr
-                key={b.id}
-                className="hover:bg-slate-50/70 transition-colors group"
-              >
-                {/* Khách hàng */}
-                <td className="py-3.5 pr-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2.5">
-                    <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
-                      <Image
-                        src={b.guestAvatar}
-                        alt={b.guestName}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
-                          {b.guestName}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-slate-400 font-normal">
-                        {b.guestFlag}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-
-                {/* Bất động sản */}
-                <td className="py-3.5 px-4 whitespace-nowrap">
-                  <div className="font-semibold text-slate-800">{b.propertyTitle}</div>
-                  <div className="text-[11px] text-slate-400">{b.propertySubtitle}</div>
-                </td>
-
-                {/* Nhận phòng */}
-                <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap text-xs">
-                  {b.checkIn}
-                </td>
-
-                {/* Trả phòng */}
-                <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap text-xs">
-                  {b.checkOut}
-                </td>
-
-                {/* Trạng thái */}
-                <td className="py-3.5 px-4 whitespace-nowrap">
-                  {getBookingStatusBadge(b.status)}
-                </td>
-
-                {/* Tổng tiền */}
-                <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
-                  {b.totalAmount}
-                </td>
-
-                {/* Thao tác */}
-                <td className="py-3.5 pl-4 text-right whitespace-nowrap">
-                  <button
-                    type="button"
-                    aria-label="Thao tác"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+            {bookings.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-xs text-slate-500">
+                  Chưa có đơn đặt phòng nào gần đây trong hệ thống.
                 </td>
               </tr>
-            ))}
+            ) : (
+              bookings.map((b) => (
+                <tr
+                  key={b.id}
+                  className="hover:bg-slate-50/70 transition-colors group"
+                >
+                  {/* Khách hàng */}
+                  <td className="py-3.5 pr-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
+                        <Image
+                          src={b.guestAvatar}
+                          alt={b.guestName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
+                            {b.guestName}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-normal">
+                          {b.guestFlag}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Bất động sản */}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <div className="font-semibold text-slate-800">{b.propertyTitle}</div>
+                    <div className="text-[11px] text-slate-400">{b.propertySubtitle}</div>
+                  </td>
+
+                  {/* Nhận phòng */}
+                  <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap text-xs">
+                    {b.checkIn}
+                  </td>
+
+                  {/* Trả phòng */}
+                  <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap text-xs">
+                    {b.checkOut}
+                  </td>
+
+                  {/* Trạng thái */}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    {getBookingStatusBadge(b.status)}
+                  </td>
+
+                  {/* Tổng tiền */}
+                  <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                    {b.totalAmount}
+                  </td>
+
+                  {/* Thao tác */}
+                  <td className="py-3.5 pl-4 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      aria-label="Thao tác"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

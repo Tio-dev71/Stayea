@@ -6,7 +6,7 @@ import { Plus } from "lucide-react"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
-import { MOCK_EXPERIENCES } from "./stayea-admin-experiences-mock-data"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import type { ExperienceItem } from "./stayea-admin-experiences-mock-data"
 import { ExperiencesKpiCards } from "./components/experiences-kpi-cards"
 import { ExperiencesFilterBar } from "./components/experiences-filter-bar"
@@ -36,7 +36,39 @@ export function StayeaAdminExperiencesPage({
 }: StayeaAdminExperiencesPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
-  const [experiences, setExperiences] = useState<ExperienceItem[]>(MOCK_EXPERIENCES)
+  const [experiences, setExperiences] = useState<ExperienceItem[]>([])
+
+  useEffect(() => {
+    async function loadExperiences() {
+      try {
+        const res = (await stayeaApi.getExperiences()) as any
+        const items = res?.items || res?.data || res
+        if (Array.isArray(items) && items.length > 0) {
+          const mapped: ExperienceItem[] = items.map((item: any, idx: number) => {
+            const priceNum = Number(item.price) || 0
+            return {
+              id: item.id || `exp-${idx}`,
+              name: item.title || "Tour trải nghiệm",
+              category: item.category === "tour" ? "Tour biển đảo" : (item.category || "Tour trải nghiệm"),
+              location: item.location || "Phú Quốc",
+              provider: "STAYEA Official",
+              price: priceNum,
+              status: "active" as const,
+              rating: Number(item.rating) || 5.0,
+              reviewsCount: item.review_count || 0,
+              image: item.image_url || "/experience/cano-4-islands.jpg",
+            }
+          })
+          setExperiences(mapped)
+        } else {
+          setExperiences([])
+        }
+      } catch (err) {
+        console.error("Failed to load experiences:", err)
+      }
+    }
+    loadExperiences()
+  }, [])
   
   const [categoryTab, setCategoryTab] = useState<string>(() => {
     if (typeof window !== "undefined") {

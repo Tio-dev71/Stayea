@@ -22,6 +22,9 @@ interface ProfileSidebarProps {
   readonly onSelectTab: (tabId: string) => void
   readonly onLogout?: () => void
   readonly hideBadges?: boolean
+  readonly favoritesCount?: number
+  readonly reviewsCount?: number
+  readonly bookingsCount?: number
 }
 
 function renderSidebarIcon(iconName: string, className: string) {
@@ -60,11 +63,22 @@ export function ProfileSidebar({
   onSelectTab,
   onLogout,
   hideBadges = false,
+  favoritesCount,
+  reviewsCount,
+  bookingsCount,
 }: ProfileSidebarProps) {
   return (
     <aside className="w-full lg:w-64 xl:w-72 shrink-0">
       <div className="bg-white rounded-2xl border border-slate-200/80 p-2.5 sm:p-3 shadow-xs space-y-1">
         {PROFILE_SIDEBAR_ITEMS.map((item: ProfileSidebarItem) => {
+          let itemBadge = item.badge
+          if (item.id === "favorites") {
+            itemBadge = favoritesCount !== undefined ? (favoritesCount > 0 ? String(favoritesCount) : undefined) : item.badge
+          } else if (item.id === "reviews") {
+            itemBadge = reviewsCount !== undefined ? (reviewsCount > 0 ? String(reviewsCount) : undefined) : item.badge
+          } else if (item.id === "bookings") {
+            itemBadge = bookingsCount !== undefined ? (bookingsCount > 0 ? String(bookingsCount) : undefined) : item.badge
+          }
           const isStayeaClubMatch =
             item.id === "staya-club" &&
             (activeTab === "staya-club" || activeTab === "stayea-club" || activeTab === "stayea-club-claimed");
@@ -129,7 +143,7 @@ export function ProfileSidebar({
                 <span className="truncate">{item.label}</span>
               </div>
 
-              {!hideBadges && item.badge && (
+              {!hideBadges && itemBadge && (
                 <span
                   className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                     isActive
@@ -137,7 +151,7 @@ export function ProfileSidebar({
                       : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  {item.badge}
+                  {itemBadge}
                 </span>
               )}
             </button>

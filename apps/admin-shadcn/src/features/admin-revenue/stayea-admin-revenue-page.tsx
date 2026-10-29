@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Download } from "lucide-react"
 import { toast } from "sonner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
@@ -10,12 +11,11 @@ import {
   MOCK_REVENUE_KPIS,
   MOCK_REVENUE_TIMELINE,
   MOCK_REVENUE_CATEGORIES,
-  MOCK_REVENUE_ORDERS,
   MOCK_PAYMENT_METHODS,
   MOCK_LOCATION_REVENUES,
   MOCK_QUICK_ACTIONS,
 } from "./stayea-admin-revenue-mock-data"
-import type { RevenueOrderItem } from "./stayea-admin-revenue-mock-data"
+import type { RevenueOrderItem, RevenueKpiItem } from "./stayea-admin-revenue-mock-data"
 import { RevenueKpiCards } from "./components/revenue-kpi-cards"
 import { RevenueFilterBar } from "./components/revenue-filter-bar"
 import { RevenueCharts } from "./components/revenue-charts"
@@ -40,6 +40,108 @@ export function StayeaAdminRevenuePage({
   const [selectedCategory, setSelectedCategory] = useState("Tất cả loại hình")
   const [selectedLocation, setSelectedLocation] = useState("Tất cả địa điểm")
   const [selectedPartner, setSelectedPartner] = useState("Tất cả đối tác")
+
+  const [ordersList, setOrdersList] = useState<RevenueOrderItem[]>([])
+  const [revenueKpis, setRevenueKpis] = useState<RevenueKpiItem[]>(MOCK_REVENUE_KPIS)
+
+  useEffect(() => {
+    async function fetchRevenueData() {
+      try {
+        const bookings = await stayeaApi.getAllBookingsForAdmin()
+        if (Array.isArray(bookings) && bookings.length > 0) {
+          let totalRev = 0
+          let paidRev = 0
+          let pendingRev = 0
+
+          const mapped: RevenueOrderItem[] = bookings.map((b: any, idx: number) => {
+            const amount = Number(b.totalAmount || b.total_price) || 0
+            const pst = (b.paymentStatus || b.status || "").toLowerCase()
+            const isPaid = pst === "paid" || pst === "đã thanh toán" || pst === "confirmed" || pst === "completed"
+            
+            totalRev += amount
+            if (isPaid) {
+              paidRev += amount
+            } else {
+              pendingRev += amount
+            }
+
+            const commission = Math.round(amount * 0.12) // 12% standard platform fee
+
+            return {
+              id: b.id || `order-${idx}`,
+              orderCode: b.bookingCode || b.booking_code || `ORD-${1000 + idx}`,
+              title: b.title || b.propertyName || "Dịch vụ STAYEA",
+              category: b.serviceType || "Lưu trú & Nghỉ dưỡng",
+              imageUrl: b.image || "/about/team-1.jpg",
+              customerName: b.contactName || b.guestName || "Khách hàng",
+              bookingDate: b.checkInDate ? new Date(b.checkInDate).toLocaleDateString("vi-VN") : "Hôm nay",
+              totalAmount: amount,
+              totalFormatted: new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount),
+              status: isPaid ? "paid" : "pending",
+              statusLabel: isPaid ? "Đã thanh toán" : "Chờ thanh toán",
+              commissionAmount: commission,
+              commissionFormatted: new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(commission),
+            }
+          })
+
+          setOrdersList(mapped)
+
+          const platformCommission = Math.round(totalRev * 0.12)
+          const fmt = (val: number) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val)
+
+          setRevenueKpis([
+            {
+              id: "total-revenue",
+              title: "Tổng doanh thu",
+              value: fmt(totalRev),
+              trendPercent: "100%",
+              trendLabel: "dữ liệu thực tế",
+              isPositive: true,
+              icon: "wallet",
+              colorTheme: "green",
+            },
+            {
+              id: "paid-revenue",
+              title: "Doanh thu đã thanh toán",
+              value: fmt(paidRev),
+              trendPercent: "100%",
+              trendLabel: "đã đối soát",
+              isPositive: true,
+              icon: "paid",
+              colorTheme: "blue",
+            },
+            {
+              id: "pending-revenue",
+              title: "Doanh thu chờ thanh toán",
+              value: fmt(pendingRev),
+              trendPercent: "0%",
+              trendLabel: "cần thu",
+              isPositive: true,
+              icon: "pending",
+              colorTheme: "orange",
+            },
+            {
+              id: "platform-commission",
+              title: "Hoa hồng nền tảng (12%)",
+              value: fmt(platformCommission),
+              trendPercent: "12%",
+              trendLabel: "phí hệ thống",
+              isPositive: true,
+              icon: "commission",
+              colorTheme: "purple",
+            },
+          ])
+        } else {
+          setOrdersList([])
+          setRevenueKpis(MOCK_REVENUE_KPIS)
+        }
+      } catch (err) {
+        console.error("Error fetching revenue bookings:", err)
+      }
+    }
+
+    fetchRevenueData()
+  }, [])
 
   const handleExport = (options: {
     format: "xlsx" | "pdf" | "csv"
@@ -168,7 +270,7 @@ export function StayeaAdminRevenuePage({
               />
 
               {/* KPI Cards Row (4 cards in a row) */}
-              <RevenueKpiCards stats={MOCK_REVENUE_KPIS} />
+              <RevenueKpiCards stats={revenueKpis} />
 
               {/* Dual Charts (Revenue over time + Revenue by category) */}
               <RevenueCharts
@@ -183,9 +285,9 @@ export function StayeaAdminRevenuePage({
 
               {/* Orders & Settlement Data Table */}
               <RevenueOrdersTable
-                orders={MOCK_REVENUE_ORDERS}
+                orders={ordersList}
                 onViewAll={() => {
-                  toast.info("Xem toàn bộ danh sách đơn hàng và đối soát (1.248 đơn)")
+                  toast.info(`Xem toàn bộ danh sách đơn hàng và đối soát (${ordersList.length} đơn)`)
                 }}
                 onActionClick={handleOrderAction}
               />

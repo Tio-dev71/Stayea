@@ -17,6 +17,17 @@ export function MyPlansTripCards({
   onSelectTrip,
   onTripActionMenu,
 }: MyPlansTripCardsProps) {
+  if (trips.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-8 text-center space-y-2 shadow-2xs">
+        <p className="text-sm font-semibold text-slate-800">Bạn chưa có kế hoạch chuyến đi nào</p>
+        <p className="text-xs text-slate-400">
+          Nhấn nút &quot;Tạo kế hoạch mới +&quot; ở trên để thiết lập lịch trình kỳ nghỉ riêng tại Phú Quốc.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 pt-1">
       {trips.map((trip) => {

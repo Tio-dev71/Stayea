@@ -12,7 +12,7 @@ import { BookingsDataTable } from "./components/bookings-data-table"
 import { BookingsRightSidebar } from "./components/bookings-right-sidebar"
 import { CreateBookingModal } from "./components/create-booking-modal"
 import { BookingDetailModal } from "./components/booking-detail-modal"
-import { BOOKINGS_DATA, type BookingRecord, type BookingKpiItem } from "./stayea-admin-bookings-mock-data"
+import { type BookingRecord, type BookingKpiItem } from "./stayea-admin-bookings-mock-data"
 import { stayeaApi } from "@/lib/stayea-api-service"
 import { exportToCsv } from "@/lib/export-csv"
 
@@ -33,7 +33,7 @@ export function StayeaAdminBookingsPage({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
   const [detailModalBooking, setDetailModalBooking] = useState<BookingRecord | null>(null)
 
-  const [bookingsList, setBookingsList] = useState<BookingRecord[]>(BOOKINGS_DATA as BookingRecord[])
+  const [bookingsList, setBookingsList] = useState<BookingRecord[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Filters
@@ -89,11 +89,12 @@ export function StayeaAdminBookingsPage({
           }
         })
 
-        // Merge real bookings on top of mock bookings
-        setBookingsList([...mapped, ...(BOOKINGS_DATA as BookingRecord[])])
+        setBookingsList(mapped)
+      } else {
+        setBookingsList([])
       }
     } catch {
-      // Fallback to initial mock data
+      setBookingsList([])
     } finally {
       setIsLoading(false)
     }

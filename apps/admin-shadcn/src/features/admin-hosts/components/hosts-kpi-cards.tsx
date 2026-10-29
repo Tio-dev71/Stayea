@@ -32,10 +32,14 @@ function renderHostKpiIcon(iconType: HostKpiItem["iconType"]) {
   }
 }
 
-export function HostsKpiCards() {
+interface HostsKpiCardsProps {
+  kpis?: readonly HostKpiItem[]
+}
+
+export function HostsKpiCards({ kpis = HOSTS_KPI_DATA }: HostsKpiCardsProps = {}) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-      {HOSTS_KPI_DATA.map((item) => (
+      {kpis.map((item) => (
         <div
           key={item.id}
           className="group relative bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-2.5 text-left"

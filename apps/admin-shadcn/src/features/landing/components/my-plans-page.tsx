@@ -18,8 +18,8 @@ import { MyPlansTripCards } from "./my-plans-trip-cards"
 import { MyPlansActiveItinerary } from "./my-plans-active-itinerary"
 import { MyPlansBookedServices } from "./my-plans-booked-services"
 import { MyPlansRecommendedAddons } from "./my-plans-recommended-addons"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import {
-  MY_PLANS_TRIPS,
   ACTIVE_PLAN_ITINERARY_DAYS,
   ACTIVE_PLAN_BOOKED_SERVICES,
   PLAN_RECOMMENDED_ADDONS,
@@ -38,7 +38,8 @@ interface MyPlansPageProps {
 export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
   // 1. States
   const [activeStatusTab, setActiveStatusTab] = React.useState<PlanFilterTab>("upcoming")
-  const [selectedTripId, setSelectedTripId] = React.useState<string>("plan-phu-quoc-bien-xanh")
+  const [plansList, setPlansList] = React.useState<readonly MyPlanTripCard[]>([])
+  const [selectedTripId, setSelectedTripId] = React.useState<string>("")
   const [toastMessage, setToastMessage] = React.useState<string | null>(null)
 
   // 2. Modals state
@@ -53,6 +54,34 @@ export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
   const [newPlanDates, setNewPlanDates] = React.useState<string>("")
   const [newPlanGuests, setNewPlanGuests] = React.useState<string>("2 người")
 
+  // Load real plans from backend
+  React.useEffect(() => {
+    async function loadPlans() {
+      try {
+        const raw = await stayeaApi.getUserPlans()
+        if (Array.isArray(raw) && raw.length > 0) {
+          const mapped: MyPlanTripCard[] = raw.map((p: any) => ({
+            id: p.id,
+            status: "upcoming" as const,
+            statusLabel: "Sắp diễn ra",
+            statusVariant: "emerald" as const,
+            title: p.title || "Kế hoạch Phú Quốc",
+            dates: p.dates || (p.startDate ? `${new Date(p.startDate).toLocaleDateString("vi-VN")} - ${new Date(p.endDate).toLocaleDateString("vi-VN")}` : "Thời gian linh hoạt"),
+            location: p.destination || "Phú Quốc (PQC)",
+            guests: p.companions || "2 người",
+            imageUrl: "/profile/bai-sao.jpg",
+            actionLabel: "Xem chi tiết",
+          }))
+          setPlansList(mapped)
+          if (mapped[0]) setSelectedTripId(mapped[0].id)
+        }
+      } catch {
+        // fallback
+      }
+    }
+    loadPlans()
+  }, [])
+
   function showToast(msg: string) {
     setToastMessage(msg)
     setTimeout(() => {
@@ -60,12 +89,42 @@ export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
     }, 3200)
   }
 
-  function handleCreatePlan(e: React.FormEvent) {
+  async function handleCreatePlan(e: React.FormEvent) {
     e.preventDefault()
     if (!newPlanTitle.trim()) {
       showToast("Vui lòng nhập tên chuyến đi!")
       return
     }
+
+    const createdPlan: MyPlanTripCard = {
+      id: `plan-${Date.now()}`,
+      status: "upcoming",
+      statusLabel: "Sắp diễn ra",
+      statusVariant: "emerald",
+      title: newPlanTitle.trim(),
+      dates: newPlanDates.trim() || "Thời gian linh hoạt",
+      location: "Phú Quốc (PQC)",
+      guests: newPlanGuests,
+      imageUrl: "/profile/bai-sao.jpg",
+      actionLabel: "Xem chi tiết",
+    }
+
+    setPlansList((prev) => [createdPlan, ...prev])
+    setSelectedTripId(createdPlan.id)
+
+    try {
+      await stayeaApi.createPlan({
+        title: newPlanTitle.trim(),
+        destination: "Phú Quốc (PQC)",
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 3 * 86400000).toISOString(),
+        companions: newPlanGuests,
+        note: newPlanDates.trim(),
+      })
+    } catch {
+      // fallback
+    }
+
     setIsCreateModalOpen(false)
     showToast(`Đã tạo kế hoạch "${newPlanTitle}" thành công!`)
     setNewPlanTitle("")
@@ -123,9 +182,9 @@ export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
               onCreateNewPlan={() => setIsCreateModalOpen(true)}
             />
 
-            {/* Top 2 Trip Cards ("Phú Quốc – Biển xanh, nắng vàng" & "Khám phá Hòn Thơm") */}
+            {/* Trip Cards */}
             <MyPlansTripCards
-              trips={MY_PLANS_TRIPS}
+              trips={plansList}
               selectedTripId={selectedTripId}
               onSelectTrip={(trip: MyPlanTripCard) => {
                 setSelectedTripId(trip.id)
@@ -136,22 +195,26 @@ export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
               }}
             />
 
-            {/* Active Plan Itinerary Section */}
-            <MyPlansActiveItinerary
-              itineraryDays={ACTIVE_PLAN_ITINERARY_DAYS}
-              onShare={() => setIsShareModalOpen(true)}
-              onDownloadPdf={() => showToast("Đang chuẩn bị và tải file PDF lịch trình...")}
-              onEditPlan={() => showToast("Mở giao diện chỉnh sửa lịch trình...")}
-              onViewMap={() => setIsMapModalOpen(true)}
-              onViewDayDetail={(day: ItineraryDayItem) => setSelectedDayDetail(day)}
-            />
+            {/* Active Plan Itinerary Section (only if plans exist) */}
+            {plansList.length > 0 && (
+              <>
+                <MyPlansActiveItinerary
+                  itineraryDays={ACTIVE_PLAN_ITINERARY_DAYS}
+                  onShare={() => setIsShareModalOpen(true)}
+                  onDownloadPdf={() => showToast("Đang chuẩn bị và tải file PDF lịch trình...")}
+                  onEditPlan={() => showToast("Mở giao diện chỉnh sửa lịch trình...")}
+                  onViewMap={() => setIsMapModalOpen(true)}
+                  onViewDayDetail={(day: ItineraryDayItem) => setSelectedDayDetail(day)}
+                />
 
-            {/* Booked Services Section ("Dịch vụ đã đặt (4)") */}
-            <MyPlansBookedServices
-              services={ACTIVE_PLAN_BOOKED_SERVICES}
-              onSelectService={(service: PlanBookedServiceItem) => setSelectedBookedService(service)}
-              onViewAll={() => onNavigate?.("bookings")}
-            />
+                {/* Booked Services Section */}
+                <MyPlansBookedServices
+                  services={ACTIVE_PLAN_BOOKED_SERVICES}
+                  onSelectService={(service: PlanBookedServiceItem) => setSelectedBookedService(service)}
+                  onViewAll={() => onNavigate?.("bookings")}
+                />
+              </>
+            )}
 
             {/* Recommended Addons Section ("Gợi ý bổ sung cho chuyến đi của bạn") */}
             <MyPlansRecommendedAddons

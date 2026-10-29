@@ -12,7 +12,6 @@ import { CustomersDataTable } from "./components/customers-data-table"
 import { CustomersRightSidebar } from "./components/customers-right-sidebar"
 import { CreateCustomerModal } from "./components/create-customer-modal"
 import {
-  CUSTOMERS_MOCK_LIST,
   type CustomerItem,
   type CustomerKpiItem,
 } from "./stayea-admin-customers-mock-data"
@@ -35,9 +34,7 @@ export function StayeaAdminCustomersPage({
   const [selectedStatus, setSelectedStatus] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-  const [customersList, setCustomersList] = useState<CustomerItem[]>(
-    CUSTOMERS_MOCK_LIST as CustomerItem[]
-  )
+  const [customersList, setCustomersList] = useState<CustomerItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Fetch real users from backend API
@@ -62,18 +59,19 @@ export function StayeaAdminCustomersPage({
             flag: "🇻🇳",
             phoneNumber: u.phoneNumber || "0908 123 456",
             email: u.email,
-            bookingsCount: roleUpper === "ADMIN" ? 15 : 2 + (idx % 4),
-            totalSpent: `${(10 + (idx % 5) * 8).toLocaleString("vi-VN")}.000.000 ₫`,
+            bookingsCount: 0,
+            totalSpent: "0 ₫",
             status: "active" as const,
             statusLabel: "Đang hoạt động",
           }
         })
 
-        // Merge real users on top of mock list
-        setCustomersList([...mapped, ...(CUSTOMERS_MOCK_LIST as CustomerItem[])])
+        setCustomersList(mapped)
+      } else {
+        setCustomersList([])
       }
     } catch {
-      // Fallback to initial mock list
+      setCustomersList([])
     } finally {
       setIsLoading(false)
     }
@@ -144,19 +142,19 @@ export function StayeaAdminCustomersPage({
       },
       {
         id: "new-customers",
-        title: "Khách hàng mới (Tháng này)",
-        value: "428",
-        change: "+31%",
-        comparisonText: "tăng trưởng mạnh",
+        title: "Khách hàng mới",
+        value: Math.max(0, customersList.length - loyal).toString(),
+        change: "0%",
+        comparisonText: "so với tháng trước",
         isPositive: true,
         iconType: "new",
       },
       {
         id: "avg-revenue",
-        title: "Doanh thu trung bình/khách",
-        value: "18.5M ₫",
-        change: "+9%",
-        comparisonText: "giá trị đơn hàng tăng",
+        title: "Doanh thu từ khách hàng",
+        value: "0 ₫",
+        change: "0%",
+        comparisonText: "so với tháng trước",
         isPositive: true,
         iconType: "revenue",
       },

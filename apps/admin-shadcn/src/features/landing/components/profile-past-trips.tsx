@@ -26,55 +26,71 @@ export function ProfilePastTrips({
           </h3>
         </div>
 
-        <button
-          type="button"
-          onClick={onViewAll}
-          className="text-xs font-semibold text-[#1E3A8A] hover:underline inline-flex items-center gap-1 transition-colors"
-        >
-          <span>Xem tất cả</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        {trips.length > 0 && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="text-xs font-semibold text-[#1E3A8A] hover:underline inline-flex items-center gap-1 transition-colors"
+          >
+            <span>Xem tất cả</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
-      {/* 3-Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {trips.map((trip: PastTrip) => (
-          <div
-            key={trip.id}
-            onClick={() => onSelectTrip?.(trip)}
-            className="group bg-white rounded-2xl border border-slate-200/80 p-3 shadow-xs hover:border-slate-300 hover:shadow-md transition-all cursor-pointer"
-          >
-            {/* Card Thumbnail */}
-            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-slate-100">
-              <Image
-                src={trip.imageUrl}
-                alt={trip.title}
-                fill
-                unoptimized
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
+      {trips.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 text-center space-y-2 shadow-xs">
+          <div className="w-10 h-10 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+            <Clock className="w-5 h-5" />
+          </div>
+          <h4 className="text-sm font-semibold text-slate-800">
+            Chưa có lịch sử chuyến đi nào đã hoàn thành
+          </h4>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            Những chuyến đi tuyệt vời sau khi hoàn thành sẽ được lưu giữ tại đây để bạn có thể xem lại và chia sẻ đánh giá.
+          </p>
+        </div>
+      ) : (
+        /* 3-Cards Grid */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {trips.map((trip: PastTrip) => (
+            <div
+              key={trip.id}
+              onClick={() => onSelectTrip?.(trip)}
+              className="group bg-white rounded-2xl border border-slate-200/80 p-3 shadow-xs hover:border-slate-300 hover:shadow-md transition-all cursor-pointer"
+            >
+              {/* Card Thumbnail */}
+              <div className="relative w-full h-40 rounded-xl overflow-hidden bg-slate-100">
+                <Image
+                  src={trip.imageUrl}
+                  alt={trip.title}
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
 
-            {/* Content Details */}
-            <div className="pt-3 pb-1 px-1">
-              <h4 className="font-bold text-slate-900 text-sm group-hover:text-teal-700 transition-colors truncate">
-                {trip.title}
-              </h4>
+              {/* Content Details */}
+              <div className="pt-3 pb-1 px-1">
+                <h4 className="font-bold text-slate-900 text-sm group-hover:text-teal-700 transition-colors truncate">
+                  {trip.title}
+                </h4>
 
-              <div className="space-y-1 mt-2 text-xs text-slate-500">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{trip.dates}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{trip.location}</span>
+                <div className="space-y-1 mt-2 text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{trip.dates}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{trip.location}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

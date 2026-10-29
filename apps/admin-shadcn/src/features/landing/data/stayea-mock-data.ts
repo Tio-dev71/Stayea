@@ -3339,9 +3339,9 @@ export const CURRENT_USER_PROFILE: UserProfileInfo = {
   avatarUrl: "/profile/profile-avatar.jpg",
   coverUrl: "/profile/profile-hero-banner.jpg",
   stats: {
-    trips: 12,
-    favorites: 28,
-    reviews: 8,
+    trips: 0,
+    favorites: 0,
+    reviews: 0,
     tierName: "Thành viên",
   },
 }
@@ -3357,8 +3357,8 @@ export const PROFILE_SIDEBAR_ITEMS: readonly ProfileSidebarItem[] = [
   { id: "profile", label: "Trang cá nhân", iconName: "user" },
   { id: "bookings", label: "Đơn đặt dịch vụ", iconName: "calendar" },
   { id: "plans", label: "Kế hoạch của tôi", iconName: "clipboard-list" },
-  { id: "favorites", label: "Yêu thích", iconName: "heart", badge: "28" },
-  { id: "reviews", label: "Đánh giá của tôi", iconName: "star", badge: "8" },
+  { id: "favorites", label: "Yêu thích", iconName: "heart" },
+  { id: "reviews", label: "Đánh giá của tôi", iconName: "star" },
   { id: "account-info", label: "Thông tin cá nhân", iconName: "user-check" },
   { id: "payment", label: "Phương thức thanh toán", iconName: "credit-card" },
   { id: "deals", label: "Ưu đãi của tôi", iconName: "gift" },
@@ -3379,16 +3379,7 @@ export interface UpcomingTrip {
   readonly bookingCode: string
 }
 
-export const UPCOMING_TRIP: UpcomingTrip = {
-  id: "trip-upcoming-1",
-  title: "Phú Quốc – Biển xanh, nắng vàng",
-  statusBadge: "Sắp diễn ra",
-  dates: "15/06/2025 - 18/06/2025",
-  guests: "2 người",
-  tripType: "Cặp đôi / Honeymoon",
-  imageUrl: "/profile/phu-quoc-upcoming.jpg",
-  bookingCode: "STAYEA-PQ-202506",
-}
+export const UPCOMING_TRIP: UpcomingTrip | null = null
 
 export interface PastTrip {
   readonly id: string
@@ -3398,29 +3389,7 @@ export interface PastTrip {
   readonly imageUrl: string
 }
 
-export const PAST_TRIPS: readonly PastTrip[] = [
-  {
-    id: "past-1",
-    title: "Sunset Sanato",
-    dates: "12/04/2025 - 14/04/2025",
-    location: "Phú Quốc",
-    imageUrl: "/profile/sunset-sanato.jpg",
-  },
-  {
-    id: "past-2",
-    title: "Khám phá Hòn Thơm",
-    dates: "05/02/2025 - 07/02/2025",
-    location: "Phú Quốc",
-    imageUrl: "/profile/hon-thom.jpg",
-  },
-  {
-    id: "past-3",
-    title: "Chợ đêm Dương Đông",
-    dates: "20/01/2025 - 22/01/2025",
-    location: "Phú Quốc",
-    imageUrl: "/profile/cho-dem.jpg",
-  },
-]
+export const PAST_TRIPS: readonly PastTrip[] = []
 
 export interface FavoriteDestination {
   readonly id: string
@@ -3429,32 +3398,7 @@ export interface FavoriteDestination {
   readonly isFavorite: boolean
 }
 
-export const FAVORITE_DESTINATIONS: readonly FavoriteDestination[] = [
-  {
-    id: "fav-1",
-    title: "Bãi Sao",
-    imageUrl: "/profile/bai-sao.jpg",
-    isFavorite: true,
-  },
-  {
-    id: "fav-2",
-    title: "Hòn Thơm",
-    imageUrl: "/profile/hon-thom-fav.jpg",
-    isFavorite: true,
-  },
-  {
-    id: "fav-3",
-    title: "VinWonders Phú Quốc",
-    imageUrl: "/profile/vinwonders.jpg",
-    isFavorite: true,
-  },
-  {
-    id: "fav-4",
-    title: "Grand World",
-    imageUrl: "/profile/grand-world.jpg",
-    isFavorite: true,
-  },
-]
+export const FAVORITE_DESTINATIONS: readonly FavoriteDestination[] = []
 
 
 // ==========================================
@@ -3481,96 +3425,7 @@ export interface ServiceBookingItem {
   readonly secondaryActionLabel: string
 }
 
-export const SERVICE_BOOKINGS_DATA: readonly ServiceBookingItem[] = [
-  {
-    id: "booking-1",
-    code: "ST250615001",
-    category: "stay",
-    status: "upcoming",
-    statusLabel: "Sắp diễn ra",
-    title: "Premier Residences Phu Quoc Emerald Bay",
-    dates: "15/06/2025 - 18/06/2025 (3 đêm)",
-    location: "Bãi Khem, Phú Quốc (PQC)",
-    guests: "2 người lớn",
-    detailInfo: "Phòng Deluxe Ocean View",
-    detailIcon: "bed",
-    price: "7.500.000đ",
-    priceNum: 7_500_000,
-    imageUrl: "/bookings/premier-residences.jpg",
-    primaryActionLabel: "Quản lý đặt phòng",
-    secondaryActionLabel: "Liên hệ hỗ trợ",
-  },
-  {
-    id: "booking-2",
-    code: "ST250616002",
-    category: "experience",
-    status: "upcoming",
-    statusLabel: "Sắp diễn ra",
-    title: "Lặn ngắm san hô tại Hòn Thơm",
-    dates: "16/06/2025 - 16/06/2025",
-    location: "Hòn Thơm, Phú Quốc",
-    guests: "2 người",
-    detailInfo: "Trải nghiệm biển",
-    detailIcon: "sparkles",
-    price: "1.200.000đ",
-    priceNum: 1_200_000,
-    imageUrl: "/bookings/hon-thom-snorkeling.jpg",
-    primaryActionLabel: "Xem voucher",
-    secondaryActionLabel: "Liên hệ hỗ trợ",
-  },
-  {
-    id: "booking-3",
-    code: "ST250412003",
-    category: "transport",
-    status: "completed",
-    statusLabel: "Đã hoàn thành",
-    title: "Vé máy bay Vietjet Air",
-    dates: "12/04/2025",
-    route: "Hà Nội (HAN) ➔ Phú Quốc (PQC)",
-    detailInfo: "Hạng phổ thông",
-    detailIcon: "plane",
-    price: "4.800.000đ",
-    priceNum: 4_800_000,
-    imageUrl: "/deals/plane-vietjet.jpg",
-    primaryActionLabel: "Xem chi tiết",
-    secondaryActionLabel: "Đặt lại",
-  },
-  {
-    id: "booking-4",
-    code: "ST250412004",
-    category: "experience",
-    status: "completed",
-    statusLabel: "Đã hoàn thành",
-    title: "Sunset Sanato",
-    dates: "12/04/2025",
-    location: "Dương Đông, Phú Quốc",
-    guests: "2 người",
-    detailInfo: "Vé tham quan & trải nghiệm",
-    detailIcon: "ticket",
-    price: "800.000đ",
-    priceNum: 800_000,
-    imageUrl: "/bookings/sunset-sanato.jpg",
-    primaryActionLabel: "Đánh giá",
-    secondaryActionLabel: "Đặt lại",
-  },
-  {
-    id: "booking-5",
-    code: "ST250413005",
-    category: "experience",
-    status: "completed",
-    statusLabel: "Đã hoàn thành",
-    title: "Tour ẩm thực chợ đêm Dương Đông",
-    dates: "13/04/2025",
-    location: "Chợ đêm Dương Đông, Phú Quốc",
-    detailInfo: "Trải nghiệm ẩm thực",
-    detailIcon: "utensils",
-    price: "1.000.000đ",
-    priceNum: 1_000_000,
-    imageUrl: "/bookings/cho-dem.jpg",
-    primaryActionLabel: "Đánh giá",
-    secondaryActionLabel: "Đặt lại",
-  },
-]
+export const SERVICE_BOOKINGS_DATA: readonly ServiceBookingItem[] = []
 
 export interface BookingTabOption {
   readonly id: "all" | "stay" | "experience" | "transport" | "cancelled"
@@ -3730,32 +3585,7 @@ export interface MyPlanTripCard {
   readonly actionLabel: string
 }
 
-export const MY_PLANS_TRIPS: readonly MyPlanTripCard[] = [
-  {
-    id: "plan-phu-quoc-bien-xanh",
-    status: "upcoming",
-    statusLabel: "Sắp diễn ra",
-    statusVariant: "emerald",
-    title: "Phú Quốc – Biển xanh, nắng vàng",
-    dates: "15/06/2025 - 18/06/2025 (4 ngày)",
-    location: "Phú Quốc (PQC)",
-    guests: "2 người",
-    imageUrl: "/profile/bai-sao.jpg",
-    actionLabel: "Xem chi tiết",
-  },
-  {
-    id: "plan-kham-pha-hon-thom",
-    status: "planning",
-    statusLabel: "Đang lên kế hoạch",
-    statusVariant: "blue",
-    title: "Khám phá Hòn Thơm",
-    dates: "12/08/2025 - 14/08/2025 (3 ngày)",
-    location: "Phú Quốc (PQC)",
-    guests: "2 người",
-    imageUrl: "/packages/hon-thom-cap-treo.jpg",
-    actionLabel: "Tiếp tục lên kế hoạch",
-  },
-]
+export const MY_PLANS_TRIPS: readonly MyPlanTripCard[] = []
 
 export interface ItineraryDayItem {
   readonly id: string
@@ -3767,44 +3597,7 @@ export interface ItineraryDayItem {
   readonly iconName: "plane-arrival" | "waves" | "fish" | "shopping-bag"
 }
 
-export const ACTIVE_PLAN_ITINERARY_DAYS: readonly ItineraryDayItem[] = [
-  {
-    id: "day-1",
-    dayIndex: 1,
-    date: "15/06",
-    dayLabel: "Ngày 1",
-    title: "Đến Phú Quốc",
-    description: "Đón sân bay, nhận phòng khách sạn",
-    iconName: "plane-arrival",
-  },
-  {
-    id: "day-2",
-    dayIndex: 2,
-    date: "16/06",
-    dayLabel: "Ngày 2",
-    title: "Khám phá Bãi Sao",
-    description: "Tắm biển, chụp ảnh, thư giãn",
-    iconName: "waves",
-  },
-  {
-    id: "day-3",
-    dayIndex: 3,
-    date: "17/06",
-    dayLabel: "Ngày 3",
-    title: "Lặn ngắm san hô Hòn Thơm",
-    description: "Trải nghiệm thế giới đại dương",
-    iconName: "fish",
-  },
-  {
-    id: "day-4",
-    dayIndex: 4,
-    date: "18/06",
-    dayLabel: "Ngày 4",
-    title: "Mua sắm & trở về",
-    description: "Mua đặc sản, trả phòng, di chuyển ra sân bay",
-    iconName: "shopping-bag",
-  },
-]
+export const ACTIVE_PLAN_ITINERARY_DAYS: readonly ItineraryDayItem[] = []
 
 export interface PlanBookedServiceItem {
   readonly id: string
@@ -3816,41 +3609,7 @@ export interface PlanBookedServiceItem {
   readonly imageUrl: string
 }
 
-export const ACTIVE_PLAN_BOOKED_SERVICES: readonly PlanBookedServiceItem[] = [
-  {
-    id: "booked-1",
-    title: "Premier Residences Phu Quoc Emerald Bay",
-    statusLabel: "Đã xác nhận",
-    dates: "15/06 - 18/06/2025",
-    typeLabel: "Lưu trú",
-    imageUrl: "/auth/auth-villa-bg.jpg",
-  },
-  {
-    id: "booked-2",
-    title: "Vietjet Air – VJ458",
-    statusLabel: "Đã xác nhận",
-    dates: "15/06/2025",
-    typeLabel: "Vé máy bay",
-    route: "Hà Nội ➔ Phú Quốc",
-    imageUrl: "/deals/plane-vietjet.jpg",
-  },
-  {
-    id: "booked-3",
-    title: "Tour lặn ngắm san hô Hòn Thơm",
-    statusLabel: "Đã xác nhận",
-    dates: "17/06/2025",
-    typeLabel: "Trải nghiệm",
-    imageUrl: "/experience/snorkeling-nam-dao.jpg",
-  },
-  {
-    id: "booked-4",
-    title: "Xe đưa đón sân bay",
-    statusLabel: "Đã xác nhận",
-    dates: "15/06/2025",
-    typeLabel: "Di chuyển",
-    imageUrl: "/transport/family-airport-van.jpg",
-  },
-]
+export const ACTIVE_PLAN_BOOKED_SERVICES: readonly PlanBookedServiceItem[] = []
 
 export interface PlanRecommendedAddonItem {
   readonly id: string
@@ -4048,133 +3807,20 @@ export interface ReviewCategoryTab {
 }
 
 export const MY_REVIEWS_SUMMARY = {
-  averageRating: 4.8,
-  totalReviews: 8,
-  thankYouMessage: "Cảm ơn bạn đã chia sẻ những trải nghiệm tuyệt vời!",
+  averageRating: 0,
+  totalReviews: 0,
+  thankYouMessage: "Bạn chưa có đánh giá nào.",
 } as const
 
 export const MY_REVIEWS_TABS: readonly ReviewCategoryTab[] = [
-  { id: "all", label: "Tất cả", count: 8 },
-  { id: "stay", label: "Lưu trú", count: 2 },
-  { id: "experience", label: "Trải nghiệm", count: 3 },
-  { id: "transport", label: "Di chuyển", count: 2 },
-  { id: "dining", label: "Ẩm thực", count: 1 },
+  { id: "all", label: "Tất cả", count: 0 },
+  { id: "stay", label: "Lưu trú", count: 0 },
+  { id: "experience", label: "Trải nghiệm", count: 0 },
+  { id: "transport", label: "Di chuyển", count: 0 },
+  { id: "dining", label: "Ẩm thực", count: 0 },
 ]
 
-export const MY_REVIEWS_ITEMS: readonly UserReviewItem[] = [
-  {
-    id: "rev-1",
-    title: "Premier Residences Phu Quoc Emerald Bay",
-    category: "stay",
-    categoryTagLabel: "Khách sạn",
-    categoryTagVariant: "sky",
-    date: "15/06/2025",
-    location: "Bãi Khem, Phú Quốc",
-    rating: 5,
-    comment:
-      "Phòng rất đẹp, view biển tuyệt vời và dịch vụ chuyên nghiệp. Nhân viên thân thiện, hỗ trợ nhiệt tình từ lúc check-in đến check-out. Một kỳ nghỉ thật đáng nhớ!",
-    imageUrl: "/auth/auth-villa-bg.jpg",
-    targetRoute: "stay",
-  },
-  {
-    id: "rev-2",
-    title: "Tour lặn ngắm san hô Hòn Thơm",
-    category: "experience",
-    categoryTagLabel: "Trải nghiệm",
-    categoryTagVariant: "sky",
-    date: "17/06/2025",
-    location: "Hòn Thơm, Phú Quốc",
-    rating: 4.8,
-    comment:
-      "Trải nghiệm tuyệt vời! Nước biển trong xanh, san hô rất đẹp và đa dạng. Hướng dẫn viên nhiệt tình, chu đáo và luôn đảm bảo an toàn cho cả đoàn.",
-    imageUrl: "/experience/snorkeling-nam-dao.jpg",
-    targetRoute: "experience",
-  },
-  {
-    id: "rev-3",
-    title: "Xe đưa đón sân bay",
-    category: "transport",
-    categoryTagLabel: "Di chuyển",
-    categoryTagVariant: "purple",
-    date: "12/08/2025",
-    location: "Phú Quốc",
-    rating: 4.9,
-    comment:
-      "Dịch vụ đưa đón rất chuyên nghiệp. Tài xế đến đúng giờ, xe sạch sẽ, thoải mái và rất thân thiện. Giúp chuyến đi của mình bắt đầu thật suôn sẻ!",
-    imageUrl: "/transport/family-airport-van.jpg",
-    targetRoute: "transport",
-  },
-  {
-    id: "rev-4",
-    title: "Sunset Sanato",
-    category: "experience",
-    categoryTagLabel: "Trải nghiệm",
-    categoryTagVariant: "sky",
-    date: "10/06/2025",
-    location: "Dương Đông, Phú Quốc",
-    rating: 4.7,
-    comment:
-      "Không gian nghệ thuật độc đáo, cảnh hoàng hôn cực kỳ đẹp. Rất nhiều góc chụp ảnh ấn tượng, thích hợp cho cả gia đình và cặp đôi. Một điểm đến không nên bỏ lỡ khi đến Phú Quốc!",
-    imageUrl: "/profile/sunset-sanato.jpg",
-    targetRoute: "experience",
-  },
-  {
-    id: "rev-5",
-    title: "Salinda Resort Phu Quoc Island",
-    category: "stay",
-    categoryTagLabel: "Khách sạn",
-    categoryTagVariant: "sky",
-    date: "02/05/2025",
-    location: "Cửa Lấp, Dương Tơ, Phú Quốc",
-    rating: 5,
-    comment:
-      "Resort sang trọng, hồ bơi điện phân muối lọc cao cấp, bữa sáng buffet phong phú và có nhạc sống piano thư giãn. Rất hài lòng với chất lượng phục vụ tại đây.",
-    imageUrl: "/stay/salinda-resort.jpg",
-    targetRoute: "stay",
-  },
-  {
-    id: "rev-6",
-    title: "Khám phá Hòn Thơm – Cáp treo vượt biển",
-    category: "experience",
-    categoryTagLabel: "Trải nghiệm",
-    categoryTagVariant: "sky",
-    date: "28/04/2025",
-    location: "An Thới, Phú Quốc",
-    rating: 4.8,
-    comment:
-      "Cáp treo 3 dây vượt biển dài nhất thế giới, tầm nhìn toàn cảnh quần đảo An Thới ngoạn mục. Công viên nước Aquatopia rất sạch và nhiều trò chơi phấn khích.",
-    imageUrl: "/packages/hon-thom-cap-treo.jpg",
-    targetRoute: "packages",
-  },
-  {
-    id: "rev-7",
-    title: "Thuê xe tự lái Toyota Vios 2024",
-    category: "transport",
-    categoryTagLabel: "Di chuyển",
-    categoryTagVariant: "purple",
-    date: "15/04/2025",
-    location: "Giao nhận xe tại sân bay PQC",
-    rating: 4.6,
-    comment:
-      "Thủ tục nhận xe nhanh chóng, xe mới sạch sẽ điều hòa mát lạnh. Chủ xe hướng dẫn nhiệt tình các cung đường đẹp ở Bắc Đảo và Nam Đảo.",
-    imageUrl: "/deals/toyota-vios.jpg",
-    targetRoute: "transport",
-  },
-  {
-    id: "rev-8",
-    title: "Tour ẩm thực hải sản Chợ đêm Phú Quốc",
-    category: "dining",
-    categoryTagLabel: "Ẩm thực",
-    categoryTagVariant: "amber",
-    date: "10/04/2025",
-    location: "Chợ đêm Bạch Đằng, Dương Đông",
-    rating: 4.7,
-    comment:
-      "Hải sản tươi sống nướng mỡ hành thơm nức, nhum biển béo ngậy và kẹo chỉ đặc sản rất vui mắt. Tour guide địa phương dẫn vào các quán ăn uy tín không bị chặt chém.",
-    imageUrl: "/profile/cho-dem.jpg",
-    targetRoute: "experience",
-  },
-]
+export const MY_REVIEWS_ITEMS: readonly UserReviewItem[] = []
 
 // ============================================================================
 // SECTION 22: THÔNG TIN CÁ NHÂN (PERSONAL INFO & ACCOUNT DETAILS)

@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
-import { HOSTS_MOCK_LIST } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 import type { HostPartnerItem } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
@@ -38,9 +37,7 @@ export function StayeaAdminHostsPage({
   const [activeSegment, setActiveSegment] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
-  const [livePartners, setLivePartners] = useState<HostPartnerItem[]>(
-    HOSTS_MOCK_LIST as HostPartnerItem[]
-  )
+  const [livePartners, setLivePartners] = useState<HostPartnerItem[]>([])
 
   useEffect(() => {
     stayeaApi
@@ -75,13 +72,60 @@ export function StayeaAdminHostsPage({
                   : "Chờ duyệt",
             commission: `${p.commissionRate || 10}%`,
           }))
-          const liveIds = new Set(mapped.map((m) => m.id))
-          const remaining = HOSTS_MOCK_LIST.filter((h) => !liveIds.has(h.id))
-          setLivePartners([...mapped, ...remaining])
+          setLivePartners(mapped)
+        } else {
+          setLivePartners([])
         }
       })
-      .catch(() => { })
+      .catch(() => {
+        setLivePartners([])
+      })
   }, [])
+
+  const liveHostKpis = useMemo(() => {
+    const total = livePartners.length
+    const active = livePartners.filter((p) => p.status === "active").length
+    const pending = livePartners.filter((p) => p.status === "pending").length
+    const paused = livePartners.filter((p) => p.status === "paused").length
+    return [
+      {
+        id: "total-hosts",
+        title: "Tổng chủ nhà/đối tác",
+        value: total.toString(),
+        change: "0%",
+        comparisonText: "so với tháng trước",
+        isPositive: true,
+        iconType: "total" as const,
+      },
+      {
+        id: "active-hosts",
+        title: "Đang hợp tác",
+        value: active.toString(),
+        change: "0%",
+        comparisonText: "so với tháng trước",
+        isPositive: true,
+        iconType: "active" as const,
+      },
+      {
+        id: "pending-hosts",
+        title: "Chờ duyệt",
+        value: pending.toString(),
+        change: "0%",
+        comparisonText: "so với tháng trước",
+        isPositive: true,
+        iconType: "pending" as const,
+      },
+      {
+        id: "paused-hosts",
+        title: "Tạm ngưng",
+        value: paused.toString(),
+        change: "0%",
+        comparisonText: "so với tháng trước",
+        isPositive: false,
+        iconType: "paused" as const,
+      },
+    ]
+  }, [livePartners])
 
   const handleAddHost = () => {
     setIsCreateModalOpen(true)
@@ -200,7 +244,7 @@ export function StayeaAdminHostsPage({
                 {/* Left Column (8 cols) */}
                 <div className="lg:col-span-8 space-y-6">
                   {/* 4 KPI Cards */}
-                  <HostsKpiCards />
+                  <HostsKpiCards kpis={liveHostKpis} />
 
                   {/* Filter and Segment Bar */}
                   <HostsFilterBar

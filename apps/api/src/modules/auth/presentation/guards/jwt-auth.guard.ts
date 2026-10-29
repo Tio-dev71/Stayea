@@ -24,9 +24,34 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ])
 
     if (isPublic) {
+      const req = context.switchToHttp().getRequest()
+      const authHeader = req?.headers?.authorization
+      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+        // Attempt passport authentication so req.user gets populated if token is present
+        return super.canActivate(context)
+      }
       return true
     }
 
     return super.canActivate(context)
+  }
+
+  override handleRequest<TUser = any>(
+    err: any,
+    user: any,
+    _info: any,
+    context: ExecutionContext,
+  ): TUser {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
+
+    if (isPublic) {
+      // If public, never throw 401: attach user if found, or null if guest/invalid token
+      return (user || null) as TUser
+    }
+
+    return super.handleRequest(err, user, _info, context)
   }
 }

@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@workspace/ui/components/dialog"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { ProfileSidebar } from "./profile-sidebar"
 import { StayeaClubHeroBanner } from "./stayea-club-hero-banner"
 import { StayeaClubTierCard } from "./stayea-club-tier-card"
@@ -18,7 +19,6 @@ import { StayeaClubPointsHistory } from "./stayea-club-points-history"
 import { StayeaClubTiersComparison } from "./stayea-club-tiers-comparison"
 import { StayeaClubExploreBanner } from "./stayea-club-explore-banner"
 import {
-  STAYEA_CLUB_PROFILE,
   STAYEA_CLUB_TIERS,
 } from "@/features/landing/data/stayea-mock-data"
 import type {
@@ -35,6 +35,56 @@ export function StayeaClubPage({ onNavigate }: StayeaClubPageProps) {
   const [selectedOffer, setSelectedOffer] = React.useState<StayeaClubOfferItem | null>(null)
   const [selectedTier, setSelectedTier] = React.useState<StayeaClubTierTierItem | null>(null)
   const [showCompareDialog, setShowCompareDialog] = React.useState<boolean>(false)
+
+  const [clubProfile, setClubProfile] = React.useState({
+    memberName: "Đang tải...",
+    memberTier: "Thành viên Bạc",
+    memberSince: "Mới tham gia",
+    avatarUrl: "/profile/profile-avatar.jpg",
+    currentPoints: 0,
+    nextTier: "Vàng",
+    pointsNeededForNextTier: 1000,
+    nextTierThreshold: 1000,
+  })
+
+  React.useEffect(() => {
+    Promise.all([
+      stayeaApi.getProfile().catch(() => null),
+      stayeaApi.getClubProfile().catch(() => null),
+    ]).then(([user, club]) => {
+      const name = user?.displayName || user?.name || "Thành viên STAYEA"
+      const avatar = user?.avatar || "/profile/profile-avatar.jpg"
+      const points = typeof club?.pointsBalance === "number" ? club.pointsBalance : 0
+      let tierName = "Thành viên Bạc"
+      let nextTier = "Vàng"
+      let threshold = 1000
+      if (points >= 4000) {
+        tierName = "Thành viên Kim Cương"
+        nextTier = "VIP Elite"
+        threshold = 10000
+      } else if (points >= 2000) {
+        tierName = "Thành viên Bạch Kim"
+        nextTier = "Kim Cương"
+        threshold = 4000
+      } else if (points >= 1000) {
+        tierName = "Thành viên Vàng"
+        nextTier = "Bạch Kim"
+        threshold = 2000
+      }
+      const needed = Math.max(0, threshold - points)
+
+      setClubProfile({
+        memberName: name,
+        memberTier: tierName,
+        memberSince: club?.memberSince || "Tháng " + (new Date().getMonth() + 1) + "/" + new Date().getFullYear(),
+        avatarUrl: avatar,
+        currentPoints: points,
+        nextTier,
+        pointsNeededForNextTier: needed,
+        nextTierThreshold: threshold,
+      })
+    })
+  }, [])
 
   function showToast(msg: string) {
     setToastMessage(msg)
@@ -151,7 +201,7 @@ export function StayeaClubPage({ onNavigate }: StayeaClubPageProps) {
           <div className="lg:col-span-9 space-y-6">
             {/* 1. Golden VIP Tier & Points Summary Card */}
             <StayeaClubTierCard
-              profile={STAYEA_CLUB_PROFILE}
+              profile={clubProfile}
               onViewTiers={() => setShowCompareDialog(true)}
             />
 

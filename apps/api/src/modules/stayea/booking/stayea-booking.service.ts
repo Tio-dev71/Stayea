@@ -13,6 +13,8 @@ import {
   stayeaExperiencesTable,
   stayeaPromotionsTable,
   stayeaUserVouchersTable,
+  partnerOrdersTable,
+  partnerProfilesTable,
 } from "@workspace/database"
 import dayjs from "dayjs"
 import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm"
@@ -205,6 +207,80 @@ export class StayeaBookingService {
           )
       }
 
+      // Automatically dispatch order to partnerOrdersTable so Admin Approval Queue
+      // and Partner Hub receive and update the state in real time!
+      try {
+        const partnerBusinessType =
+          dto.bookingType === "stay"
+            ? "homestay"
+            : dto.bookingType === "experience" || dto.bookingType === "combo"
+            ? "tour"
+            : "transport"
+
+        const [matchedPartner] = await tx
+          .select()
+          .from(partnerProfilesTable)
+          .where(
+            and(
+              eq(partnerProfilesTable.status, "approved"),
+              or(
+                eq(partnerProfilesTable.businessType, partnerBusinessType),
+                eq(partnerProfilesTable.businessType, "multi")
+              )
+            )
+          )
+          .limit(1)
+
+        const fallbackPartnerId =
+          dto.bookingType === "stay"
+            ? "ptn_sunshine_01"
+            : dto.bookingType === "experience"
+            ? "ptn_tour_01"
+            : "ptn_carrent_01"
+
+        const targetPartnerId = matchedPartner?.id || fallbackPartnerId
+        const commissionRate = matchedPartner?.commissionRate
+          ? Number.parseFloat(matchedPartner.commissionRate) / 100
+          : 0.1
+        const commissionAmount = Math.round(finalAmount * commissionRate)
+        const partnerPayoutAmount = Math.max(0, finalAmount - commissionAmount)
+
+        const rawPhone = dto.details?.contactInfo?.phone || "0912345678"
+        const cleanPhone = rawPhone.replace(/[\s.-]/g, "")
+        const customerName = dto.details?.contactInfo?.fullName || "Khách hàng STAYEA"
+        const customerEmail = dto.details?.contactInfo?.email || null
+
+        await tx.insert(partnerOrdersTable).values({
+          id: `pord-${crypto.randomUUID()}`,
+          orderCode: `ORD-${bookingCode}`,
+          partnerId: targetPartnerId,
+          serviceId:
+            dto.details?.stayId ||
+            dto.details?.experienceId ||
+            dto.details?.packageId ||
+            `srv-${crypto.randomUUID().slice(0, 8)}`,
+          bookingId: newBooking?.id || bookingId,
+          customerName,
+          customerPhone: cleanPhone,
+          customerEmail,
+          serviceTitle: dto.title,
+          serviceType: dto.bookingType,
+          startDate: dto.startDate,
+          endDate: dto.endDate,
+          quantity: dto.guestCount ?? 1,
+          unitPrice: verifiedTotal.toString(),
+          totalAmount: finalAmount.toString(),
+          commissionAmount: commissionAmount.toString(),
+          partnerPayoutAmount: partnerPayoutAmount.toString(),
+          status: "pending_admin",
+          source: "direct_customer",
+          adminNotes: `Đơn đặt dịch vụ trực tuyến từ website (Mã booking: ${bookingCode})`,
+        })
+      } catch (orderErr) {
+        // Log but do not block booking if partner order dispatch hits non-critical warning
+        console.warn("[StayeaBooking] Partner order dispatch warning:", orderErr)
+      }
+
       return newBooking
     })
   }
@@ -212,8 +288,15 @@ export class StayeaBookingService {
   /**
    * Find user bookings with optional status or type filter
    */
-  async findUserBookings(userId: string, query: BookingQueryDto) {
-    const conditions = [eq(stayeaBookingsTable.userId, userId)]
+  async findUserBookings(userId: string, query: BookingQueryDto, userEmail?: string) {
+    const userMatchConditions = [eq(stayeaBookingsTable.userId, userId)]
+    if (userEmail) {
+      userMatchConditions.push(
+        sql`lower(${stayeaBookingsTable.details}->'contactInfo'->>'email') = ${userEmail.toLowerCase()}`
+      )
+    }
+
+    const conditions = [or(...userMatchConditions)]
 
     if (query.status && query.status !== "all") {
       conditions.push(eq(stayeaBookingsTable.status, query.status as any))

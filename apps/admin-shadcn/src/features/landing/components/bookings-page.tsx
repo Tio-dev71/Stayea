@@ -98,6 +98,18 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
     return liveBookings
   }, [liveBookings])
 
+  // Tab counts dynamically calculated from live bookings
+  const tabCounts = React.useMemo(
+    () => ({
+      all: allBookings.length,
+      stay: allBookings.filter((item) => item.category === "stay").length,
+      experience: allBookings.filter((item) => item.category === "experience").length,
+      transport: allBookings.filter((item) => item.category === "transport").length,
+      cancelled: allBookings.filter((item) => item.status === "cancelled").length,
+    }),
+    [allBookings]
+  )
+
   // Filter items based on active tab
   const filteredBookings = React.useMemo(() => {
     if (activeFilterTab === "all") return allBookings
@@ -206,6 +218,7 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
             {/* 2. Category Filter Tabs */}
             <BookingsTabs
               activeTab={activeFilterTab}
+              counts={tabCounts}
               onSelectTab={(tab) => {
                 setActiveFilterTab(tab)
                 setCurrentPage(1)

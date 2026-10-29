@@ -6,14 +6,22 @@ import type { BookingTabOption } from "@/features/landing/data/stayea-mock-data"
 interface BookingsTabsProps {
   readonly activeTab: "all" | "stay" | "experience" | "transport" | "cancelled"
   readonly onSelectTab: (tabId: "all" | "stay" | "experience" | "transport" | "cancelled") => void
+  readonly counts?: {
+    all: number
+    stay: number
+    experience: number
+    transport: number
+    cancelled: number
+  }
 }
 
-export function BookingsTabs({ activeTab, onSelectTab }: BookingsTabsProps) {
+export function BookingsTabs({ activeTab, onSelectTab, counts }: BookingsTabsProps) {
   return (
     <div className="w-full overflow-x-auto scrollbar-none pb-1">
       <div className="inline-flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-2xs">
         {BOOKING_TABS.map((tab: BookingTabOption) => {
           const isActive = activeTab === tab.id
+          const count = counts ? (counts[tab.id as keyof typeof counts] ?? 0) : tab.count
 
           return (
             <button
@@ -27,7 +35,7 @@ export function BookingsTabs({ activeTab, onSelectTab }: BookingsTabsProps) {
               }`}
             >
               <span>{tab.label}</span>
-              <span className="ml-1">({tab.count})</span>
+              <span className="ml-1">({count})</span>
             </button>
           )
         })}

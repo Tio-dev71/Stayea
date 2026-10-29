@@ -44,10 +44,10 @@ export class StayeaBookingController {
   @UseEnvelope()
   @ApiOperation({ summary: "Get current user booking history" })
   async findUserBookings(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user: { id: string; email?: string } },
     @Query() query: BookingQueryDto
   ) {
-    return this.bookingService.findUserBookings(req.user.id, query)
+    return this.bookingService.findUserBookings(req.user.id, query, req.user.email)
   }
 
   @Get("admin/all")

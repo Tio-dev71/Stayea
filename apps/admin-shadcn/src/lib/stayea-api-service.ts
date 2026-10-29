@@ -96,7 +96,7 @@ export interface CreateBookingPayload {
 
 export interface BookingResult {
   success: boolean
-  id: string
+  id?: string
   bookingCode: string
   title: string
   status: string
@@ -327,8 +327,8 @@ class StayeaApiService {
         const booking = data.data || data
         return {
           success: true,
-          id: booking.id || `bk-${Date.now()}`,
-          bookingCode: booking.bookingCode || `STA-202610-${Math.floor(1000 + Math.random() * 9000)}`,
+          id: booking.id,
+          bookingCode: booking.bookingCode,
           title: booking.title || payload.title,
           status: booking.status || "confirmed",
           totalAmount: Number(booking.finalAmount || payload.totalAmount),
@@ -336,21 +336,28 @@ class StayeaApiService {
           message: "Đơn đặt dịch vụ đã được ghi nhận trực tiếp vào hệ thống!",
         }
       }
-    } catch {
-      // Backend is temporarily offline or database starting up -> fallback safely
-    }
 
-    // Graceful offline fallback
-    const randCode = `STA-202610-${Math.floor(1000 + Math.random() * 9000)}`
-    return {
-      success: true,
-      id: `bk-${Date.now()}`,
-      bookingCode: randCode,
-      title: payload.title,
-      status: "confirmed",
-      totalAmount: payload.totalAmount,
-      isLiveDb: false,
-      message: "Đơn đặt phòng đã được xác nhận (chế độ bảo lưu)",
+      const errJson = await res.json().catch(() => ({}))
+      const errMsg = errJson?.message || errJson?.detail || `Đặt dịch vụ không thành công (HTTP ${res.status})`
+      return {
+        success: false,
+        bookingCode: "",
+        title: payload.title,
+        status: "failed",
+        totalAmount: payload.totalAmount,
+        isLiveDb: false,
+        message: Array.isArray(errMsg) ? errMsg.join(", ") : String(errMsg),
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        bookingCode: "",
+        title: payload.title,
+        status: "failed",
+        totalAmount: payload.totalAmount,
+        isLiveDb: false,
+        message: err?.message || "Không thể kết nối đến máy chủ đặt chỗ",
+      }
     }
   }
 
@@ -1118,6 +1125,148 @@ class StayeaApiService {
         }
       }
       return { valid: false, message: "Mã ưu đãi không hợp lệ hoặc đã hết lượt dùng" }
+    }
+  }
+  /**
+   * Club Loyalty: Get current user loyalty profile
+   */
+  async getClubProfile(): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/club/profile`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Club Loyalty: Get perks
+   */
+  async getClubPerks(): Promise<any[]> {
+    try {
+      const res = await fetch(`/api/stayea/club/perks`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Club Loyalty: Claim perk
+   */
+  async claimClubPerk(perkId: string): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/club/claim-perk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ perkId }),
+      })
+      if (res.ok) {
+        return await res.json()
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Club Loyalty: Points history
+   */
+  async getClubHistory(): Promise<any[]> {
+    try {
+      const res = await fetch(`/api/stayea/club/history`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Payments: Get saved payment methods
+   */
+  async getPaymentMethods(): Promise<any[]> {
+    try {
+      const res = await fetch(`/api/stayea/payments/methods`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Payments: Add payment method
+   */
+  async addPaymentMethod(payload: any): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/payments/methods`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      if (res.ok) {
+        return await res.json()
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Payments: Delete payment method
+   */
+  async deletePaymentMethod(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/payments/methods/${id}`, {
+        method: "DELETE",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Payments: Set default payment method
+   */
+  async setDefaultPaymentMethod(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/payments/methods/${id}/default`, {
+        method: "PATCH",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
     }
   }
 }

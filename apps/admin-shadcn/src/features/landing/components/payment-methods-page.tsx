@@ -31,14 +31,10 @@ import type {
   LinkedBankAccount,
   LinkedEWallet,
   BillingInvoiceAddress,
+  RecentPaymentTransaction,
 } from "@/features/landing/data/stayea-mock-data"
 import {
-  SAVED_CREDIT_CARDS,
-  LINKED_BANK_ACCOUNTS,
   LINKED_E_WALLETS,
-  DEFAULT_BILLING_ADDRESS,
-  RECENT_PAYMENT_TRANSACTIONS,
-  PAYMENT_METHODS_METRICS,
 } from "@/features/landing/data/stayea-mock-data"
 
 interface PaymentMethodsPageProps {
@@ -46,23 +42,85 @@ interface PaymentMethodsPageProps {
 }
 
 export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
-  const [accountHolderName, setAccountHolderName] = React.useState<string>("Chủ tài khoản")
+  const [accountHolderName, setAccountHolderName] = React.useState<string>("Khách hàng STAYEA")
+  const [cards, setCards] = React.useState<readonly SavedCreditCard[]>([])
+  const [bankAccounts, setBankAccounts] = React.useState<readonly LinkedBankAccount[]>([])
+  const [recentTransactions, setRecentTransactions] = React.useState<readonly RecentPaymentTransaction[]>([])
+  const [wallets, setWallets] = React.useState<readonly LinkedEWallet[]>(LINKED_E_WALLETS)
+  const [billingAddress, setBillingAddress] = React.useState<BillingInvoiceAddress>({
+    type: "Cá nhân",
+    fullName: "Khách hàng STAYEA",
+    taxId: "",
+    email: "",
+    phone: "",
+    address: "Phú Quốc, Kiên Giang, Việt Nam",
+  })
 
   React.useEffect(() => {
     stayeaApi.getProfile().then((u) => {
-      if (u && (u.displayName || u.name)) {
-        setAccountHolderName(u.displayName || u.name)
+      if (u) {
+        const name = u.displayName || u.name || "Khách hàng STAYEA"
+        setAccountHolderName(name)
+        setNewCardHolder(name)
+        setBillingAddress((prev) => ({
+          ...prev,
+          fullName: name,
+          email: u.email || "",
+          phone: u.phone || "",
+        }))
       }
     }).catch(() => {})
-  }, [])
 
-  // 1. Data States
-  const [cards, setCards] = React.useState<readonly SavedCreditCard[]>(SAVED_CREDIT_CARDS)
-  const [bankAccounts, setBankAccounts] =
-    React.useState<readonly LinkedBankAccount[]>(LINKED_BANK_ACCOUNTS)
-  const [wallets, setWallets] = React.useState<readonly LinkedEWallet[]>(LINKED_E_WALLETS)
-  const [billingAddress, setBillingAddress] =
-    React.useState<BillingInvoiceAddress>(DEFAULT_BILLING_ADDRESS)
+    stayeaApi.getPaymentMethods().then((res) => {
+      if (Array.isArray(res)) {
+        const loadedCards: SavedCreditCard[] = res
+          .filter((item: any) => item.type === "credit_card" || item.type === "card")
+          .map((item: any) => ({
+            id: item.id,
+            cardType: item.brand?.toLowerCase() === "mastercard" ? "mastercard" : "visa",
+            cardNumberMasked: item.details?.maskedCard || item.details?.cardNumber || "•••• •••• •••• 8899",
+            cardHolder: item.details?.cardHolder || accountHolderName,
+            expiryDate: item.details?.expiry || "12/28",
+            isDefault: Boolean(item.isDefault),
+            backgroundGradient:
+              item.brand?.toLowerCase() === "mastercard"
+                ? "from-[#2A2B30] via-[#1C1D21] to-[#0D0E11]"
+                : "from-[#194FA8] via-[#1E5CCB] to-[#0A88DE]",
+          }))
+        setCards(loadedCards)
+
+        const loadedBanks: LinkedBankAccount[] = res
+          .filter((item: any) => item.type === "bank_account" || item.type === "bank")
+          .map((item: any) => ({
+            id: item.id,
+            bankName: item.title || "Ngân hàng",
+            bankCode: (item.brand || "vcb").toLowerCase(),
+            accountHolder: item.details?.accountHolder || accountHolderName,
+            accountNumberMasked: item.details?.maskedAccount || item.details?.accountNumber || "**** 8899",
+            logoColor: "#0066B3",
+          }))
+        setBankAccounts(loadedBanks)
+      }
+    }).catch(() => {})
+
+    stayeaApi.getUserBookings().then((raw) => {
+      if (Array.isArray(raw) && raw.length > 0) {
+        const mapped: RecentPaymentTransaction[] = raw.map((b: any) => ({
+          id: b.id,
+          bookingCode: b.bookingCode || b.id,
+          serviceTitle: b.title || "Dịch vụ tuyển chọn STAYEA",
+          amountFormatted: new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(Number(b.finalAmount || b.totalAmount || 0)),
+          date: b.createdAt ? new Date(b.createdAt).toLocaleDateString("vi-VN") : "Hôm nay",
+          status: b.paymentStatus === "paid" ? "Đã thanh toán" : "Đang xử lý",
+          imageUrl: b.details?.imageUrl || "/bookings/premier-residences.jpg",
+        }))
+        setRecentTransactions(mapped)
+      }
+    }).catch(() => {})
+  }, [accountHolderName])
 
   // 2. Modals States
   const [isAddModalOpen, setIsAddModalOpen] = React.useState<boolean>(false)
@@ -80,18 +138,37 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
 
   // Add Card Form State
   const [newCardNumber, setNewCardNumber] = React.useState<string>("")
-  const [newCardHolder, setNewCardHolder] = React.useState<string>("NGUYỄN MINH")
+  const [newCardHolder, setNewCardHolder] = React.useState<string>("Khách hàng STAYEA")
   const [newCardExpiry, setNewCardExpiry] = React.useState<string>("")
   const [newCardCvv, setNewCardCvv] = React.useState<string>("")
   const [newCardIsDefault, setNewCardIsDefault] = React.useState<boolean>(false)
 
   // Add Bank Form State
-  const [newBankName, setNewBankName] = React.useState<string>("BIDV")
+  const [newBankName, setNewBankName] = React.useState<string>("Vietcombank")
   const [newBankAccNumber, setNewBankAccNumber] = React.useState<string>("")
 
   // Billing Address Edit Temp State
-  const [tempBilling, setTempBilling] =
-    React.useState<BillingInvoiceAddress>(DEFAULT_BILLING_ADDRESS)
+  const [tempBilling, setTempBilling] = React.useState<BillingInvoiceAddress>({
+    type: "Cá nhân",
+    fullName: "Khách hàng STAYEA",
+    taxId: "",
+    email: "",
+    phone: "",
+    address: "Phú Quốc, Kiên Giang, Việt Nam",
+  })
+
+  // Dynamic computed metrics for payment bar
+  const computedMetrics = React.useMemo(() => {
+    const defaultCard = cards.find((c) => c.isDefault) || cards[0]
+    return {
+      savedMethodsCount: cards.length + bankAccounts.length,
+      defaultCardTitle: defaultCard
+        ? `${defaultCard.cardType.toUpperCase()} ${defaultCard.cardNumberMasked.slice(-4)}`
+        : "Chưa thiết lập",
+      recentTxCount: recentTransactions.length,
+      securityStatus: "Mã hóa 256-bit",
+    }
+  }, [cards, bankAccounts, recentTransactions])
 
   // Toast Notification
   const [toastMessage, setToastMessage] = React.useState<string | null>(null)
@@ -111,6 +188,7 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
         isDefault: c.id === cardId,
       }))
     )
+    stayeaApi.setDefaultPaymentMethod(cardId).catch(() => {})
     const target = cards.find((c) => c.id === cardId)
     showToast(
       `Đã đặt thẻ ${target?.cardType.toUpperCase()} (${target?.cardNumberMasked}) làm mặc định!`
@@ -119,17 +197,15 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
 
   // 2. Delete Card
   function handleDeleteCard(cardId: string) {
-    if (cards.length <= 1) {
-      showToast("Bạn cần giữ ít nhất một phương thức thanh toán thẻ.")
-      return
-    }
     setCards((prev) => prev.filter((c) => c.id !== cardId))
+    stayeaApi.deletePaymentMethod(cardId).catch(() => {})
     showToast("Đã xóa thẻ thanh toán thành công.")
   }
 
   // 3. Delete Bank Account
   function handleDeleteBank(accountId: string) {
     setBankAccounts((prev) => prev.filter((a) => a.id !== accountId))
+    stayeaApi.deletePaymentMethod(accountId).catch(() => {})
     showToast("Đã hủy liên kết tài khoản ngân hàng thành công.")
   }
 
@@ -171,6 +247,20 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
         }
         return [...prev, newCard]
       })
+
+      stayeaApi.addPaymentMethod({
+        type: "credit_card",
+        brand: newCardNumber.startsWith("4") ? "visa" : "mastercard",
+        title: `${newCardNumber.startsWith("4") ? "Visa" : "Mastercard"} kết thúc ${last4}`,
+        isDefault: newCardIsDefault,
+        details: {
+          cardNumber: newCardNumber,
+          maskedCard: `•••• •••• •••• ${last4}`,
+          cardHolder: newCardHolder.toUpperCase(),
+          expiry: newCardExpiry,
+        },
+      }).catch(() => {})
+
       showToast("Đã thêm thẻ thanh toán mới thành công!")
     } else {
       if (!newBankAccNumber) {
@@ -181,12 +271,25 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
       const newBank: LinkedBankAccount = {
         id: `bank-${Date.now()}`,
         bankName: newBankName,
-        bankCode: "bidv",
+        bankCode: newBankName.toLowerCase().includes("vcb") ? "vcb" : "tcb",
         accountHolder: accountHolderName,
         accountNumberMasked: `**** ${last4}`,
         logoColor: "#0066B3",
       }
       setBankAccounts((prev) => [...prev, newBank])
+
+      stayeaApi.addPaymentMethod({
+        type: "bank_account",
+        brand: newBankName.toLowerCase().includes("vcb") ? "vcb" : "techcombank",
+        title: newBankName,
+        isDefault: false,
+        details: {
+          accountNumber: newBankAccNumber,
+          maskedAccount: `**** ${last4}`,
+          accountHolder: accountHolderName,
+        },
+      }).catch(() => {})
+
       showToast(`Đã liên kết tài khoản ${newBankName} thành công!`)
     }
 
@@ -264,7 +367,7 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
               {/* Left Stack (Col Span 7) */}
               <div className="lg:col-span-7 space-y-6">
                 {/* 1. Metrics Status Cards */}
-                <PaymentMetricsBar metrics={PAYMENT_METHODS_METRICS} />
+                <PaymentMetricsBar metrics={computedMetrics} />
 
                 {/* 2. Thẻ đã lưu */}
                 <SavedCardsSection
@@ -311,7 +414,7 @@ export function PaymentMethodsPage({ onNavigate }: PaymentMethodsPageProps) {
 
                 {/* 2. Lịch sử thanh toán gần đây */}
                 <RecentTransactionsCard
-                  transactions={RECENT_PAYMENT_TRANSACTIONS}
+                  transactions={recentTransactions}
                   onViewAll={() => onNavigate?.("bookings")}
                 />
 

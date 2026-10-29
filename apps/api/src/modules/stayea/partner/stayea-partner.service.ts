@@ -577,8 +577,9 @@ export class StayeaPartnerService {
   async getPartnerOrders(partnerId: string, status?: string) {
     let conditions = [
       eq(partnerOrdersTable.partnerId, partnerId),
-      // Partners only see orders that have reached their inbox or completed
+      // Partners see all orders related to their property or service
       inArray(partnerOrdersTable.status, [
+        "pending_admin",
         "sent_to_partner",
         "partner_accepted",
         "partner_rejected",

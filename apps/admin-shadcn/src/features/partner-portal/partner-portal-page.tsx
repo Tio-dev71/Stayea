@@ -18,7 +18,6 @@ import { PartnerOrdersManager } from "./components/partner-orders-manager"
 import { PartnerPayoutSettings } from "./components/partner-payout-settings"
 import { PartnerServicesManager } from "./components/partner-services-manager"
 import {
-  DEMO_PARTNER_ORDERS,
   DEMO_PARTNER_PROFILES,
   DEMO_PARTNER_SERVICES,
 } from "./mock-partners"
@@ -60,14 +59,13 @@ export function PartnerPortalPage({
   )
 
   // Orders State (filtered to current partner)
-  const [allOrders, setAllOrders] =
-    useState<PartnerOrderData[]>(DEMO_PARTNER_ORDERS)
+  const [allOrders, setAllOrders] = useState<PartnerOrderData[]>([])
 
   useEffect(() => {
     stayeaApi
       .getPartnerOrders({ partnerId: currentProfile.id })
       .then((live) => {
-        if (live && live.length > 0) {
+        if (Array.isArray(live)) {
           const mapped: PartnerOrderData[] = live.map((o: any) => ({
             id: o.id,
             orderCode: o.orderCode,
@@ -93,9 +91,7 @@ export function PartnerPortalPage({
             source: o.source,
             createdAt: o.createdAt,
           }))
-          const liveIds = new Set(mapped.map((m) => m.id))
-          const remaining = DEMO_PARTNER_ORDERS.filter((d) => !liveIds.has(d.id))
-          setAllOrders([...mapped, ...remaining])
+          setAllOrders(mapped)
         }
       })
       .catch(() => {})

@@ -20,15 +20,15 @@ export function PaymentMetricsBar({ metrics }: PaymentMetricsBarProps) {
         <div className="p-2 rounded-xl bg-blue-50 text-blue-600 shrink-0">
           <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-[11px] text-slate-500 font-medium leading-tight">
             Phương thức đã lưu
           </div>
           <div className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
             {metrics.savedMethodsCount}
           </div>
-          <div className="text-[10px] text-slate-400 leading-tight">
-            Thẻ, tài khoản và ví điện tử
+          <div className="text-[10px] text-slate-400 leading-tight truncate">
+            Thẻ, tài khoản & ví
           </div>
         </div>
       </div>
@@ -38,14 +38,14 @@ export function PaymentMetricsBar({ metrics }: PaymentMetricsBarProps) {
         <div className="p-2 rounded-xl bg-amber-50 text-amber-500 shrink-0">
           <Crown className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-[11px] text-slate-500 font-medium leading-tight">
             Mặc định
           </div>
-          <div className="text-xs sm:text-sm font-bold text-slate-900 leading-tight truncate">
-            {metrics.defaultCardTitle}
+          <div className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+            {metrics.defaultCardTitle || "Chưa thiết lập"}
           </div>
-          <div className="text-[10px] text-slate-400 leading-tight">
+          <div className="text-[10px] text-slate-400 leading-tight truncate">
             Thẻ thanh toán chính
           </div>
         </div>
@@ -56,14 +56,14 @@ export function PaymentMetricsBar({ metrics }: PaymentMetricsBarProps) {
         <div className="p-2 rounded-xl bg-blue-50 text-blue-600 shrink-0">
           <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-[11px] text-slate-500 font-medium leading-tight">
             Giao dịch gần đây
           </div>
           <div className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
             {metrics.recentTxCount}
           </div>
-          <div className="text-[10px] text-slate-400 leading-tight">
+          <div className="text-[10px] text-slate-400 leading-tight truncate">
             Trong 3 tháng qua
           </div>
         </div>
@@ -74,15 +74,15 @@ export function PaymentMetricsBar({ metrics }: PaymentMetricsBarProps) {
         <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
           <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-[11px] text-slate-500 font-medium leading-tight">
             Bảo mật thanh toán
           </div>
-          <div className="text-xs sm:text-sm font-bold text-emerald-600 leading-tight truncate">
-            {metrics.securityStatus}
+          <div className="text-xs sm:text-sm font-bold text-emerald-600 leading-tight">
+            {metrics.securityStatus || "Mã hóa 256-bit"}
           </div>
-          <div className="text-[10px] text-slate-400 leading-tight">
-            Được mã hóa bảo mật
+          <div className="text-[10px] text-slate-400 leading-tight truncate">
+            Chuẩn PCI-DSS
           </div>
         </div>
       </div>

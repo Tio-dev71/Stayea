@@ -39,7 +39,16 @@ export function SavedCardsSection({
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {cards.length === 0 ? (
+        <div className="text-center py-10 px-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
+          <CreditCard className="w-10 h-10 text-slate-400 mx-auto mb-2" />
+          <h4 className="text-sm font-bold text-slate-800">Chưa có thẻ thanh toán nào được lưu</h4>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            Thêm thẻ tín dụng hoặc ghi nợ quốc tế để thanh toán dịch vụ nhanh chóng và an toàn.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {cards.map((card) => {
           const isVisa = card.cardType === "visa"
 
@@ -137,6 +146,7 @@ export function SavedCardsSection({
           )
         })}
       </div>
+      )}
     </div>
   )
 }

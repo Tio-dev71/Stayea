@@ -44,7 +44,8 @@ export function PartnerOrdersManager({
     if (!matchesSearch) return false
 
     if (activeTab === "all") return true
-    if (activeTab === "sent_to_partner") return o.status === "sent_to_partner"
+    if (activeTab === "sent_to_partner")
+      return o.status === "sent_to_partner" || o.status === "pending_admin"
     if (activeTab === "partner_accepted")
       return o.status === "partner_accepted" || o.status === "in_progress"
     if (activeTab === "completed") return o.status === "completed"
@@ -54,7 +55,9 @@ export function PartnerOrdersManager({
     return true
   })
 
-  const pendingCount = orders.filter((o) => o.status === "sent_to_partner").length
+  const pendingCount = orders.filter(
+    (o) => o.status === "sent_to_partner" || o.status === "pending_admin"
+  ).length
 
   const handleOpenReject = (orderId: string) => {
     setRejectionModalOrderId(orderId)

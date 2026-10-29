@@ -6,6 +6,7 @@ const PUBLIC_ROUTES = new Set([
   '/about',
   '/host',
   '/partner',
+  '/hub',
   '/stayea-club',
   '/stayea-club-claimed',
   '/stay',
@@ -35,6 +36,12 @@ const PUBLIC_ROUTES = new Set([
 export const proxy: NextProxy = (request: NextRequest) => {
   const token = request.cookies.get('token')?.value
   const { pathname } = request.nextUrl
+  const hostname = request.headers.get('host')?.toLowerCase() || ''
+
+  // Allow partner subdomains
+  if (hostname.startsWith('partner.') || hostname.startsWith('hub.')) {
+    return NextResponse.next()
+  }
 
   // Allow static assets, public pages, and all customer portal routes
   if (

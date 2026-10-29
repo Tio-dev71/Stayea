@@ -1,21 +1,60 @@
-export interface ChatMessage {
-  role: "system" | "user" | "assistant" | "tool"
-  content: string
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger"
+import { IsArray, IsBoolean, IsOptional, IsString } from "class-validator"
+
+export class ChatMessageDto {
+  @ApiProperty({ enum: ["system", "user", "assistant", "tool"] })
+  @IsString()
+  role!: "system" | "user" | "assistant" | "tool"
+
+  @ApiProperty()
+  @IsString()
+  content!: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   name?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   tool_call_id?: string
 }
 
-export interface CustomerContext {
+export class CustomerContextDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   name?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   phone?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   email?: string
 }
 
 export class AiChatRequestDto {
-  messages!: ChatMessage[]
-  customerContext?: CustomerContext
+  @ApiProperty({ type: [ChatMessageDto] })
+  @IsArray()
+  messages!: ChatMessageDto[]
+
+  @ApiPropertyOptional({ type: CustomerContextDto })
+  @IsOptional()
+  customerContext?: CustomerContextDto
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
   stream?: boolean
 }
+
+export type ChatMessage = ChatMessageDto
+export type CustomerContext = CustomerContextDto
 
 export interface BookingPreviewCard {
   orderCode: string

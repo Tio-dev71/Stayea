@@ -6,6 +6,7 @@ import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import { CampaignsHeader } from "./components/campaigns-header"
+import { MarketingCategoryTabs } from "./components/marketing-category-tabs"
 import { CampaignsKpiCards } from "./components/campaigns-kpi-cards"
 import { CampaignsFilterBar } from "./components/campaigns-filter-bar"
 import { CampaignsCharts } from "./components/campaigns-charts"
@@ -20,12 +21,14 @@ interface StayeaAdminCampaignsPageProps {
   onNavigateTab?: (tabId: string) => void
   onNavigateLanding?: () => void
   onSwitchToOverview?: () => void
+  onSwitchCategoryTab?: (tab: string) => void
 }
 
 export function StayeaAdminCampaignsPage({
   onNavigateTab,
   onNavigateLanding,
   onSwitchToOverview,
+  onSwitchCategoryTab,
 }: StayeaAdminCampaignsPageProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false)
@@ -128,6 +131,18 @@ export function StayeaAdminCampaignsPage({
               }}
               onDateRangeChange={(range) => {
                 toast.info(`Đã chọn kỳ báo cáo: ${range}`)
+              }}
+            />
+
+            {/* Category Tabs */}
+            <MarketingCategoryTabs
+              activeTab="chien-dich"
+              setActiveTab={(tab) => {
+                if (tab === "tong-quan" && onSwitchToOverview) {
+                  onSwitchToOverview()
+                } else if (onSwitchCategoryTab) {
+                  onSwitchCategoryTab(tab)
+                }
               }}
             />
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { StayeaAdminHeader } from "./components/stayea-admin-header"
 import { StayeaAdminSidebar } from "./components/stayea-admin-sidebar"
@@ -11,7 +12,6 @@ import { StayeaAdminBookingStatusChart } from "./components/stayea-admin-booking
 import { StayeaAdminRecentBookingsTable } from "./components/stayea-admin-recent-bookings-table"
 import { StayeaAdminRightSidebar } from "./components/stayea-admin-right-sidebar"
 import { StayeaAdminFooter } from "./components/stayea-admin-footer"
-import { StayeaAdminBookingsPage } from "@/features/admin-bookings"
 
 interface StayeaAdminDashboardPageProps {
   onNavigateLanding?: () => void
@@ -24,45 +24,31 @@ export function StayeaAdminDashboardPage({
   onNavigateTab,
   onLogout,
 }: StayeaAdminDashboardPageProps) {
-  const [activeTab, setActiveTab] = useState("tong-quan")
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleQuickAction = (actionKey: string) => {
     switch (actionKey) {
       case "banner-action":
-        toast.info("Hành trình hạnh phúc tại Phú Quốc", {
-          description: "Mở danh sách các trải nghiệm và dịch vụ cao cấp tuyển chọn.",
-        })
+        router.push("/stayea/experiences")
         break
       case "add-property":
-        toast.success("Thêm bất động sản mới", {
-          description: "Mở biểu mẫu đăng ký biệt thự, căn hộ hoặc homestay mới tại Phú Quốc.",
-        })
+        router.push("/stayea/properties")
         break
       case "create-promotion":
-        toast.success("Tạo chương trình khuyến mãi", {
-          description: "Mở trình thiết lập mã giảm giá và ưu đãi đặc quyền cho khách hàng.",
-        })
+        router.push("/stayea/deals")
         break
       case "create-experience":
-        toast.success("Tạo tour/trải nghiệm mới", {
-          description: "Thêm gói tour khám phá biển đảo, lặn ngắm san hô hoặc ẩm thực.",
-        })
+        router.push("/stayea/experiences")
         break
       case "send-announcement":
-        toast.info("Gửi thông báo hệ thống", {
-          description: "Soạn và gửi thông báo tới toàn bộ đối tác hoặc khách hàng.",
-        })
+        router.push("/stayea/messages")
         break
       case "view-reports":
-        toast.info("Xem báo cáo chi tiết", {
-          description: "Đang tổng hợp báo cáo tài chính và hiệu suất vận hành tuần này.",
-        })
+        router.push("/stayea/reports")
         break
       case "sustainable-tourism":
-        toast.info("Du lịch bền vững tại Phú Quốc", {
-          description: "Chiến dịch bảo tồn hệ sinh thái biển và phát triển cộng đồng địa phương.",
-        })
+        router.push("/stayea/experiences")
         break
       default:
         break
@@ -76,23 +62,7 @@ export function StayeaAdminDashboardPage({
   }
 
   const handleCreateNew = () => {
-    toast.success("Tạo mới", {
-      description: "Chọn tạo Đặt phòng mới, Thêm chỗ nghỉ, hoặc Tạo ưu đãi du lịch.",
-    })
-  }
-
-  if (activeTab === "dat-phong") {
-    return (
-      <StayeaAdminBookingsPage
-        onNavigateLanding={onNavigateLanding}
-        onNavigateTab={(tabId) => {
-          setActiveTab(tabId)
-          if (tabId === "tong-quan" || tabId === "dashboard") {
-            window.location.hash = "admin"
-          }
-        }}
-      />
-    )
+    router.push("/stayea/bookings")
   }
 
   return (
@@ -114,35 +84,8 @@ export function StayeaAdminDashboardPage({
         {/* Left Sidebar */}
         <div className={`${sidebarOpen ? "block" : "hidden"} lg:block`}>
           <StayeaAdminSidebar
-            activeTab={activeTab}
-            onSelectTab={(tabId) => {
-              if (onNavigateTab) {
-                onNavigateTab(tabId)
-                return
-              }
-              setActiveTab(tabId)
-              if (tabId === "dat-phong" || tabId === "bookings") {
-                window.location.hash = "admin-bookings"
-                return
-              }
-              if (tabId === "bat-dong-san" || tabId === "properties") {
-                window.location.hash = "properties"
-                return
-              }
-              if (tabId === "khach-hang" || tabId === "guests") {
-                window.location.hash = "customers"
-                return
-              }
-              if (tabId === "chu-nha-doi-tac" || tabId === "hosts") {
-                window.location.hash = "hosts"
-                return
-              }
-              if (tabId !== "tong-quan") {
-                toast.info(`Điều hướng đến mục "${tabId}"`, {
-                  description: "Hiển thị dữ liệu quản trị từ hệ sinh thái Stayea.",
-                })
-              }
-            }}
+            activeTab="tong-quan"
+            onSelectTab={onNavigateTab}
             onExplorePhuQuoc={() => {
               toast.info("Khám phá Phú Quốc", {
                 description: "Chuyển tới cổng thông tin du lịch và danh sách trải nghiệm đảo ngọc.",
@@ -156,7 +99,7 @@ export function StayeaAdminDashboardPage({
           <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
             {/* Greeting & Date Picker Bar */}
             <StayeaAdminGreetingBar
-              adminName="Nguyễn Minh"
+              adminName="Quản trị viên"
               dateRange="21/04/2025 - 27/04/2025"
               onDateRangeClick={handleDateRangeClick}
               onCreateNew={handleCreateNew}
@@ -177,9 +120,7 @@ export function StayeaAdminDashboardPage({
                   <div className="md:col-span-5">
                     <StayeaAdminBookingStatusChart
                       onViewDetails={() => {
-                        toast.info("Chi tiết tình trạng đặt phòng", {
-                          description: "Xem phân bổ theo loại phòng, thời gian và trạng thái thanh toán.",
-                        })
+                        router.push("/stayea/bookings")
                       }}
                     />
                   </div>
@@ -188,9 +129,7 @@ export function StayeaAdminDashboardPage({
                 {/* Recent Bookings Table (Đặt phòng gần đây) */}
                 <StayeaAdminRecentBookingsTable
                   onViewAll={() => {
-                    toast.info("Toàn bộ danh sách đặt phòng", {
-                      description: "Hiển thị tất cả 1.284 lượt đặt chỗ nghỉ tại Phú Quốc.",
-                    })
+                    router.push("/stayea/bookings")
                   }}
                 />
               </div>
@@ -200,9 +139,7 @@ export function StayeaAdminDashboardPage({
                 <StayeaAdminRightSidebar
                   onQuickAction={handleQuickAction}
                   onViewAllActivities={() => {
-                    toast.info("Nhật ký hoạt động gần đây", {
-                      description: "Xem đầy đủ lịch sử giao dịch và biến động hệ thống.",
-                    })
+                    router.push("/stayea/revenue")
                   }}
                 />
               </div>

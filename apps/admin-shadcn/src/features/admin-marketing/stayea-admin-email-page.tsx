@@ -6,6 +6,7 @@ import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import { EmailHeader } from "./components/email-header"
+import { MarketingCategoryTabs } from "./components/marketing-category-tabs"
 import { EmailKpiCards } from "./components/email-kpi-cards"
 import { EmailSubTabs } from "./components/email-sub-tabs"
 import { EmailCharts } from "./components/email-charts"
@@ -146,6 +147,14 @@ export function StayeaAdminEmailPage({
                 toast.info(`Đã đổi mốc so sánh: ${period}`)
               }}
               onExportReport={() => setIsExportModalOpen(true)}
+            />
+
+            {/* Category Tabs */}
+            <MarketingCategoryTabs
+              activeTab="email-marketing"
+              setActiveTab={(tab) => {
+                onSwitchCategoryTab?.(tab)
+              }}
             />
 
             {/* 5 KPI Cards: Đặt ngay bên dưới Header theo chuẩn thiết kế */}

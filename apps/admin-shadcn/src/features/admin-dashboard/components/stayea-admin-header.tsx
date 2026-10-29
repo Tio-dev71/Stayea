@@ -211,7 +211,7 @@ export function StayeaAdminHeader({
                 type="button"
                 onClick={() => {
                   setIsProfileMenuOpen(false)
-                  window.location.href = "/settings"
+                  window.location.href = "/stayea/settings"
                 }}
                 className="w-full px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-xl flex items-center gap-2 transition-colors"
               >

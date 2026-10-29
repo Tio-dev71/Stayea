@@ -190,6 +190,10 @@ export function StayeaAdminMarketingPage({
         onNavigateLanding={onNavigateLanding}
         onNavigateTab={onNavigateTab}
         onSwitchToOverview={() => setActiveCategoryTab("tong-quan")}
+        onSwitchCategoryTab={(tab) => {
+          setActiveCategoryTab(tab)
+          window.location.hash = `#${tab}`
+        }}
       />
     )
   }

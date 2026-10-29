@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useRouter, usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -79,7 +80,7 @@ function getSidebarIcon(iconName: string) {
 }
 
 const DEFAULT_TAB_ROUTES: Record<string, string> = {
-  "tong-quan": "/stayea/bookings",
+  "tong-quan": "/stayea",
   "dat-phong": "/stayea/bookings",
   "bat-dong-san": "/stayea/properties",
   "khach-hang": "/stayea/customers",
@@ -91,60 +92,86 @@ const DEFAULT_TAB_ROUTES: Record<string, string> = {
   "tin-nhan": "/stayea/messages",
   "marketing": "/stayea/marketing",
   "bao-cao": "/stayea/reports",
-  "cai-dat": "/settings",
+  "cai-dat": "/stayea/settings",
 }
 
 export function StayeaAdminSidebar({
-  activeTab = "tong-quan",
+  activeTab,
   onSelectTab,
   onExplorePhuQuoc,
   promoTitle = "Phú Quốc",
   promoSubtitle = "Chờ bạn khám phá",
   promoButtonText = "Xem ngay",
 }: StayeaAdminSidebarProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+
   const normalizedActiveTab = (() => {
-    switch (activeTab) {
-      case "dashboard":
-        return "tong-quan"
-      case "bookings":
-        return "dat-phong"
-      case "properties":
-        return "bat-dong-san"
-      case "guests":
-      case "customers":
-        return "khach-hang"
-      case "hosts":
-        return "chu-nha-doi-tac"
-      case "experience":
-      case "experiences":
-        return "trai-nghiem-tour"
-      case "deals":
-        return "uu-dai-khuyen-mai"
-      case "revenue":
-      case "transactions":
-        return "doanh-thu-thanh-toan"
-      case "reviews":
-        return "danh-gia"
-      case "messages":
-        return "tin-nhan"
-      case "marketing":
-        return "marketing"
-      case "analytics":
-      case "reports":
-        return "bao-cao"
-      case "settings":
-        return "cai-dat"
-      default:
-        return activeTab
+    // If activeTab is explicitly passed and not generic "tong-quan", use it
+    if (activeTab && activeTab !== "tong-quan") {
+      switch (activeTab) {
+        case "dashboard":
+          return "tong-quan"
+        case "bookings":
+          return "dat-phong"
+        case "properties":
+          return "bat-dong-san"
+        case "guests":
+        case "customers":
+          return "khach-hang"
+        case "hosts":
+          return "chu-nha-doi-tac"
+        case "experience":
+        case "experiences":
+          return "trai-nghiem-tour"
+        case "deals":
+          return "uu-dai-khuyen-mai"
+        case "revenue":
+        case "transactions":
+          return "doanh-thu-thanh-toan"
+        case "reviews":
+          return "danh-gia"
+        case "messages":
+          return "tin-nhan"
+        case "marketing":
+          return "marketing"
+        case "analytics":
+        case "reports":
+          return "bao-cao"
+        case "settings":
+          return "cai-dat"
+        default:
+          return activeTab
+      }
     }
+
+    // Auto-detect from current URL pathname
+    if (pathname) {
+      if (pathname === "/stayea" || pathname === "/stayea/overview") return "tong-quan"
+      if (pathname.startsWith("/stayea/bookings")) return "dat-phong"
+      if (pathname.startsWith("/stayea/properties")) return "bat-dong-san"
+      if (pathname.startsWith("/stayea/customers")) return "khach-hang"
+      if (pathname.startsWith("/hub")) return "chu-nha-doi-tac"
+      if (pathname.startsWith("/stayea/experiences")) return "trai-nghiem-tour"
+      if (pathname.startsWith("/stayea/deals")) return "uu-dai-khuyen-mai"
+      if (pathname.startsWith("/stayea/revenue")) return "doanh-thu-thanh-toan"
+      if (pathname.startsWith("/stayea/reviews")) return "danh-gia"
+      if (pathname.startsWith("/stayea/messages")) return "tin-nhan"
+      if (pathname.startsWith("/stayea/marketing")) return "marketing"
+      if (pathname.startsWith("/stayea/reports")) return "bao-cao"
+      if (pathname.startsWith("/stayea/settings")) return "cai-dat"
+    }
+
+    return activeTab || "tong-quan"
   })()
 
   const handleTabClick = (tabId: string) => {
     if (onSelectTab) {
       onSelectTab(tabId)
-    } else {
-      const target = DEFAULT_TAB_ROUTES[tabId] || "/stayea/bookings"
-      window.location.href = target
+    }
+    const target = DEFAULT_TAB_ROUTES[tabId]
+    if (target && pathname !== target) {
+      router.push(target)
     }
   }
 
@@ -167,10 +194,10 @@ export function StayeaAdminSidebar({
               key={item.id}
               type="button"
               onClick={() => handleTabClick(item.id)}
-              className={`relative w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-[13px] font-medium transition-all text-left ${
+              className={`relative overflow-hidden w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all text-left ${
                 isActive
-                  ? "bg-[#eef8f3] text-[#1b7a4e] font-semibold shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-[#eef8f3] text-[#1b7a4e] font-semibold shadow-2xs border border-emerald-200/60"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
               }`}
             >
               {/* Left active marker pill */}
@@ -212,10 +239,10 @@ export function StayeaAdminSidebar({
           </div>
         </div>
 
-        {/* Stayea.com Version */}
-        <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium px-1">
-          <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
-            <Home className="w-3.5 h-3.5 text-[#1b7a4e]" />
+        {/* Brand & Version Info */}
+        <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <Home className="w-3.5 h-3.5 text-slate-400" />
             <span>Stayea.com</span>
           </div>
           <span>Phiên bản 1.0.0</span>

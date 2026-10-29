@@ -52,7 +52,7 @@ interface StayeaAdminReportsPageProps {
 }
 
 export function StayeaAdminReportsPage({
-  initialTab = "khach-hang",
+  initialTab = "tong-quan",
   onNavigateLanding,
   onNavigateTab,
 }: StayeaAdminReportsPageProps) {

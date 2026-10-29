@@ -6,7 +6,6 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Eye,
   Mail,
   Edit,
@@ -17,6 +16,7 @@ import type { CustomerItem } from "@/features/admin-customers/stayea-admin-custo
 import { CUSTOMERS_MOCK_LIST } from "@/features/admin-customers/stayea-admin-customers-mock-data"
 
 interface CustomersDataTableProps {
+  customers?: readonly CustomerItem[]
   onCustomerAction?: (action: string, customer: CustomerItem) => void
 }
 
@@ -47,21 +47,25 @@ function renderCustomerStatusBadge(status: CustomerItem["status"], label: string
 }
 
 export function CustomersDataTable({
+  customers = CUSTOMERS_MOCK_LIST,
   onCustomerAction,
 }: CustomersDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
+  const totalCount = customers.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   const isAllSelected =
-    CUSTOMERS_MOCK_LIST.length > 0 &&
-    selectedIds.length === CUSTOMERS_MOCK_LIST.length
+    totalCount > 0 && selectedIds.length === totalCount
 
   const handleToggleSelectAll = () => {
     if (isAllSelected) {
       setSelectedIds([])
     } else {
-      setSelectedIds(CUSTOMERS_MOCK_LIST.map((item) => item.id))
+      setSelectedIds(customers.map((item) => item.id))
     }
   }
 
@@ -70,6 +74,10 @@ export function CustomersDataTable({
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     )
   }
+
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, totalCount)
+  const displayedCustomers = customers.slice(startIndex, endIndex)
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
@@ -98,9 +106,16 @@ export function CustomersDataTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
-            {CUSTOMERS_MOCK_LIST.map((cust) => {
-              const isSelected = selectedIds.includes(cust.id)
-              const isMenuOpen = activeMenuId === cust.id
+            {displayedCustomers.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="py-8 text-center text-xs text-slate-500">
+                  Không tìm thấy khách hàng nào phù hợp.
+                </td>
+              </tr>
+            ) : (
+              displayedCustomers.map((cust) => {
+                const isSelected = selectedIds.includes(cust.id)
+                const isMenuOpen = activeMenuId === cust.id
 
               return (
                 <tr
@@ -241,7 +256,7 @@ export function CustomersDataTable({
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
       </div>
@@ -249,7 +264,7 @@ export function CustomersDataTable({
       {/* Pagination Footer */}
       <div className="p-3 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
         <span className="font-medium text-slate-600">
-          Hiển thị 1 - 10 của 2.716 khách hàng
+          Hiển thị {totalCount === 0 ? 0 : startIndex + 1} - {endIndex} của {totalCount} khách hàng
         </span>
 
         <div className="flex items-center gap-2">
@@ -264,55 +279,29 @@ export function CustomersDataTable({
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
 
-            <button
-              type="button"
-              onClick={() => setCurrentPage(1)}
-              className="w-7 h-7 rounded-lg bg-[#1b7a4e] text-white font-semibold flex items-center justify-center shadow-xs"
-            >
-              1
-            </button>
-
-            {[2, 3, 4, 5].map((pageNum) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
               <button
                 key={pageNum}
                 type="button"
                 onClick={() => setCurrentPage(pageNum)}
-                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 font-medium"
+                className={`w-7 h-7 rounded-lg font-semibold flex items-center justify-center transition-all ${
+                  currentPage === pageNum
+                    ? "bg-[#1b7a4e] text-white shadow-xs"
+                    : "border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium"
+                }`}
               >
                 {pageNum}
               </button>
             ))}
 
-            <span className="px-1 text-slate-400">...</span>
-
             <button
               type="button"
-              onClick={() => setCurrentPage(272)}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 font-medium"
-            >
-              272
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.min(272, p + 1))}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
-          </div>
-
-          {/* Page size dropdown */}
-          <div className="relative ml-2">
-            <select
-              defaultValue="10"
-              className="appearance-none pl-2.5 pr-6 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium cursor-pointer focus:outline-none text-xs"
-            >
-              <option value="10">10 / trang</option>
-              <option value="20">20 / trang</option>
-              <option value="50">50 / trang</option>
-            </select>
-            <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
       </div>

@@ -88,3 +88,4 @@ export interface InventorySlotData {
   priceOverride?: string | null
   note?: string | null
 }
+

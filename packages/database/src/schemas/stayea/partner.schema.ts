@@ -223,3 +223,4 @@ export const partnerOrdersTable = pgTable(
 
 export type PartnerOrder = typeof partnerOrdersTable.$inferSelect
 export type InsertPartnerOrder = typeof partnerOrdersTable.$inferInsert
+

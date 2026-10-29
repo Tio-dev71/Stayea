@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useId } from "react"
+import { toast } from "sonner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import {
   X,
   Plus,
@@ -8,6 +10,7 @@ import {
   Calendar,
   ChevronDown,
   CheckCircle2,
+  Loader2,
 } from "lucide-react"
 
 interface CreateBookingModalProps {
@@ -143,36 +146,69 @@ export function CreateBookingModal({
     setTotalAmount(total > 0 ? `${total.toLocaleString("vi-VN")} đ` : "0 đ")
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmitSuccess?.({
-      fullName,
-      nationality,
-      phoneNumber,
-      email,
-      property,
-      propertyType,
-      roomName,
-      checkInDate,
-      checkOutDate,
-      nightsCount,
-      guestsCount,
-      roomsCount,
-      specialRequests,
-      pricePerNight,
-      totalAmount,
-      paymentMethod,
-      paymentStatus,
-      bookingSource,
-      discountCode,
-      internalNotes,
-      sendNotification,
-    })
+    setIsSubmitting(true)
+
+    const numAmount = Number.parseInt(totalAmount.replaceAll(/\D/g, ""), 10) || 3500000
+
+    try {
+      const res = await stayeaApi.createBooking({
+        bookingType: "stay",
+        title: property || "Sunset Villa Phú Quốc",
+        destination: "Phú Quốc, Kiên Giang",
+        startDate: checkInDate || new Date().toISOString().split("T")[0] || "",
+        endDate: checkOutDate || new Date(Date.now() + 86400000 * (nightsCount || 2)).toISOString().split("T")[0] || "",
+        guestCount: guestsCount,
+        totalAmount: numAmount,
+        paymentMethod: paymentMethod || "Chuyển khoản",
+        details: {
+          stayId: property,
+          roomType: roomName,
+          nightCount: nightsCount || 2,
+          contactInfo: {
+            fullName: fullName || "Khách hàng",
+            email: email || "khach@stayea.com",
+            phone: phoneNumber || "0987654321",
+            note: specialRequests,
+          },
+        },
+      })
+
+      const newBookingRecord: any = {
+        id: res.id || `b-${Date.now()}`,
+        code: res.bookingCode || `ST${Date.now().toString().slice(-6)}`,
+        guestName: fullName || "Khách Hàng",
+        guestAvatar: "/about/team-2.jpg",
+        guestFlag: nationality.includes("Mỹ") ? "🇺🇸" : "🇻🇳",
+        propertyName: property || "Sunset Villa Phú Quốc",
+        checkIn: checkInDate || "Hôm nay",
+        checkOut: checkOutDate || "Sau 2 ngày",
+        guestsCount: guestsCount || 2,
+        bookingStatus: "Chờ xác nhận",
+        paymentStatus: paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chờ thanh toán",
+        totalAmount: totalAmount || "3.500.000 đ",
+        channel: (bookingSource as any) || "Website",
+        channelType: "website",
+      }
+
+      toast.success("Tạo đặt phòng thành công!", {
+        description: `Mã đơn ${newBookingRecord.code} đã được lưu vào hệ thống database.`,
+      })
+
+      onSubmitSuccess?.(newBookingRecord)
+    } catch {
+      toast.error("Không thể lưu đơn đặt phòng, vui lòng thử lại")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-5 bg-slate-900/50 backdrop-blur-xs overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
@@ -660,10 +696,20 @@ export function CreateBookingModal({
 
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1b7a4e] hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all"
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1b7a4e] hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-60 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Tạo đặt phòng</span>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Tạo đặt phòng</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

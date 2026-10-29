@@ -7,6 +7,7 @@ import {
   SlidersHorizontal,
   List,
   MapPin,
+  Download,
 } from "lucide-react"
 
 interface PropertiesFilterBarProps {
@@ -21,6 +22,7 @@ interface PropertiesFilterBarProps {
   selectedManager?: string
   onManagerChange?: (val: string) => void
   onAdvancedFilter?: () => void
+  onExport?: () => void
   viewMode?: "list" | "map"
   onViewModeChange?: (mode: "list" | "map") => void
 }
@@ -37,6 +39,7 @@ export function PropertiesFilterBar({
   selectedManager = "",
   onManagerChange,
   onAdvancedFilter,
+  onExport,
   viewMode = "list",
   onViewModeChange,
 }: PropertiesFilterBarProps) {
@@ -145,6 +148,18 @@ export function PropertiesFilterBar({
           <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
           <span>Bộ lọc nâng cao</span>
         </button>
+
+        {/* Button: Xuất file */}
+        {onExport && (
+          <button
+            type="button"
+            onClick={onExport}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200/90 text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-xs font-semibold text-xs sm:text-sm"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>Xuất file</span>
+          </button>
+        )}
       </div>
 
       {/* Right: View Mode Switcher (Danh sách / Bản đồ) */}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, ChevronDown, SlidersHorizontal } from "lucide-react"
+import { Search, ChevronDown, SlidersHorizontal, Download } from "lucide-react"
 import type { CustomerSegmentItem } from "@/features/admin-customers/stayea-admin-customers-mock-data"
 import { CUSTOMERS_SEGMENT_TABS } from "@/features/admin-customers/stayea-admin-customers-mock-data"
 
@@ -17,6 +17,7 @@ interface CustomersFilterBarProps {
   selectedDateRange?: string
   onDateRangeChange?: (val: string) => void
   onAdvancedFilter?: () => void
+  onExport?: () => void
   activeSegment?: string
   onSegmentChange?: (segmentId: string) => void
 }
@@ -33,6 +34,7 @@ export function CustomersFilterBar({
   selectedDateRange = "",
   onDateRangeChange,
   onAdvancedFilter,
+  onExport,
   activeSegment = "all",
   onSegmentChange,
 }: CustomersFilterBarProps) {
@@ -140,6 +142,18 @@ export function CustomersFilterBar({
           <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
           <span>Bộ lọc nâng cao</span>
         </button>
+
+        {/* Button: Xuất file */}
+        {onExport && (
+          <button
+            type="button"
+            onClick={onExport}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200/90 text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-xs font-semibold text-xs sm:text-sm"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>Xuất file</span>
+          </button>
+        )}
       </div>
 
       {/* 2. Segment Tabs (Tất cả, Thân thiết, Mới, Doanh nghiệp, Quốc tế) */}

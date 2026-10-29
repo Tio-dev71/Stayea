@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import {
   MoreHorizontal,
@@ -10,6 +10,11 @@ import {
   ChevronRight,
   ChevronDown,
   Globe,
+  Eye,
+  CheckCircle2,
+  Clock,
+  CheckCheck,
+  XCircle,
 } from "lucide-react"
 import type { BookingRecord } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
 import { BOOKINGS_DATA } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
@@ -18,6 +23,8 @@ interface BookingsDataTableProps {
   bookings?: readonly BookingRecord[]
   onSelectBooking?: (booking: BookingRecord) => void
   onSortChange?: () => void
+  onStatusUpdate?: (bookingId: string, newStatus: string) => void
+  onViewDetail?: (booking: BookingRecord) => void
 }
 
 function getBookingStatusBadge(status: BookingRecord["bookingStatus"]) {
@@ -161,9 +168,38 @@ function renderChannelBadge(channel: BookingRecord["channel"], channelType: Book
 export function BookingsDataTable({
   bookings = BOOKINGS_DATA,
   onSortChange,
+  onStatusUpdate,
+  onViewDetail,
 }: BookingsDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const menuContainerRef = useRef<HTMLDivElement>(null)
+
+  const pageSize = 10
+  const totalCount = bookings.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  useEffect(() => {
+    // Reset to page 1 if list length shrinks
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, totalCount)
+  const displayedBookings = bookings.slice(startIndex, endIndex)
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -180,11 +216,14 @@ export function BookingsDataTable({
   }
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
+    <div
+      className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4"
+      ref={menuContainerRef}
+    >
       {/* 1. Header with Title & Sort */}
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-          Danh sách đặt phòng ({bookings.length * 34 + 2})
+          Danh sách đặt phòng ({totalCount})
         </h2>
 
         <button
@@ -226,102 +265,181 @@ export function BookingsDataTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100/80">
-            {bookings.map((b) => {
-              const isSelected = selectedIds.includes(b.id)
-              return (
-                <tr
-                  key={b.id}
-                  className={`hover:bg-slate-50/70 transition-colors group ${
-                    isSelected ? "bg-emerald-50/30" : ""
-                  }`}
-                >
-                  {/* Checkbox */}
-                  <td className="py-3.5 pr-2 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      aria-label={`Chọn đặt phòng ${b.code}`}
-                      checked={isSelected}
-                      onChange={() => handleToggleSelect(b.id)}
-                      className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                    />
-                  </td>
+            {displayedBookings.length === 0 ? (
+              <tr>
+                <td colSpan={12} className="py-8 text-center text-xs text-slate-500">
+                  Không tìm thấy đơn đặt phòng nào phù hợp với bộ lọc.
+                </td>
+              </tr>
+            ) : (
+              displayedBookings.map((b) => {
+                const isSelected = selectedIds.includes(b.id)
+                const isMenuOpen = openMenuId === b.id
 
-                  {/* Mã đặt chỗ */}
-                  <td className="py-3.5 px-3 font-semibold text-slate-700 whitespace-nowrap text-xs">
-                    {b.code}
-                  </td>
+                return (
+                  <tr
+                    key={b.id}
+                    className={`hover:bg-slate-50/70 transition-colors group ${
+                      isSelected ? "bg-emerald-50/30" : ""
+                    }`}
+                  >
+                    {/* Checkbox */}
+                    <td className="py-3.5 pr-2 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        aria-label={`Chọn đặt phòng ${b.code}`}
+                        checked={isSelected}
+                        onChange={() => handleToggleSelect(b.id)}
+                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      />
+                    </td>
 
-                  {/* Khách hàng */}
-                  <td className="py-3.5 px-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
-                        <Image
-                          src={b.guestAvatar}
-                          alt={b.guestName}
-                          fill
-                          className="object-cover"
-                        />
+                    {/* Mã đặt chỗ */}
+                    <td className="py-3.5 px-3 font-semibold text-slate-700 whitespace-nowrap text-xs">
+                      {b.code}
+                    </td>
+
+                    {/* Khách hàng */}
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
+                          <Image
+                            src={b.guestAvatar || "/about/team-1.jpg"}
+                            alt={b.guestName}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
+                          {b.guestName}
+                        </span>
+                        <span className="text-xs">{b.guestFlag || "🇻🇳"}</span>
                       </div>
-                      <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
-                        {b.guestName}
-                      </span>
-                      <span className="text-xs">{b.guestFlag}</span>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Bất động sản */}
-                  <td className="py-3.5 px-3 text-slate-600 font-medium whitespace-nowrap text-xs">
-                    {b.propertyName}
-                  </td>
+                    {/* Bất động sản */}
+                    <td className="py-3.5 px-3 text-slate-600 font-medium whitespace-nowrap text-xs">
+                      {b.propertyName}
+                    </td>
 
-                  {/* Nhận phòng */}
-                  <td className="py-3.5 px-3 text-slate-500 whitespace-nowrap text-xs">
-                    {b.checkIn}
-                  </td>
+                    {/* Nhận phòng */}
+                    <td className="py-3.5 px-3 text-slate-500 whitespace-nowrap text-xs">
+                      {b.checkIn}
+                    </td>
 
-                  {/* Trả phòng */}
-                  <td className="py-3.5 px-3 text-slate-500 whitespace-nowrap text-xs">
-                    {b.checkOut}
-                  </td>
+                    {/* Trả phòng */}
+                    <td className="py-3.5 px-3 text-slate-500 whitespace-nowrap text-xs">
+                      {b.checkOut}
+                    </td>
 
-                  {/* Số khách */}
-                  <td className="py-3.5 px-3 text-slate-700 text-center font-medium whitespace-nowrap text-xs">
-                    {b.guestsCount}
-                  </td>
+                    {/* Số khách */}
+                    <td className="py-3.5 px-3 text-slate-700 text-center font-medium whitespace-nowrap text-xs">
+                      {b.guestsCount}
+                    </td>
 
-                  {/* Trạng thái */}
-                  <td className="py-3.5 px-3 whitespace-nowrap">
-                    {getBookingStatusBadge(b.bookingStatus)}
-                  </td>
+                    {/* Trạng thái */}
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      {getBookingStatusBadge(b.bookingStatus)}
+                    </td>
 
-                  {/* Thanh toán */}
-                  <td className="py-3.5 px-3 whitespace-nowrap">
-                    {getPaymentStatusBadge(b.paymentStatus)}
-                  </td>
+                    {/* Thanh toán */}
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      {getPaymentStatusBadge(b.paymentStatus)}
+                    </td>
 
-                  {/* Tổng tiền */}
-                  <td className="py-3.5 px-3 font-bold text-slate-900 whitespace-nowrap text-xs">
-                    {b.totalAmount}
-                  </td>
+                    {/* Tổng tiền */}
+                    <td className="py-3.5 px-3 font-bold text-slate-900 whitespace-nowrap text-xs">
+                      {b.totalAmount}
+                    </td>
 
-                  {/* Kênh */}
-                  <td className="py-3.5 px-3 whitespace-nowrap text-xs">
-                    {renderChannelBadge(b.channel, b.channelType)}
-                  </td>
+                    {/* Kênh */}
+                    <td className="py-3.5 px-3 whitespace-nowrap text-xs">
+                      {renderChannelBadge(b.channel, b.channelType)}
+                    </td>
 
-                  {/* Thao tác */}
-                  <td className="py-3.5 pl-3 text-right whitespace-nowrap">
-                    <button
-                      type="button"
-                      aria-label="Thao tác"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
+                    {/* Thao tác */}
+                    <td className="py-3.5 pl-3 text-right whitespace-nowrap relative">
+                      <button
+                        type="button"
+                        aria-label="Thao tác"
+                        onClick={() => setOpenMenuId(isMenuOpen ? null : b.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+
+                      {isMenuOpen && (
+                        <div className="absolute right-2 top-10 w-52 bg-white rounded-xl shadow-xl border border-slate-200/80 py-1.5 z-50 text-left text-xs animate-in fade-in duration-100">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null)
+                              onViewDetail?.(b)
+                            }}
+                            className="w-full px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Xem chi tiết đơn</span>
+                          </button>
+
+                          <div className="my-1 border-t border-slate-100" />
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null)
+                              onStatusUpdate?.(b.id, "confirmed")
+                            }}
+                            className="w-full px-3 py-2 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition-colors font-medium"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Xác nhận đặt phòng</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null)
+                              onStatusUpdate?.(b.id, "active")
+                            }}
+                            className="w-full px-3 py-2 text-sky-700 hover:bg-sky-50 flex items-center gap-2 transition-colors font-medium"
+                          >
+                            <Clock className="w-3.5 h-3.5 text-sky-600" />
+                            <span>Khách nhận phòng</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null)
+                              onStatusUpdate?.(b.id, "completed")
+                            }}
+                            className="w-full px-3 py-2 text-teal-700 hover:bg-teal-50 flex items-center gap-2 transition-colors font-medium"
+                          >
+                            <CheckCheck className="w-3.5 h-3.5 text-teal-600" />
+                            <span>Hoàn tất trả phòng</span>
+                          </button>
+
+                          <div className="my-1 border-t border-slate-100" />
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null)
+                              onStatusUpdate?.(b.id, "cancelled")
+                            }}
+                            className="w-full px-3 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors font-medium"
+                          >
+                            <XCircle className="w-3.5 h-3.5 text-rose-500" />
+                            <span>Hủy đơn đặt</span>
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -329,11 +447,14 @@ export function BookingsDataTable({
       {/* 3. Pagination Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
         <div>
-          Hiển thị <span className="font-bold text-slate-800">1 - 10</span> của{" "}
-          <span className="font-bold text-slate-800">342</span> đặt phòng
+          Hiển thị{" "}
+          <span className="font-bold text-slate-800">
+            {totalCount === 0 ? 0 : startIndex + 1} - {endIndex}
+          </span>{" "}
+          của <span className="font-bold text-slate-800">{totalCount}</span> đặt phòng
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Previous Page */}
           <button
             type="button"
@@ -346,7 +467,7 @@ export function BookingsDataTable({
           </button>
 
           {/* Page numbers */}
-          {[1, 2, 3, 4, 5].map((pageNum) => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
             <button
               key={pageNum}
               type="button"
@@ -360,35 +481,17 @@ export function BookingsDataTable({
               {pageNum}
             </button>
           ))}
-          <span className="px-1 text-slate-400">...</span>
-          <button
-            type="button"
-            onClick={() => setCurrentPage(35)}
-            className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
-              currentPage === 35
-                ? "bg-[#1b7a4e] text-white shadow-xs"
-                : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            35
-          </button>
 
           {/* Next Page */}
           <button
             type="button"
             aria-label="Trang kế tiếp"
-            disabled={currentPage === 35}
-            onClick={() => setCurrentPage((p) => Math.min(35, p + 1))}
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
-
-          {/* Page size select */}
-          <div className="ml-2 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium">
-            <span>10 / trang</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </div>
         </div>
       </div>
     </div>

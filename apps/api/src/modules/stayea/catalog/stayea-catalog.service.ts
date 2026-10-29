@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { Inject, Injectable, NotFoundException } from "@nestjs/common"
 import {
   stayeaAccommodationsTable,
@@ -97,6 +98,107 @@ export class StayeaCatalogService {
     }
 
     return item
+  }
+
+  async createAccommodation(dto: any) {
+    const randomSuffix = Math.random().toString(36).substring(2, 7)
+    const slug = `${(dto.title || "villa")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")}-${randomSuffix}`
+
+    const id = `stay_${randomUUID().replace(/-/g, "").slice(0, 12)}`
+
+    const [created] = await this.db
+      .insert(stayeaAccommodationsTable)
+      .values({
+        id,
+        title: dto.title,
+        slug,
+        location: dto.location || "Phú Quốc, Việt Nam",
+        category: dto.category || "villa",
+        pricePerNight: dto.pricePerNight ? dto.pricePerNight.toString() : "2000000.00",
+        originalPrice: dto.originalPrice ? dto.originalPrice.toString() : null,
+        imageUrl:
+          dto.imageUrl ||
+          "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
+        gallery: dto.gallery || [
+          "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
+          "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+        ],
+        bedrooms: dto.bedrooms ?? 2,
+        bathrooms: dto.bathrooms ?? 2,
+        maxGuests: dto.maxGuests ?? 4,
+        amenities: dto.amenities || [
+          { icon: "wifi", label: "Wifi tốc độ cao" },
+          { icon: "pool", label: "Hồ bơi riêng" },
+          { icon: "kitchen", label: "Bếp gia đình" },
+        ],
+        badge: dto.badge || null,
+        isFeatured: dto.isFeatured ?? true,
+        hostName: dto.hostName || "STAYEA Official Host",
+        description: dto.description || "",
+      })
+      .returning()
+
+    return created
+  }
+
+  async updateAccommodation(id: string, dto: any) {
+    const [existing] = await this.db
+      .select()
+      .from(stayeaAccommodationsTable)
+      .where(eq(stayeaAccommodationsTable.id, id))
+      .limit(1)
+
+    if (!existing) {
+      throw new NotFoundException(`Không tìm thấy chỗ nghỉ với ID ${id}`)
+    }
+
+    const [updated] = await this.db
+      .update(stayeaAccommodationsTable)
+      .set({
+        ...(dto.title ? { title: dto.title } : {}),
+        ...(dto.location ? { location: dto.location } : {}),
+        ...(dto.category ? { category: dto.category } : {}),
+        ...(dto.pricePerNight !== undefined
+          ? { pricePerNight: dto.pricePerNight.toString() }
+          : {}),
+        ...(dto.originalPrice !== undefined
+          ? { originalPrice: dto.originalPrice ? dto.originalPrice.toString() : null }
+          : {}),
+        ...(dto.imageUrl ? { imageUrl: dto.imageUrl } : {}),
+        ...(dto.bedrooms !== undefined ? { bedrooms: dto.bedrooms } : {}),
+        ...(dto.bathrooms !== undefined ? { bathrooms: dto.bathrooms } : {}),
+        ...(dto.maxGuests !== undefined ? { maxGuests: dto.maxGuests } : {}),
+        ...(dto.badge !== undefined ? { badge: dto.badge } : {}),
+        ...(dto.isFeatured !== undefined ? { isFeatured: dto.isFeatured } : {}),
+        ...(dto.description !== undefined ? { description: dto.description } : {}),
+      })
+      .where(eq(stayeaAccommodationsTable.id, id))
+      .returning()
+
+    return updated
+  }
+
+  async deleteAccommodation(id: string) {
+    const [existing] = await this.db
+      .select()
+      .from(stayeaAccommodationsTable)
+      .where(eq(stayeaAccommodationsTable.id, id))
+      .limit(1)
+
+    if (!existing) {
+      throw new NotFoundException(`Không tìm thấy chỗ nghỉ với ID ${id}`)
+    }
+
+    await this.db
+      .delete(stayeaAccommodationsTable)
+      .where(eq(stayeaAccommodationsTable.id, id))
+
+    return { success: true, deletedId: id }
   }
 
   // --------------------------------------------------------------------------

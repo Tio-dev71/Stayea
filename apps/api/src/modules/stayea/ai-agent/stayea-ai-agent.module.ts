@@ -12,3 +12,4 @@ import { StayeaAiAgentService } from "@/modules/stayea/ai-agent/stayea-ai-agent.
   exports: [StayeaAiAgentService],
 })
 export class StayeaAiAgentModule {}
+

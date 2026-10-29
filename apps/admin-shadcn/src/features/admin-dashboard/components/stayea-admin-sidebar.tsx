@@ -78,6 +78,22 @@ function getSidebarIcon(iconName: string) {
   }
 }
 
+const DEFAULT_TAB_ROUTES: Record<string, string> = {
+  "tong-quan": "/stayea/bookings",
+  "dat-phong": "/stayea/bookings",
+  "bat-dong-san": "/stayea/properties",
+  "khach-hang": "/stayea/customers",
+  "chu-nha-doi-tac": "/hub",
+  "trai-nghiem-tour": "/stayea/experiences",
+  "uu-dai-khuyen-mai": "/stayea/deals",
+  "doanh-thu-thanh-toan": "/stayea/revenue",
+  "danh-gia": "/stayea/reviews",
+  "tin-nhan": "/stayea/messages",
+  "marketing": "/stayea/marketing",
+  "bao-cao": "/stayea/reports",
+  "cai-dat": "/settings",
+}
+
 export function StayeaAdminSidebar({
   activeTab = "tong-quan",
   onSelectTab,
@@ -123,6 +139,23 @@ export function StayeaAdminSidebar({
     }
   })()
 
+  const handleTabClick = (tabId: string) => {
+    if (onSelectTab) {
+      onSelectTab(tabId)
+    } else {
+      const target = DEFAULT_TAB_ROUTES[tabId] || "/stayea/bookings"
+      window.location.href = target
+    }
+  }
+
+  const handleDefaultExplore = () => {
+    if (onExplorePhuQuoc) {
+      onExplorePhuQuoc()
+    } else {
+      window.open("https://stayea.com/phu-quoc", "_blank")
+    }
+  }
+
   return (
     <aside className="w-64 shrink-0 bg-white border-r border-slate-200/80 min-h-[calc(100vh-4rem)] p-3 flex flex-col justify-between hidden lg:flex select-none">
       {/* Navigation List */}
@@ -133,7 +166,7 @@ export function StayeaAdminSidebar({
             <button
               key={item.id}
               type="button"
-              onClick={() => onSelectTab?.(item.id)}
+              onClick={() => handleTabClick(item.id)}
               className={`relative w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-[13px] font-medium transition-all text-left ${
                 isActive
                   ? "bg-[#eef8f3] text-[#1b7a4e] font-semibold shadow-xs"
@@ -170,7 +203,7 @@ export function StayeaAdminSidebar({
             </p>
             <button
               type="button"
-              onClick={onExplorePhuQuoc}
+              onClick={handleDefaultExplore}
               className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-[11px] font-semibold w-fit transition-colors shadow-xs"
             >
               <span>{promoButtonText}</span>

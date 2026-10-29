@@ -586,6 +586,145 @@ class StayeaApiService {
   }
 
   /**
+   * Admin: Get all platform bookings
+   */
+  async getAllBookingsForAdmin(params?: { search?: string; status?: string }): Promise<any[]> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.status) searchParams.set("status", params.status)
+      const res = await fetch(`/api/stayea/bookings/admin/all?${searchParams.toString()}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Admin: Update booking status
+   */
+  async updateBookingStatus(id: string, status: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({ status }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Admin: Create Accommodation Listing
+   */
+  async createAccommodation(dto: any): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/accommodations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(dto),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Admin: Delete Accommodation
+   */
+  async deleteAccommodation(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/accommodations/${id}`, {
+        method: "DELETE",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Admin: Get users list
+   */
+  async getUsers(params?: { search?: string; page?: number; pageSize?: number }): Promise<{ items: any[]; total: number }> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.page) searchParams.set("page", String(params.page))
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize || 20))
+      const res = await fetch(`/api/users?${searchParams.toString()}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return {
+          items: Array.isArray(data) ? data : data.data || [],
+          total: data.total || (Array.isArray(data) ? data.length : 0),
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return { items: [], total: 0 }
+  }
+
+  /**
+   * Admin: Create new customer/user
+   */
+  async createUser(dto: { name: string; email: string; password?: string; role?: string }): Promise<any> {
+    try {
+      const res = await fetch(`/api/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify({
+          name: dto.name,
+          email: dto.email,
+          password: dto.password || "Stayea@2026",
+          role: dto.role || "USER",
+        }),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Admin: Delete user
+   */
+  async deleteUser(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/users/${id}`, {
+        method: "DELETE",
+        headers: this.getAuthHeader(),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Validate a promotional coupon code
    */
   async validatePromo(code: string, subtotal?: number, category?: string) {

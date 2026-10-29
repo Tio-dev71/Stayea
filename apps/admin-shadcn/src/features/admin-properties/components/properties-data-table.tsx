@@ -6,7 +6,6 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Check,
   Eye,
   Edit,
@@ -18,6 +17,7 @@ import type { PropertyItem } from "@/features/admin-properties/stayea-admin-prop
 import { PROPERTIES_MOCK_LIST } from "@/features/admin-properties/stayea-admin-properties-mock-data"
 
 interface PropertiesDataTableProps {
+  properties?: readonly PropertyItem[]
   onPropertyAction?: (action: string, property: PropertyItem) => void
 }
 
@@ -48,21 +48,25 @@ function renderStatusBadge(status: PropertyItem["status"], label: string) {
 }
 
 export function PropertiesDataTable({
+  properties = PROPERTIES_MOCK_LIST,
   onPropertyAction,
 }: PropertiesDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
+  const totalCount = properties.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   const isAllSelected =
-    PROPERTIES_MOCK_LIST.length > 0 &&
-    selectedIds.length === PROPERTIES_MOCK_LIST.length
+    totalCount > 0 && selectedIds.length === totalCount
 
   const handleToggleSelectAll = () => {
     if (isAllSelected) {
       setSelectedIds([])
     } else {
-      setSelectedIds(PROPERTIES_MOCK_LIST.map((item) => item.id))
+      setSelectedIds(properties.map((item) => item.id))
     }
   }
 
@@ -72,7 +76,9 @@ export function PropertiesDataTable({
     )
   }
 
-
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, totalCount)
+  const displayedProperties = properties.slice(startIndex, endIndex)
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
@@ -103,9 +109,16 @@ export function PropertiesDataTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
-            {PROPERTIES_MOCK_LIST.map((item) => {
-              const isSelected = selectedIds.includes(item.id)
-              const isMenuOpen = activeMenuId === item.id
+            {displayedProperties.length === 0 ? (
+              <tr>
+                <td colSpan={11} className="py-8 text-center text-xs text-slate-500">
+                  Không tìm thấy bất động sản nào phù hợp.
+                </td>
+              </tr>
+            ) : (
+              displayedProperties.map((item) => {
+                const isSelected = selectedIds.includes(item.id)
+                const isMenuOpen = activeMenuId === item.id
 
               return (
                 <tr
@@ -261,7 +274,7 @@ export function PropertiesDataTable({
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
       </div>
@@ -269,7 +282,7 @@ export function PropertiesDataTable({
       {/* Pagination Footer */}
       <div className="p-3 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
         <span className="font-medium text-slate-600">
-          Hiển thị 1 - 10 của 342 bất động sản
+          Hiển thị {totalCount === 0 ? 0 : startIndex + 1} - {endIndex} của {totalCount} bất động sản
         </span>
 
         <div className="flex items-center gap-2">
@@ -284,55 +297,29 @@ export function PropertiesDataTable({
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
 
-            <button
-              type="button"
-              onClick={() => setCurrentPage(1)}
-              className="w-7 h-7 rounded-lg bg-[#1b7a4e] text-white font-semibold flex items-center justify-center shadow-xs"
-            >
-              1
-            </button>
-
-            {[2, 3, 4, 5].map((pageNum) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
               <button
                 key={pageNum}
                 type="button"
                 onClick={() => setCurrentPage(pageNum)}
-                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 font-medium"
+                className={`w-7 h-7 rounded-lg font-semibold flex items-center justify-center transition-all ${
+                  currentPage === pageNum
+                    ? "bg-[#1b7a4e] text-white shadow-xs"
+                    : "border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium"
+                }`}
               >
                 {pageNum}
               </button>
             ))}
 
-            <span className="px-1 text-slate-400">...</span>
-
             <button
               type="button"
-              onClick={() => setCurrentPage(35)}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 font-medium"
-            >
-              35
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.min(35, p + 1))}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
-          </div>
-
-          {/* Page size dropdown */}
-          <div className="relative ml-2">
-            <select
-              defaultValue="10"
-              className="appearance-none pl-2.5 pr-6 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium cursor-pointer focus:outline-none text-xs"
-            >
-              <option value="10">10 / trang</option>
-              <option value="20">20 / trang</option>
-              <option value="50">50 / trang</option>
-            </select>
-            <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
       </div>

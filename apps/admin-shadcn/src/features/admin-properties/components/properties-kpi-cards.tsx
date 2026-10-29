@@ -45,10 +45,16 @@ function getKpiIcon(type: PropertyKpiItem["iconType"]) {
   }
 }
 
-export function PropertiesKpiCards() {
+interface PropertiesKpiCardsProps {
+  kpiData?: readonly PropertyKpiItem[]
+}
+
+export function PropertiesKpiCards({
+  kpiData = PROPERTIES_KPI_DATA,
+}: PropertiesKpiCardsProps = {}) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {PROPERTIES_KPI_DATA.map((kpi) => (
+      {kpiData.map((kpi) => (
         <div
           key={kpi.id}
           className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:shadow-md transition-shadow"

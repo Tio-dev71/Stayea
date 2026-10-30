@@ -171,15 +171,21 @@ export function StayFilterSidebar({
 
         {/* Dual Slider Simulation / Range Input */}
         <div className="relative pt-2 pb-1">
-          <input
-            type="range"
-            min={0}
-            max={20_000_000}
-            step={500_000}
-            value={filters.priceMax}
-            onChange={handlePriceChange}
-            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0c3b40]"
-          />
+          {(() => {
+            const progress = Math.min(100, Math.max(0, (filters.priceMax / 20_000_000) * 100))
+            return (
+              <input
+                type="range"
+                min={0}
+                max={20_000_000}
+                step={500_000}
+                value={filters.priceMax}
+                style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
+                onChange={handlePriceChange}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
+              />
+            )
+          })()}
           <div className="flex justify-between items-center text-[10px] text-slate-600 font-medium pt-2">
             <span>0 đ</span>
             <span>5 triệu</span>
@@ -208,11 +214,10 @@ export function StayFilterSidebar({
                     className="w-4 h-4 rounded border-slate-300 text-[#0c3b40] focus:ring-[#0c3b40] cursor-pointer"
                   />
                   <span
-                    className={`transition-colors ${
-                      isChecked
-                        ? "font-semibold text-slate-900"
-                        : "text-slate-600 group-hover:text-slate-900"
-                    }`}
+                    className={`transition-colors ${isChecked
+                      ? "font-semibold text-slate-900"
+                      : "text-slate-600 group-hover:text-slate-900"
+                      }`}
                   >
                     {item.label}
                   </span>
@@ -243,11 +248,10 @@ export function StayFilterSidebar({
                     className="w-4 h-4 rounded border-slate-300 text-[#0c3b40] focus:ring-[#0c3b40] cursor-pointer"
                   />
                   <span
-                    className={`transition-colors ${
-                      isChecked
-                        ? "font-semibold text-slate-900"
-                        : "text-slate-600 group-hover:text-slate-900"
-                    }`}
+                    className={`transition-colors ${isChecked
+                      ? "font-semibold text-slate-900"
+                      : "text-slate-600 group-hover:text-slate-900"
+                      }`}
                   >
                     {item.label}
                   </span>
@@ -278,11 +282,10 @@ export function StayFilterSidebar({
                     className="w-4 h-4 rounded border-slate-300 text-[#0c3b40] focus:ring-[#0c3b40] cursor-pointer"
                   />
                   <span
-                    className={`transition-colors ${
-                      isChecked
-                        ? "font-semibold text-slate-900"
-                        : "text-slate-600 group-hover:text-slate-900"
-                    }`}
+                    className={`transition-colors ${isChecked
+                      ? "font-semibold text-slate-900"
+                      : "text-slate-600 group-hover:text-slate-900"
+                      }`}
                   >
                     {item.label}
                   </span>
@@ -313,11 +316,10 @@ export function StayFilterSidebar({
                     className="w-4 h-4 rounded border-slate-300 text-[#0c3b40] focus:ring-[#0c3b40] cursor-pointer"
                   />
                   <span
-                    className={`transition-colors ${
-                      isChecked
-                        ? "font-semibold text-slate-900"
-                        : "text-slate-600 group-hover:text-slate-900"
-                    }`}
+                    className={`transition-colors ${isChecked
+                      ? "font-semibold text-slate-900"
+                      : "text-slate-600 group-hover:text-slate-900"
+                      }`}
                   >
                     {item.label}
                   </span>
@@ -349,11 +351,10 @@ export function StayFilterSidebar({
                   className="w-4 h-4 border-slate-300 text-[#0c3b40] focus:ring-[#0c3b40] cursor-pointer"
                 />
                 <span
-                  className={`transition-colors ${
-                    isSelected
-                      ? "font-bold text-slate-900"
-                      : "text-slate-600 group-hover:text-slate-900"
-                  }`}
+                  className={`transition-colors ${isSelected
+                    ? "font-bold text-slate-900"
+                    : "text-slate-600 group-hover:text-slate-900"
+                    }`}
                 >
                   {item.label}
                 </span>

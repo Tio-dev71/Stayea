@@ -222,16 +222,22 @@ export const StayeaFlightFilterSidebar: React.FC<StayeaFlightFilterSidebarProps>
 
         {/* Range Track */}
         <div className="relative pt-2 pb-1">
-          <input
-            type="range"
-            min="500000"
-            max="5000000"
-            step="100000"
-            value={priceRange}
-            onChange={(e) => setPriceRange(Number(e.target.value))}
-            className="w-full h-1.5 bg-[#1E3A8A] rounded-lg appearance-none cursor-pointer accent-[#1E3A8A]"
-            aria-label="Khoảng giá"
-          />
+          {(() => {
+            const progress = Math.min(100, Math.max(0, ((priceRange - 500_000) / 4_500_000) * 100))
+            return (
+              <input
+                type="range"
+                min="500000"
+                max="5000000"
+                step="100000"
+                value={priceRange}
+                style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
+                onChange={(e) => setPriceRange(Number(e.target.value))}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
+                aria-label="Khoảng giá"
+              />
+            )
+          })()}
         </div>
 
         {/* Price Labels */}

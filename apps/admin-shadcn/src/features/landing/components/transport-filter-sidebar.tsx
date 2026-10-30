@@ -165,17 +165,23 @@ export function TransportFilterSidebar({
 
         {/* Range slider visual */}
         <div className="relative pt-1 pb-2">
-          <input
-            type="range"
-            min={0}
-            max={5_000_000}
-            step={100_000}
-            value={filters.maxPrice}
-            onChange={(e) =>
-              onFiltersChange((prev) => ({ ...prev, maxPrice: Number(e.target.value) }))
-            }
-            className="w-full cursor-pointer h-1.5 bg-slate-100 rounded-lg"
-          />
+          {(() => {
+            const progress = Math.min(100, Math.max(0, (filters.maxPrice / 5_000_000) * 100))
+            return (
+              <input
+                type="range"
+                min={0}
+                max={5_000_000}
+                step={100_000}
+                value={filters.maxPrice}
+                style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
+                onChange={(e) =>
+                  onFiltersChange((prev) => ({ ...prev, maxPrice: Number(e.target.value) }))
+                }
+                className="w-full cursor-pointer h-1.5 rounded-lg"
+              />
+            )
+          })()}
         </div>
 
         {/* 4 Quick price chips (2x2 grid) */}

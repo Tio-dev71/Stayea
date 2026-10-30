@@ -144,7 +144,13 @@
     appearance: none !important;
     width: 100% !important;
     height: 6px !important;
-    background: #e2e8f0 !important;
+    background: linear-gradient(
+      to right,
+      #0c3b40 0%,
+      #0c3b40 var(--range-progress, 100%),
+      #e2e8f0 var(--range-progress, 100%),
+      #e2e8f0 100%
+    ) !important;
     border-radius: 9999px !important;
     outline: none !important;
     border: none !important;
@@ -157,7 +163,7 @@
   input[type="range"]::-webkit-slider-runnable-track {
     width: 100% !important;
     height: 6px !important;
-    background: #e2e8f0 !important;
+    background: transparent !important;
     border-radius: 9999px !important;
     border: none !important;
   }
@@ -187,6 +193,12 @@
     background: #e2e8f0 !important;
     border-radius: 9999px !important;
     border: none !important;
+  }
+
+  input[type="range"]::-moz-range-progress {
+    background-color: #0c3b40 !important;
+    height: 6px !important;
+    border-radius: 9999px !important;
   }
 
   input[type="range"]::-moz-range-thumb {

@@ -140,15 +140,21 @@ export function ExperienceSidebar({
           0đ - {formattedMaxPrice}
         </div>
         <div className="relative pt-1">
-          <input
-            type="range"
-            min={0}
-            max={5_000_000}
-            step={100_000}
-            value={filters.priceMax}
-            onChange={handlePriceChange}
-            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0c3b40]"
-          />
+          {(() => {
+            const progress = Math.min(100, Math.max(0, (filters.priceMax / 5_000_000) * 100))
+            return (
+              <input
+                type="range"
+                min={0}
+                max={5_000_000}
+                step={100_000}
+                value={filters.priceMax}
+                style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
+                onChange={handlePriceChange}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
+              />
+            )
+          })()}
         </div>
       </div>
 

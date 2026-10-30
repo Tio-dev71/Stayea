@@ -138,11 +138,10 @@ export function PhuQuocListingPage({ onNavigate, initialCategory }: PhuQuocListi
                           setSelectedSort(opt)
                           setIsSortOpen(false)
                         }}
-                        className={`w-full text-left px-3.5 py-2 text-xs transition-colors ${
-                          selectedSort === opt
+                        className={`w-full text-left px-3.5 py-2 text-xs transition-colors ${selectedSort === opt
                             ? "bg-teal-50 text-[#0c3b40] font-bold"
                             : "text-slate-700 hover:bg-slate-50 font-medium"
-                        }`}
+                          }`}
                       >
                         {opt}
                       </button>
@@ -188,11 +187,10 @@ export function PhuQuocListingPage({ onNavigate, initialCategory }: PhuQuocListi
                         key={page}
                         type="button"
                         onClick={() => setPageIndex(page)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                          isActive
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isActive
                             ? "bg-[#0c3b40] text-white shadow-xs"
                             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                        }`}
+                          }`}
                       >
                         {page}
                       </button>

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { CheckCircle2, X } from "lucide-react"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { ProfileSidebar } from "./profile-sidebar"
 import { StayeaClubHeroBanner } from "./stayea-club-hero-banner"
 import { StayeaClubTierCard } from "./stayea-club-tier-card"
@@ -23,6 +24,44 @@ export interface StayeaClubClaimedPageProps {
 export function StayeaClubClaimedPage({ onNavigate }: StayeaClubClaimedPageProps) {
   const [toastMessage, setToastMessage] = React.useState<string | null>(null)
   const [showSuccessBanner, setShowSuccessBanner] = React.useState<boolean>(true)
+  const [clubProfile, setClubProfile] = React.useState(STAYEA_CLUB_PROFILE)
+
+  React.useEffect(() => {
+    Promise.all([
+      stayeaApi.getProfile().catch(() => null),
+      stayeaApi.getClubProfile().catch(() => null),
+    ]).then(([user, club]) => {
+      const name = user?.displayName || user?.name || "Thành viên STAYEA"
+      const avatar = user?.avatar || "/profile/profile-avatar.jpg"
+      const points = typeof club?.pointsBalance === "number" ? club.pointsBalance : 0
+      let tierName = "Thành viên Bạc"
+      let nextTier = "Vàng"
+      let threshold = 1000
+      if (points >= 4000) {
+        tierName = "Thành viên Kim Cương"
+        nextTier = "VIP Elite"
+        threshold = 10000
+      } else if (points >= 2000) {
+        tierName = "Thành viên Bạch Kim"
+        nextTier = "Kim Cương"
+        threshold = 4000
+      } else if (points >= 1000) {
+        tierName = "Thành viên Vàng"
+        nextTier = "Bạch Kim"
+        threshold = 2000
+      }
+      setClubProfile({
+        memberName: name,
+        memberTier: tierName,
+        memberSince: club?.memberSince || "Tháng " + (new Date().getMonth() + 1) + "/" + new Date().getFullYear(),
+        avatarUrl: avatar,
+        currentPoints: points,
+        nextTier,
+        pointsNeededForNextTier: Math.max(0, threshold - points),
+        nextTierThreshold: threshold,
+      })
+    })
+  }, [])
 
   function showToast(msg: string) {
     setToastMessage(msg)
@@ -147,7 +186,7 @@ export function StayeaClubClaimedPage({ onNavigate }: StayeaClubClaimedPageProps
           <div className="lg:col-span-9 space-y-6">
             {/* 1. Member Golden VIP Profile & Points Card */}
             <StayeaClubTierCard
-              profile={STAYEA_CLUB_PROFILE}
+              profile={clubProfile}
               onViewTiers={() => onNavigate?.("stayea-club")}
             />
 

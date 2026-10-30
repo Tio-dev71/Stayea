@@ -30,6 +30,7 @@ import { FavoritesHeroBanner } from "./favorites-hero-banner"
 import { FavoritesHeaderAndTabs } from "./favorites-header-and-tabs"
 import { FavoritesGrid } from "./favorites-grid"
 import { FavoritesDiscoveryBanner } from "./favorites-discovery-banner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { FAVORITE_ITEMS } from "@/features/landing/data/stayea-mock-data"
 import type {
   FavoriteItem,
@@ -52,6 +53,48 @@ export function FavoritesPage({ onNavigate }: FavoritesPageProps) {
   // 2. Favorite items state
   const [favoriteList, setFavoriteList] = React.useState<readonly FavoriteItem[]>(FAVORITE_ITEMS)
   const [lastRemovedItem, setLastRemovedItem] = React.useState<FavoriteItem | null>(null)
+
+  React.useEffect(() => {
+    stayeaApi
+      .getUserFavorites()
+      .then((raw) => {
+        if (Array.isArray(raw) && raw.length > 0) {
+          const mapped: FavoriteItem[] = raw.map((f: any) => ({
+            id: f.id || f.itemId,
+            title: f.title || "Địa điểm yêu thích",
+            category: (f.itemType || "stay") as FavoriteItemCategory,
+            categoryLabel:
+              f.itemType === "experience"
+                ? "Trải nghiệm"
+                : f.itemType === "transport"
+                  ? "Di chuyển"
+                  : "Lưu trú",
+            categoryVariant:
+              f.itemType === "experience"
+                ? "emerald"
+                : f.itemType === "transport"
+                  ? "amber"
+                  : "purple",
+            rating: Number(f.rating) || 5.0,
+            reviewsCount: `${f.reviewsCount || 0} đánh giá`,
+            dateOrDuration: f.dateOrDuration || "Linh hoạt",
+            location: f.location || "Phú Quốc",
+            extraDetail: f.extraDetail || "Chi tiết dịch vụ",
+            extraDetailIcon: "bed",
+            price: Number(f.price || 0),
+            priceUnit: f.priceUnit || "",
+            imageUrl: f.imageUrl || "/profile/bai-sao.jpg",
+            targetRoute: f.itemType || "stay",
+          }))
+          setFavoriteList(mapped)
+        } else {
+          setFavoriteList([])
+        }
+      })
+      .catch(() => {
+        setFavoriteList([])
+      })
+  }, [])
 
   // 3. Modals state
   const [selectedItemForDetail, setSelectedItemForDetail] = React.useState<FavoriteItem | null>(null)

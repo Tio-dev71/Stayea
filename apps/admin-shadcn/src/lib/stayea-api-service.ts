@@ -1127,6 +1127,27 @@ class StayeaApiService {
       return { valid: false, message: "Mã ưu đãi không hợp lệ hoặc đã hết lượt dùng" }
     }
   }
+
+  /**
+   * Get active promotional deals & vouchers from backend
+   */
+  async getPromotions(category?: string): Promise<any[]> {
+    try {
+      const q = category ? `?category=${encodeURIComponent(category)}` : ""
+      const res = await fetch(`${this.baseUrl}/deals${q}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
   /**
    * Club Loyalty: Get current user loyalty profile
    */

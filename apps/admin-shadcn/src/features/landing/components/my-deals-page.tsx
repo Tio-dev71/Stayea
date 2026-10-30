@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@workspace/ui/components/dialog"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { ProfileSidebar } from "./profile-sidebar"
 import { MyDealsHeroBanner } from "./my-deals-hero-banner"
 import { MyDealsMetricsBar } from "./my-deals-metrics-bar"
@@ -18,13 +19,10 @@ import type { DealCategoryFilter } from "./my-deals-filter-tabs"
 import { MyDealVoucherCard } from "./my-deal-voucher-card"
 import { MyDealsRecommendedSection } from "./my-deals-recommended-section"
 import { MyDealsSupportBanner } from "./my-deals-support-banner"
-import {
-  MY_DEALS_METRICS,
-  MY_VOUCHERS_LIST,
-} from "@/features/landing/data/stayea-mock-data"
 import type {
   MyVoucherItem,
   RecommendedDealItem,
+  MyDealsMetrics,
 } from "@/features/landing/data/stayea-mock-data"
 
 interface MyDealsPageProps {
@@ -36,6 +34,38 @@ export function MyDealsPage({ onNavigate }: MyDealsPageProps) {
   const [searchQuery, setSearchQuery] = React.useState<string>("")
   const [selectedVoucher, setSelectedVoucher] = React.useState<MyVoucherItem | null>(null)
   const [toastMessage, setToastMessage] = React.useState<string | null>(null)
+  const [vouchersList, setVouchersList] = React.useState<readonly MyVoucherItem[]>([])
+  const [clubPoints, setClubPoints] = React.useState<number>(0)
+
+  React.useEffect(() => {
+    Promise.all([
+      stayeaApi.getPromotions().catch(() => []),
+      stayeaApi.getClubProfile().catch(() => null),
+    ]).then(([promos, club]) => {
+      if (typeof club?.pointsBalance === "number") {
+        setClubPoints(club.pointsBalance)
+      }
+      if (Array.isArray(promos) && promos.length > 0) {
+        const mapped: MyVoucherItem[] = promos.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          description: p.description || "",
+          category: (p.category === "stay" ? "voucher" : p.category === "flight" ? "voucher" : p.category === "exclusive" ? "member" : "discount") as any,
+          code: p.code,
+          expiryDate: p.endDate ? new Date(p.endDate).toLocaleDateString("vi-VN") : "31/12/2026",
+          status: "active" as const,
+          badgeText: p.badge || "Ưu đãi",
+          badgeVariant: (p.badge === "VIP" ? "purple" : p.badge === "HOT" ? "amber" : "emerald") as any,
+          imageUrl: p.imageUrl || "/deals/vietjet-air.jpg",
+          minSpend: p.minSpend ? `${Number(p.minSpend).toLocaleString("vi-VN")}đ` : "Không giới hạn",
+          terms: Array.isArray(p.terms) ? p.terms.join(". ") : p.terms || "Áp dụng khi thanh toán đặt chỗ trên nền tảng STAYEA.",
+        }))
+        setVouchersList(mapped)
+      } else {
+        setVouchersList([])
+      }
+    })
+  }, [])
 
   function showToast(msg: string) {
     setToastMessage(msg)
@@ -115,17 +145,17 @@ export function MyDealsPage({ onNavigate }: MyDealsPageProps) {
   // Compute category counts
   const counts = React.useMemo(() => {
     return {
-      all: 8,
-      voucher: 3,
-      discount: 2,
-      member: 3,
-      expired: 1,
+      all: vouchersList.length,
+      voucher: vouchersList.filter((v) => v.category === "voucher").length,
+      discount: vouchersList.filter((v) => v.category === "discount").length,
+      member: vouchersList.filter((v) => v.category === "member").length,
+      expired: vouchersList.filter((v) => v.status === "expired").length,
     }
-  }, [])
+  }, [vouchersList])
 
   // Filter vouchers list
   const filteredVouchers = React.useMemo(() => {
-    return MY_VOUCHERS_LIST.filter((v) => {
+    return vouchersList.filter((v) => {
       // 1. Filter by category
       if (activeCategory !== "all" && v.category !== activeCategory) {
         return false
@@ -142,7 +172,16 @@ export function MyDealsPage({ onNavigate }: MyDealsPageProps) {
       }
       return true
     })
-  }, [activeCategory, searchQuery])
+  }, [vouchersList, activeCategory, searchQuery])
+
+  const computedMetrics: MyDealsMetrics = React.useMemo(() => {
+    return {
+      availableCount: vouchersList.filter((v) => v.status === "active").length,
+      savedCount: 0,
+      usedCount: 0,
+      stayaClubPoints: clubPoints,
+    }
+  }, [vouchersList, clubPoints])
 
   return (
     <div className="min-h-screen bg-white pb-16">
@@ -180,7 +219,7 @@ export function MyDealsPage({ onNavigate }: MyDealsPageProps) {
           <div className="lg:col-span-9 space-y-6">
             {/* 1. 4 Metrics Cards */}
             <MyDealsMetricsBar
-              metrics={MY_DEALS_METRICS}
+              metrics={computedMetrics}
               onNavigateToClub={() => onNavigate?.("stayea-club")}
             />
 

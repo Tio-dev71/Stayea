@@ -3686,99 +3686,13 @@ export interface FavoriteCategoryTab {
 }
 
 export const FAVORITE_CATEGORY_TABS: readonly FavoriteCategoryTab[] = [
-  { id: "all", label: "Tất cả", count: 5 },
-  { id: "stay", label: "Lưu trú", count: 1 },
-  { id: "experience", label: "Trải nghiệm", count: 3 },
-  { id: "transport", label: "Di chuyển", count: 1 },
+  { id: "all", label: "Tất cả", count: 0 },
+  { id: "stay", label: "Lưu trú", count: 0 },
+  { id: "experience", label: "Trải nghiệm", count: 0 },
+  { id: "transport", label: "Di chuyển", count: 0 },
 ]
 
-export const FAVORITE_ITEMS: readonly FavoriteItem[] = [
-  {
-    id: "fav-1",
-    title: "Phú Quốc – Biển xanh, nắng vàng",
-    category: "experience",
-    categoryLabel: "Trải nghiệm",
-    categoryVariant: "emerald",
-    rating: 4.8,
-    reviewsCount: "320 đánh giá",
-    dateOrDuration: "15/06/2025 - 18/06/2025 (4 ngày)",
-    location: "Phú Quốc (PQC)",
-    extraDetail: "2 - 10 người",
-    extraDetailIcon: "users",
-    price: 7_500_000,
-    priceUnit: "/ người",
-    imageUrl: "/profile/bai-sao.jpg",
-    targetRoute: "packages",
-  },
-  {
-    id: "fav-2",
-    title: "Premier Residences Phu Quoc Emerald Bay",
-    category: "stay",
-    categoryLabel: "Lưu trú",
-    categoryVariant: "purple",
-    rating: 4.8,
-    reviewsCount: "320 đánh giá",
-    dateOrDuration: "15/06/2025 - 18/06/2025 (3 đêm)",
-    location: "Bãi Khem, Phú Quốc (PQC)",
-    extraDetail: "Phòng Deluxe Ocean View",
-    extraDetailIcon: "bed",
-    price: 2_000_000,
-    priceUnit: "/ đêm",
-    imageUrl: "/auth/auth-villa-bg.jpg",
-    targetRoute: "stay",
-  },
-  {
-    id: "fav-3",
-    title: "Khám phá Hòn Thơm",
-    category: "experience",
-    categoryLabel: "Trải nghiệm",
-    categoryVariant: "sky",
-    rating: 4.7,
-    reviewsCount: "218 đánh giá",
-    dateOrDuration: "12/08/2025 - 14/08/2025 (3 ngày)",
-    location: "Phú Quốc (PQC)",
-    extraDetail: "2 người",
-    extraDetailIcon: "users",
-    price: 1_200_000,
-    priceUnit: "/ người",
-    imageUrl: "/packages/hon-thom-cap-treo.jpg",
-    targetRoute: "packages",
-  },
-  {
-    id: "fav-4",
-    title: "Vé máy bay Vietjet Air",
-    category: "transport",
-    categoryLabel: "Di chuyển",
-    categoryVariant: "amber",
-    rating: 4.6,
-    reviewsCount: "156 đánh giá",
-    dateOrDuration: "15/06/2025",
-    location: "Hà Nội (HAN) → Phú Quốc (PQC)",
-    extraDetail: "Hạng phổ thông",
-    extraDetailIcon: "ticket",
-    price: 4_800_000,
-    priceUnit: "/ vé",
-    imageUrl: "/deals/plane-vietjet.jpg",
-    targetRoute: "transport",
-  },
-  {
-    id: "fav-5",
-    title: "Tour lặn ngắm san hô Hòn Thơm",
-    category: "experience",
-    categoryLabel: "Trải nghiệm",
-    categoryVariant: "emerald",
-    rating: 4.5,
-    reviewsCount: "892 đánh giá",
-    dateOrDuration: "17/06/2025",
-    location: "Hòn Thơm, Phú Quốc",
-    extraDetail: "2 người",
-    extraDetailIcon: "users",
-    price: 1_000_000,
-    priceUnit: "/ người",
-    imageUrl: "/experience/snorkeling-nam-dao.jpg",
-    targetRoute: "experience",
-  },
-]
+export const FAVORITE_ITEMS: readonly FavoriteItem[] = []
 
 // ==========================================
 // 21. MY REVIEWS SCREEN MOCK DATA (ĐÁNH GIÁ CỦA TÔI)
@@ -4212,10 +4126,10 @@ export interface MyDealsMetrics {
 }
 
 export const MY_DEALS_METRICS: MyDealsMetrics = {
-  availableCount: 8,
-  savedCount: 5,
-  usedCount: 12,
-  stayaClubPoints: 2450,
+  availableCount: 0,
+  savedCount: 0,
+  usedCount: 0,
+  stayaClubPoints: 0,
 }
 
 export interface MyVoucherItem {
@@ -4368,13 +4282,13 @@ export interface StayeaClubProfile {
 
 export const STAYEA_CLUB_PROFILE: StayeaClubProfile = {
   memberName: "Thành viên STAYEA",
-  memberTier: "Thành viên Vàng",
-  memberSince: "06/2024",
+  memberTier: "Thành viên Bạc",
+  memberSince: "10/2026",
   avatarUrl: "/profile/profile-avatar.jpg",
-  currentPoints: 3280,
-  nextTier: "Bạch Kim",
-  pointsNeededForNextTier: 720,
-  nextTierThreshold: 4000,
+  currentPoints: 0,
+  nextTier: "Vàng",
+  pointsNeededForNextTier: 1000,
+  nextTierThreshold: 1000,
 }
 
 export interface StayeaClubPerkItem {
@@ -4485,44 +4399,7 @@ export interface StayeaClubPointsTransaction {
   readonly iconType: "bed" | "palmtree" | "gift" | "percent"
 }
 
-export const STAYEA_CLUB_POINTS_HISTORY: readonly StayeaClubPointsTransaction[] = [
-  {
-    id: "tx-1",
-    date: "20/06/2025",
-    activity: "Đặt phòng Premier Residences Phu Quoc Emerald Bay",
-    points: "+480 điểm",
-    isPositive: true,
-    status: "Đã cộng",
-    iconType: "bed",
-  },
-  {
-    id: "tx-2",
-    date: "15/06/2025",
-    activity: "Tour lặn ngắm san hô Hòn Thơm",
-    points: "+120 điểm",
-    isPositive: true,
-    status: "Đã cộng",
-    iconType: "palmtree",
-  },
-  {
-    id: "tx-3",
-    date: "10/06/2025",
-    activity: "Vé hạng thưởng sinh nhật",
-    points: "+200 điểm",
-    isPositive: true,
-    status: "Đã cộng",
-    iconType: "gift",
-  },
-  {
-    id: "tx-4",
-    date: "05/06/2025",
-    activity: "Dùng voucher giảm giá",
-    points: "-300 điểm",
-    isPositive: false,
-    status: "Đã trừ",
-    iconType: "percent",
-  },
-]
+export const STAYEA_CLUB_POINTS_HISTORY: readonly StayeaClubPointsTransaction[] = []
 
 export interface StayeaClubTierTierItem {
   readonly id: "silver" | "gold" | "platinum"

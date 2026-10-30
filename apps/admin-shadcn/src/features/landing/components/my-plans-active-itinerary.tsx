@@ -20,6 +20,8 @@ import type { ItineraryDayItem } from "@/features/landing/data/stayea-mock-data"
 export type ItinerarySubTab = "overview" | "detailed" | "booked" | "budget" | "notes"
 
 interface MyPlansActiveItineraryProps {
+  readonly title?: string
+  readonly dates?: string
   readonly itineraryDays: readonly ItineraryDayItem[]
   readonly onShare: () => void
   readonly onDownloadPdf: () => void
@@ -52,6 +54,8 @@ function renderDayIcon(iconName: "plane-arrival" | "waves" | "fish" | "shopping-
 }
 
 export function MyPlansActiveItinerary({
+  title = "Kế hoạch chuyến đi",
+  dates = "Thời gian linh hoạt",
   itineraryDays,
   onShare,
   onDownloadPdf,
@@ -71,10 +75,10 @@ export function MyPlansActiveItinerary({
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-              Phú Quốc – Biển xanh, nắng vàng
+              {title}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              15/06/2025 - 18/06/2025 (4 ngày)
+              {dates}
             </p>
           </div>
         </div>

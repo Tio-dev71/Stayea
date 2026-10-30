@@ -18,6 +18,8 @@ export function MyPlansRecommendedAddons({
 }: MyPlansRecommendedAddonsProps) {
   const [favoriteMap, setFavoriteMap] = React.useState<Record<string, boolean>>({})
 
+  if (!items || items.length === 0) return null
+
   function toggleFavorite(id: string, e: React.MouseEvent) {
     e.stopPropagation()
     setFavoriteMap((prev) => ({

@@ -37,7 +37,11 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
   React.useEffect(() => {
     let isMounted = true
     stayeaApi.getExperiences().then((res) => {
-      if (!isMounted || !res || !Array.isArray(res.items) || res.items.length === 0) return
+      if (!isMounted || !res || !Array.isArray(res.items)) return
+      if (res.items.length === 0) {
+        setExperiences([])
+        return
+      }
       const mapped: ExperienceListingItem[] = res.items.map((db: any) => {
         const p = Number(db.price || 0)
         return {

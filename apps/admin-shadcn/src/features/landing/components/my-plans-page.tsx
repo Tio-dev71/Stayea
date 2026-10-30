@@ -196,25 +196,30 @@ export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
             />
 
             {/* Active Plan Itinerary Section (only if plans exist) */}
-            {plansList.length > 0 && (
-              <>
-                <MyPlansActiveItinerary
-                  itineraryDays={ACTIVE_PLAN_ITINERARY_DAYS}
-                  onShare={() => setIsShareModalOpen(true)}
-                  onDownloadPdf={() => showToast("Đang chuẩn bị và tải file PDF lịch trình...")}
-                  onEditPlan={() => showToast("Mở giao diện chỉnh sửa lịch trình...")}
-                  onViewMap={() => setIsMapModalOpen(true)}
-                  onViewDayDetail={(day: ItineraryDayItem) => setSelectedDayDetail(day)}
-                />
+            {plansList.length > 0 && (() => {
+              const activeTrip = plansList.find((p) => p.id === selectedTripId) || plansList[0]
+              return (
+                <>
+                  <MyPlansActiveItinerary
+                    title={activeTrip?.title || "Kế hoạch chuyến đi"}
+                    dates={activeTrip?.dates || "Thời gian linh hoạt"}
+                    itineraryDays={ACTIVE_PLAN_ITINERARY_DAYS}
+                    onShare={() => setIsShareModalOpen(true)}
+                    onDownloadPdf={() => showToast("Đang chuẩn bị và tải file PDF lịch trình...")}
+                    onEditPlan={() => showToast("Mở giao diện chỉnh sửa lịch trình...")}
+                    onViewMap={() => setIsMapModalOpen(true)}
+                    onViewDayDetail={(day: ItineraryDayItem) => setSelectedDayDetail(day)}
+                  />
 
-                {/* Booked Services Section */}
-                <MyPlansBookedServices
-                  services={ACTIVE_PLAN_BOOKED_SERVICES}
-                  onSelectService={(service: PlanBookedServiceItem) => setSelectedBookedService(service)}
-                  onViewAll={() => onNavigate?.("bookings")}
-                />
-              </>
-            )}
+                  {/* Booked Services Section */}
+                  <MyPlansBookedServices
+                    services={ACTIVE_PLAN_BOOKED_SERVICES}
+                    onSelectService={(service: PlanBookedServiceItem) => setSelectedBookedService(service)}
+                    onViewAll={() => onNavigate?.("bookings")}
+                  />
+                </>
+              )
+            })()}
 
             {/* Recommended Addons Section ("Gợi ý bổ sung cho chuyến đi của bạn") */}
             <MyPlansRecommendedAddons

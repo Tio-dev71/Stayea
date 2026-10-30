@@ -78,7 +78,7 @@ export function MyReviewsPage({ onNavigate }: MyReviewsPageProps) {
   const [editComment, setEditComment] = React.useState<string>("")
 
   const [isWriteModalOpen, setIsWriteModalOpen] = React.useState<boolean>(false)
-  const [newReviewService, setNewReviewService] = React.useState<string>("Phú Quốc – Biển xanh, nắng vàng")
+  const [newReviewService, setNewReviewService] = React.useState<string>("Dịch vụ lưu trú tại Phú Quốc")
   const [newReviewRating, setNewReviewRating] = React.useState<number>(5)
   const [newReviewComment, setNewReviewComment] = React.useState<string>("")
 
@@ -400,13 +400,12 @@ export function MyReviewsPage({ onNavigate }: MyReviewsPageProps) {
                 onChange={(e) => setNewReviewService(e.target.value)}
                 className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-[#0A2239] bg-white transition-all"
               >
-                <option value="Phú Quốc – Biển xanh, nắng vàng">
-                  Phú Quốc – Biển xanh, nắng vàng
+                <option value="Dịch vụ lưu trú tại Phú Quốc">
+                  Dịch vụ lưu trú tại Phú Quốc
                 </option>
-                <option value="Khám phá Hòn Thơm">Khám phá Hòn Thơm</option>
-                <option value="Sunset Sanato">Sunset Sanato</option>
-                <option value="Grand World Phú Quốc">Grand World Phú Quốc</option>
-                <option value="VinWonders Phú Quốc">VinWonders Phú Quốc</option>
+                <option value="Tour trải nghiệm biển đảo">Tour trải nghiệm biển đảo</option>
+                <option value="Dịch vụ xe đưa đón di chuyển">Dịch vụ xe đưa đón di chuyển</option>
+                <option value="Gói combo nghỉ dưỡng">Gói combo nghỉ dưỡng</option>
               </select>
             </div>
 

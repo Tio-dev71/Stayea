@@ -37,7 +37,11 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
   React.useEffect(() => {
     let isMounted = true
     stayeaApi.getPackages().then((res) => {
-      if (!isMounted || !res || !Array.isArray(res.items) || res.items.length === 0) return
+      if (!isMounted || !res || !Array.isArray(res.items)) return
+      if (res.items.length === 0) {
+        setPackages([])
+        return
+      }
       const mapped: PackageListingItem[] = res.items.map((db: any) => {
         const p = Number(db.price || 0)
         return {

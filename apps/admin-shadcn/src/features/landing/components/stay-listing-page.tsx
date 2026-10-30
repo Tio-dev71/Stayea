@@ -48,7 +48,11 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
   React.useEffect(() => {
     let isMounted = true
     stayeaApi.getAccommodations().then((res) => {
-      if (!isMounted || !res || !Array.isArray(res.items) || res.items.length === 0) return
+      if (!isMounted || !res || !Array.isArray(res.items)) return
+      if (res.items.length === 0) {
+        setAccommodations([])
+        return
+      }
       const mapped: StayAccommodationItem[] = res.items.map((db: any) => {
         const cat = (db.category || "").toLowerCase()
         let categoryId: StayAccommodationItem["categoryId"] = "hotels"

@@ -123,7 +123,8 @@ export class OAuthService {
     } else {
       // Step 3: create new user + OAuth identity
       userId = randomUUID()
-      await this.userRepo.create({ id: userId, name: profile.name, email: cleanEmail })
+      const createdUser = await this.userRepo.create({ id: userId, name: profile.name, email: cleanEmail })
+      userId = createdUser.id
 
       const oauthIdentityId = randomUUID()
       const newIdentity = AuthIdentity.createOAuthIdentity(

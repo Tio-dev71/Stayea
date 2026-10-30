@@ -37,14 +37,49 @@ export class AuthIdentityRepositoryImpl implements AuthIdentityRepository {
       updatedAt: identity.updatedAt,
     }
 
-    const existing = await this.findById(identity.id)
+    const existingById = await this.findById(identity.id)
+    if (existingById) {
+      await this.db.update(accountsTable).set(data).where(eq(accountsTable.id, identity.id))
+      return
+    }
 
-    await (existing
-      ? this.db.update(accountsTable).set(data).where(eq(accountsTable.id, identity.id))
-      : this.db.insert(accountsTable).values({
-          ...data,
-          createdAt: identity.createdAt,
-        }))
+    const existingByProvider = await this.findByProviderAndIdentifier(
+      identity.providerId,
+      identity.accountId,
+    )
+    if (existingByProvider) {
+      await this.db
+        .update(accountsTable)
+        .set({ ...data, id: existingByProvider.id })
+        .where(eq(accountsTable.id, existingByProvider.id))
+      return
+    }
+
+    try {
+      await this.db.insert(accountsTable).values({
+        ...data,
+        createdAt: identity.createdAt,
+      })
+    } catch (err: any) {
+      const isConflict =
+        err?.code === '23505' ||
+        err?.cause?.code === '23505' ||
+        err?.driverError?.code === '23505'
+
+      if (isConflict) {
+        await this.db
+          .update(accountsTable)
+          .set(data)
+          .where(
+            and(
+              eq(accountsTable.providerId, identity.providerId),
+              eq(accountsTable.accountId, identity.accountId.toLowerCase()),
+            ),
+          )
+        return
+      }
+      throw err
+    }
   }
 
   async findById(id: string): Promise<AuthIdentity | null> {

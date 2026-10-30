@@ -12,6 +12,7 @@ import {
   Check,
 } from "lucide-react"
 import { VisaLogo, MastercardLogo, JcbLogo } from "./payment-brand-logos"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import {
   SUPPORTED_COUNTRIES,
   CARD_BRAND_OPTIONS,
@@ -46,7 +47,7 @@ export function AddPaymentCardForm({
   onSubmit,
 }: AddPaymentCardFormProps) {
   // Card Form States
-  const [cardHolder, setCardHolder] = React.useState<string>("NGUYỄN MINH")
+  const [cardHolder, setCardHolder] = React.useState<string>("")
   const [cardNumber, setCardNumber] = React.useState<string>("")
   const [cardExpiry, setCardExpiry] = React.useState<string>("")
   const [cardCvv, setCardCvv] = React.useState<string>("")
@@ -61,7 +62,15 @@ export function AddPaymentCardForm({
 
   // Wallet Form States
   const [walletType, setWalletType] = React.useState<string>("MoMo")
-  const [walletPhone, setWalletPhone] = React.useState<string>("0912 345 678")
+  const [walletPhone, setWalletPhone] = React.useState<string>("")
+
+  React.useEffect(() => {
+    stayeaApi.getProfile().then((u) => {
+      if (u && (u.displayName || u.name)) {
+        setCardHolder((u.displayName || u.name).toUpperCase())
+      }
+    }).catch(() => {})
+  }, [])
 
   // Country Dropdown State
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = React.useState<boolean>(false)
@@ -188,7 +197,7 @@ export function AddPaymentCardForm({
                 type="text"
                 value={cardHolder}
                 onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-                placeholder="NGUYEN MINH"
+                placeholder="NGUYEN VAN A"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-medium tracking-wide focus:outline-hidden focus:border-[#0A2239] focus:ring-2 focus:ring-[#0A2239]/10 transition-all uppercase placeholder:normal-case placeholder:text-slate-400"
               />
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">

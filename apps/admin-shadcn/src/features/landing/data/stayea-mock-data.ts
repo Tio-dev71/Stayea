@@ -3434,10 +3434,10 @@ export interface BookingTabOption {
 }
 
 export const BOOKING_TABS: readonly BookingTabOption[] = [
-  { id: "all", label: "Tất cả", count: 5 },
-  { id: "stay", label: "Lưu trú", count: 2 },
-  { id: "experience", label: "Trải nghiệm", count: 2 },
-  { id: "transport", label: "Di chuyển", count: 1 },
+  { id: "all", label: "Tất cả", count: 0 },
+  { id: "stay", label: "Lưu trú", count: 0 },
+  { id: "experience", label: "Trải nghiệm", count: 0 },
+  { id: "transport", label: "Di chuyển", count: 0 },
   { id: "cancelled", label: "Đã hủy", count: 0 },
 ]
 
@@ -3859,26 +3859,7 @@ export interface SavedCreditCard {
   readonly backgroundGradient: string
 }
 
-export const SAVED_CREDIT_CARDS: readonly SavedCreditCard[] = [
-  {
-    id: "card-visa-4242",
-    cardType: "visa",
-    cardNumberMasked: "•••• •••• •••• 4242",
-    cardHolder: "NGUYỄN MINH",
-    expiryDate: "12/28",
-    isDefault: true,
-    backgroundGradient: "from-[#1D4ED8] via-[#2563EB] to-[#0284C7]",
-  },
-  {
-    id: "card-mastercard-8516",
-    cardType: "mastercard",
-    cardNumberMasked: "•••• •••• •••• 8516",
-    cardHolder: "NGUYỄN MINH",
-    expiryDate: "09/27",
-    isDefault: false,
-    backgroundGradient: "from-[#1E293B] via-[#0F172A] to-[#020617]",
-  },
-]
+export const SAVED_CREDIT_CARDS: readonly SavedCreditCard[] = []
 
 export interface LinkedBankAccount {
   readonly id: string
@@ -3889,24 +3870,7 @@ export interface LinkedBankAccount {
   readonly logoColor: string
 }
 
-export const LINKED_BANK_ACCOUNTS: readonly LinkedBankAccount[] = [
-  {
-    id: "bank-vcb-257522",
-    bankName: "Vietcombank",
-    bankCode: "vcb",
-    accountHolder: "Chủ tài khoản",
-    accountNumberMasked: "**** 257522",
-    logoColor: "#007A33",
-  },
-  {
-    id: "bank-tcb-886621",
-    bankName: "Techcombank",
-    bankCode: "tcb",
-    accountHolder: "Chủ tài khoản",
-    accountNumberMasked: "**** 886621",
-    logoColor: "#E31837",
-  },
-]
+export const LINKED_BANK_ACCOUNTS: readonly LinkedBankAccount[] = []
 
 export interface LinkedEWallet {
   readonly id: string
@@ -3967,35 +3931,7 @@ export interface RecentPaymentTransaction {
   readonly imageUrl: string
 }
 
-export const RECENT_PAYMENT_TRANSACTIONS: readonly RecentPaymentTransaction[] = [
-  {
-    id: "tx-1",
-    bookingCode: "ST250615001",
-    serviceTitle: "Ocean Bay Resort Phú Quốc",
-    date: "15/06/2025",
-    amountFormatted: "7.500.000đ",
-    status: "Đã thanh toán",
-    imageUrl: "/stay/salinda-resort.jpg",
-  },
-  {
-    id: "tx-2",
-    bookingCode: "ST250616002",
-    serviceTitle: "Tour 3 đảo Phú Quốc",
-    date: "16/06/2025",
-    amountFormatted: "1.200.000đ",
-    status: "Đã thanh toán",
-    imageUrl: "/experience/snorkeling-nam-dao.jpg",
-  },
-  {
-    id: "tx-3",
-    bookingCode: "ST250620014",
-    serviceTitle: "Sunset Cruise Phú Quốc",
-    date: "20/06/2025",
-    amountFormatted: "350.000đ",
-    status: "Hoàn tất",
-    imageUrl: "/profile/sunset-sanato.jpg",
-  },
-]
+export const RECENT_PAYMENT_TRANSACTIONS: readonly RecentPaymentTransaction[] = []
 
 export interface PaymentMethodsMetrics {
   readonly savedMethodsCount: number
@@ -4005,9 +3941,9 @@ export interface PaymentMethodsMetrics {
 }
 
 export const PAYMENT_METHODS_METRICS: PaymentMethodsMetrics = {
-  savedMethodsCount: 3,
-  defaultCardTitle: "Visa **** 4242",
-  recentTxCount: 12,
+  savedMethodsCount: 0,
+  defaultCardTitle: "Chưa thiết lập",
+  recentTxCount: 0,
   securityStatus: "An toàn",
 }
 

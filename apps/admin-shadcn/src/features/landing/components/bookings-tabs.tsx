@@ -21,7 +21,7 @@ export function BookingsTabs({ activeTab, onSelectTab, counts }: BookingsTabsPro
       <div className="inline-flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-2xs">
         {BOOKING_TABS.map((tab: BookingTabOption) => {
           const isActive = activeTab === tab.id
-          const count = counts ? (counts[tab.id as keyof typeof counts] ?? 0) : tab.count
+          const count = counts ? (counts[tab.id as keyof typeof counts] ?? 0) : 0
 
           return (
             <button

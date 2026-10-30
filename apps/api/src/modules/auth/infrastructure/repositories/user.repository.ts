@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { Inject, Injectable } from '@nestjs/common'
 import { usersTable } from '@workspace/database'
 import { and, eq, or, ilike } from 'drizzle-orm'
@@ -50,9 +51,20 @@ export class UserRepositoryImpl implements UserRepository {
 
       return this.toEntity(result[0]!)
     } catch (err: any) {
-      if (err?.code === '23505' && err?.constraint?.includes('username')) {
-        // Fallback with timestamp-based unique username
-        uniqueUsername = `${baseUsername}_${Date.now().toString(36)}_${Math.floor(Math.random() * 1000)}`
+      const isConflict =
+        err?.code === '23505' ||
+        err?.cause?.code === '23505' ||
+        err?.driverError?.code === '23505'
+
+      if (isConflict) {
+        // If user already exists with this email, return that existing user
+        const existingByEmail = await this.findByEmail(cleanEmail)
+        if (existingByEmail) {
+          return existingByEmail
+        }
+
+        // If username was in conflict, generate guaranteed unique username and retry
+        uniqueUsername = `${baseUsername}_${randomUUID().replace(/-/g, '').slice(0, 8)}`
         const retryResult = await this.db
           .insert(usersTable)
           .values({

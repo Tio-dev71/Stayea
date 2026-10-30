@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { accountsTable } from '@workspace/database'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, or } from 'drizzle-orm'
 
 import { DB_TOKEN } from '@/app/database/db.port'
 import { AuthIdentity } from '@/modules/auth/domain/aggregates/auth-identity.aggregate'
@@ -73,7 +73,10 @@ export class AuthIdentityRepositoryImpl implements AuthIdentityRepository {
           .where(
             and(
               eq(accountsTable.providerId, identity.providerId),
-              eq(accountsTable.accountId, identity.accountId.toLowerCase()),
+              or(
+                eq(accountsTable.accountId, identity.accountId),
+                eq(accountsTable.accountId, identity.accountId.toLowerCase()),
+              ),
             ),
           )
         return

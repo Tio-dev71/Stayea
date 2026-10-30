@@ -268,14 +268,17 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
-            <p className="text-slate-500 text-sm">
-              Không tìm thấy gói hành trình nào phù hợp với bộ lọc hiện tại.
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 space-y-2 p-8">
+            <p className="text-slate-800 font-bold text-sm">
+              Chưa có gói combo hành trình nào được đăng tải.
+            </p>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Bạn có thể tự tạo gói combo nghỉ dưỡng hoặc tour trọn gói mới từ cổng Quản trị hệ thống.
             </p>
             <button
               type="button"
               onClick={handleResetFilters}
-              className="mt-3 px-4 py-2 rounded-xl bg-[#0c3b40] text-white text-xs font-medium hover:bg-[#072528] transition-colors"
+              className="mt-3 px-4 py-2 rounded-xl bg-[#0c3b40] text-white text-xs font-medium hover:bg-[#072528] transition-colors cursor-pointer"
             >
               Đặt lại bộ lọc
             </button>

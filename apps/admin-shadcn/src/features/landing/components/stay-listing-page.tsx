@@ -312,14 +312,17 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
 
             {/* Accommodation Cards (4 columns x 3 rows on large desktop) */}
             {filteredItems.length === 0 ? (
-              <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8">
-                <p className="text-slate-600 font-semibold text-sm">
-                  Không tìm thấy chỗ lưu trú phù hợp với bộ lọc đã chọn.
+              <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8 space-y-2">
+                <p className="text-slate-800 font-bold text-sm">
+                  Chưa có nơi lưu trú nào được đăng tải.
+                </p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Bạn có thể tự đăng ký thêm biệt thự, căn hộ hoặc khách sạn mới từ Hub đối tác hoặc Quản trị hệ thống để bắt đầu trải nghiệm.
                 </p>
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="mt-3 text-xs font-semibold text-[#0c3b40] hover:underline"
+                  className="mt-3 text-xs font-semibold text-[#0c3b40] hover:underline cursor-pointer"
                 >
                   Xóa tất cả bộ lọc và thử lại
                 </button>

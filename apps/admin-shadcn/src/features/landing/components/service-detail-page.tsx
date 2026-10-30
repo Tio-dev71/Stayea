@@ -113,18 +113,44 @@ export function ServiceDetailPage({
   onBack,
   onNavigate,
 }: ServiceDetailPageProps) {
+  // Fallback empty item if no service is passed and catalog is clean/empty
+  const fallbackEmptyItem = React.useMemo(() => ({
+    id: "empty-service",
+    title: "Dịch vụ STAYEA Phú Quốc",
+    type: "Lưu trú",
+    location: "Phú Quốc, Kiên Giang",
+    rating: 5,
+    reviewsCount: 0,
+    pricePerNight: 0,
+    price: 0,
+    formattedPrice: "0 đ",
+    imageUrl: "/placeholder.jpg",
+    amenities: [],
+    categoryId: "all",
+    area: "Phú Quốc",
+  }), [])
+
   // Resolve item fallback if none provided
   const activeItem = React.useMemo(() => {
     if (item) return item
-    if (type === "stay") return STAY_ACCOMMODATION_LISTINGS[1] || STAY_ACCOMMODATION_LISTINGS[0]
-    if (type === "experience") return EXPERIENCE_LISTINGS[0]
-    if (type === "package") return PACKAGE_LISTINGS[0]
-    if (type === "transport") return TRANSPORT_ITEMS[0]
-    return STAY_ACCOMMODATION_LISTINGS[0]
-  }, [item, type])
+    if (type === "stay" && STAY_ACCOMMODATION_LISTINGS.length > 0) {
+      return STAY_ACCOMMODATION_LISTINGS[1] || STAY_ACCOMMODATION_LISTINGS[0]
+    }
+    if (type === "experience" && EXPERIENCE_LISTINGS.length > 0) {
+      return EXPERIENCE_LISTINGS[0]
+    }
+    if (type === "package" && PACKAGE_LISTINGS.length > 0) {
+      return PACKAGE_LISTINGS[0]
+    }
+    if (type === "transport" && TRANSPORT_ITEMS.length > 0) {
+      return TRANSPORT_ITEMS[0]
+    }
+    return fallbackEmptyItem
+  }, [item, type, fallbackEmptyItem])
 
   // Gallery images array
   const galleryImages = React.useMemo(() => {
+    if (!activeItem) return []
     if (Array.isArray(activeItem.gallery) && activeItem.gallery.length > 0) {
       return activeItem.gallery.slice(0, 5)
     }
@@ -132,7 +158,7 @@ export function ServiceDetailPage({
     const mainPhoto = activeItem.imageUrl || defaultPhotos[0]
     const otherPhotos = defaultPhotos.filter((p: string) => p !== mainPhoto)
     return [mainPhoto, ...otherPhotos].slice(0, 5)
-  }, [activeItem.imageUrl, activeItem.gallery, type])
+  }, [activeItem?.imageUrl, activeItem?.gallery, type])
 
   // UI state
   const [isWishlisted, setIsWishlisted] = React.useState(false)
@@ -345,6 +371,7 @@ export function ServiceDetailPage({
 
   // Related items list
   const relatedItems = React.useMemo(() => {
+    if (!activeItem) return []
     if (type === "stay") {
       return STAY_ACCOMMODATION_LISTINGS.filter((s) => s.id !== activeItem.id).slice(0, 4)
     }
@@ -355,7 +382,23 @@ export function ServiceDetailPage({
       return PACKAGE_LISTINGS.filter((p) => p.id !== activeItem.id).slice(0, 4)
     }
     return TRANSPORT_ITEMS.filter((t) => t.id !== activeItem.id).slice(0, 4)
-  }, [activeItem.id, type])
+  }, [activeItem?.id, type])
+
+  if (!activeItem) {
+    return (
+      <div className="min-h-screen bg-[#FBFBFA] flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Chưa có thông tin dịch vụ</h2>
+        <p className="text-sm text-slate-500 mb-6">Dịch vụ này hiện chưa có dữ liệu hoặc đã được gỡ bỏ để cập nhật mới.</p>
+        <button
+          type="button"
+          onClick={onBack || (() => onNavigate?.("home"))}
+          className="px-5 py-2.5 rounded-xl bg-[#0c3b40] text-white text-xs font-semibold cursor-pointer"
+        >
+          Quay lại trang chủ
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#FBFBFA] text-slate-800 pb-20">

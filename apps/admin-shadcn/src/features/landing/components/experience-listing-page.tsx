@@ -252,14 +252,17 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
           {/* Right Column: 4-Column Cards Grid */}
           <div className="flex-1 min-w-0 w-full space-y-6">
             {filteredItems.length === 0 ? (
-              <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8">
-                <p className="text-slate-600 font-semibold text-sm">
-                  Không tìm thấy trải nghiệm phù hợp với bộ lọc đã chọn.
+              <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8 space-y-2">
+                <p className="text-slate-800 font-bold text-sm">
+                  Chưa có trải nghiệm nào được đăng tải.
+                </p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Bạn có thể tự đăng ký thêm tour đảo, lặn ngắm san hô hoặc hoạt động vui chơi từ Hub đối tác hoặc Quản trị hệ thống.
                 </p>
                 <button
                   type="button"
                   onClick={() => setFilters(INITIAL_FILTERS)}
-                  className="mt-3 text-xs font-semibold text-[#0c3b40] hover:underline"
+                  className="mt-3 text-xs font-semibold text-[#0c3b40] hover:underline cursor-pointer"
                 >
                   Xóa tất cả bộ lọc và thử lại
                 </button>

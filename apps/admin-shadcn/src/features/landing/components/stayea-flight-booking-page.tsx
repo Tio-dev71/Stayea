@@ -181,16 +181,27 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
               onNext={() => showToast("Đang tải các ngày sau...")}
             />
 
-            {/* Flight Cards List (5 cards matching screenshot) */}
+            {/* Flight Cards List */}
             <div className="space-y-3">
-              {STAYEA_FLIGHT_RESULTS.map((flight) => (
-                <StayeaFlightCardItem
-                  key={flight.id}
-                  flight={flight}
-                  isSelected={flight.id === selectedFlightId}
-                  onSelect={handleSelectFlight}
-                />
-              ))}
+              {STAYEA_FLIGHT_RESULTS.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-2">
+                  <p className="text-sm font-semibold text-slate-800">
+                    Chưa có chặng bay nào được cập nhật cho tuyến này.
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Bạn có thể cập nhật các lịch bay mới từ hệ thống quản trị STAYEA.
+                  </p>
+                </div>
+              ) : (
+                STAYEA_FLIGHT_RESULTS.map((flight) => (
+                  <StayeaFlightCardItem
+                    key={flight.id}
+                    flight={flight}
+                    isSelected={flight.id === selectedFlightId}
+                    onSelect={handleSelectFlight}
+                  />
+                ))
+              )}
             </div>
           </div>
 

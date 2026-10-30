@@ -153,7 +153,7 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-200">
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                  Có 186 dịch vụ di chuyển tại Phú Quốc
+                  Có {filteredItems.length} dịch vụ di chuyển tại Phú Quốc
                 </h2>
                 <p className="text-xs sm:text-[13px] text-slate-500 mt-0.5">
                   Đa dạng phương tiện, linh hoạt lựa chọn, phù hợp mọi hành trình của bạn.
@@ -229,16 +229,19 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
 
             {/* 3. Cards Grid: Exactly 5 columns on large screens as reference design */}
             {filteredItems.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center my-6">
-                <p className="text-sm font-semibold text-slate-700">
-                  Không tìm thấy phương tiện nào phù hợp với bộ lọc hiện tại.
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center my-6 space-y-2">
+                <p className="text-sm font-semibold text-slate-800">
+                  Chưa có dịch vụ di chuyển nào được đăng tải.
+                </p>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Bạn có thể thêm dịch vụ xe đưa đón hoặc thuê xe mới từ Hub đối tác hoặc Quản trị hệ thống.
                 </p>
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="mt-3 text-xs text-teal-600 font-bold hover:underline"
+                  className="mt-3 text-xs text-teal-600 font-bold hover:underline cursor-pointer"
                 >
-                  Xóa bộ lọc và thử lại
+                  Đặt lại bộ lọc
                 </button>
               </div>
             ) : viewMode === "grid" ? (

@@ -207,6 +207,7 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
               filters={filters}
               onFiltersChange={setFilters}
               onResetFilters={handleResetFilters}
+              items={accommodations}
             />
           </div>
 
@@ -232,6 +233,7 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
                   filters={filters}
                   onFiltersChange={setFilters}
                   onResetFilters={handleResetFilters}
+                  items={accommodations}
                 />
               </div>
             </div>

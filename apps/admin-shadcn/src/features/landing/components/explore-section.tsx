@@ -33,42 +33,53 @@ export function ExploreSection({ onNavigate }: ExploreSectionProps = {}) {
           </button>
         </div>
 
-        {/* 8 Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-          {EXPLORE_GUIDES.map((item) => (
-            <div
-              key={item.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onNavigate?.("phu-quoc")}
-              onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("phu-quoc") }}
-              className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 hover:-translate-y-0.5"
-            >
-              {/* Image */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 12.5vw"
-                />
-              </div>
+        {/* 8 Cards Grid or Empty State */}
+        {EXPLORE_GUIDES.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+            {EXPLORE_GUIDES.map((item) => (
+              <div
+                key={item.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onNavigate?.("phu-quoc")}
+                onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("phu-quoc") }}
+                className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                {/* Image */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 12.5vw"
+                  />
+                </div>
 
-              {/* Text info */}
-              <div className="p-2.5 flex flex-col flex-grow justify-between">
-                <div>
-                  <h4 className="font-bold text-xs sm:text-[13px] text-slate-800 leading-snug group-hover:text-[#0c3b40] transition-colors">
-                    {item.title}
-                  </h4>
-                  <p className="text-[10.5px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
-                    {item.description}
-                  </p>
+                {/* Text info */}
+                <div className="p-2.5 flex flex-col flex-grow justify-between">
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-[13px] text-slate-800 leading-snug group-hover:text-[#0c3b40] transition-colors">
+                      {item.title}
+                    </h4>
+                    <p className="text-[10.5px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 px-4 rounded-2xl border border-dashed border-slate-200 text-center bg-slate-50/60">
+            <p className="text-sm font-semibold text-slate-700">
+              Chưa có cẩm nang khám phá nào được đăng tải
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              Các bài viết cẩm nang, gợi ý du lịch và kinh nghiệm khám phá Phú Quốc sẽ sớm xuất hiện tại đây.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   )

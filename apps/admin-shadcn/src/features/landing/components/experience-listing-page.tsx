@@ -224,6 +224,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
             <ExperienceSidebar
               filters={filters}
               onFiltersChange={setFilters}
+              items={experiences}
             />
           </div>
 
@@ -248,6 +249,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
                 <ExperienceSidebar
                   filters={filters}
                   onFiltersChange={setFilters}
+                  items={experiences}
                 />
               </div>
             </div>

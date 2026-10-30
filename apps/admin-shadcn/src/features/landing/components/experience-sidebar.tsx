@@ -12,7 +12,10 @@ import {
   Ticket,
 } from "lucide-react"
 import { EXPERIENCE_SIDEBAR_CATEGORIES } from "@/features/landing/data/stayea-mock-data"
-import type { ExperienceCategorySidebarItem } from "@/features/landing/data/stayea-mock-data"
+import type {
+  ExperienceCategorySidebarItem,
+  ExperienceListingItem,
+} from "@/features/landing/data/stayea-mock-data"
 
 export interface ExperienceFilterState {
   category: string
@@ -23,6 +26,7 @@ export interface ExperienceFilterState {
 interface ExperienceSidebarProps {
   readonly filters: ExperienceFilterState
   readonly onFiltersChange: (newFilters: ExperienceFilterState) => void
+  readonly items?: readonly ExperienceListingItem[]
 }
 
 function getCategoryIcon(iconName: string, isActive: boolean) {
@@ -56,6 +60,7 @@ function getCategoryIcon(iconName: string, isActive: boolean) {
 export function ExperienceSidebar({
   filters,
   onFiltersChange,
+  items = [],
 }: ExperienceSidebarProps) {
   const handleSelectCategory = (categoryId: string) => {
     onFiltersChange({
@@ -96,6 +101,10 @@ export function ExperienceSidebar({
         <div className="space-y-1">
           {EXPERIENCE_SIDEBAR_CATEGORIES.map((cat: ExperienceCategorySidebarItem) => {
             const isActive = filters.category === cat.id
+            const count =
+              cat.id === "all"
+                ? items.length
+                : items.filter((it) => it.categoryId === cat.id).length
             return (
               <button
                 key={cat.id}
@@ -116,7 +125,7 @@ export function ExperienceSidebar({
                     isActive ? "text-[#0c3b40] font-semibold" : "text-slate-400 group-hover:text-slate-600"
                   }`}
                 >
-                  ({cat.count})
+                  ({count})
                 </span>
               </button>
             )

@@ -22,6 +22,7 @@ import {
 import {
   PHU_QUOC_CATEGORIES,
   PHU_QUOC_FEATURED_ARTICLE,
+  PHU_QUOC_ARTICLES,
 } from "@/features/landing/data/stayea-mock-data"
 
 interface PhuQuocSidebarProps {
@@ -77,55 +78,57 @@ export function PhuQuocSidebar({
   return (
     <aside className="w-full space-y-6">
       {/* 1. Featured Article Card */}
-      <div className="group bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all overflow-hidden flex flex-col justify-between">
-        <div>
-          {/* Image */}
-          <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
-            <Image
-              src={PHU_QUOC_FEATURED_ARTICLE.imageUrl}
-              alt={PHU_QUOC_FEATURED_ARTICLE.title}
-              fill
-              sizes="(max-width: 1024px) 100vw, 320px"
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-            />
-            <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1e3a8a] text-white tracking-wider uppercase shadow-xs">
-              BÀI VIẾT NỔI BẬT
-            </span>
-          </div>
-
-          {/* Info */}
-          <div className="p-4 space-y-2">
-            <h3 className="font-sans text-base font-bold text-slate-900 group-hover:text-[#0c3b40] transition-colors leading-snug">
-              {PHU_QUOC_FEATURED_ARTICLE.title}
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
-              {PHU_QUOC_FEATURED_ARTICLE.excerpt}
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 pb-4 pt-2 flex items-center justify-between border-t border-slate-50 text-[11px] text-slate-400">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 shrink-0" />
-              <span>{PHU_QUOC_FEATURED_ARTICLE.date}</span>
+      {PHU_QUOC_FEATURED_ARTICLE && (
+        <div className="group bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all overflow-hidden flex flex-col justify-between">
+          <div>
+            {/* Image */}
+            <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+              <Image
+                src={PHU_QUOC_FEATURED_ARTICLE.imageUrl}
+                alt={PHU_QUOC_FEATURED_ARTICLE.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 320px"
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+              />
+              <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1e3a8a] text-white tracking-wider uppercase shadow-xs">
+                BÀI VIẾT NỔI BẬT
+              </span>
             </div>
-            <div className="flex items-center gap-1">
-              <Eye className="w-3.5 h-3.5 shrink-0" />
-              <span>{PHU_QUOC_FEATURED_ARTICLE.views}</span>
+
+            {/* Info */}
+            <div className="p-4 space-y-2">
+              <h3 className="font-sans text-base font-bold text-slate-900 group-hover:text-[#0c3b40] transition-colors leading-snug">
+                {PHU_QUOC_FEATURED_ARTICLE.title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
+                {PHU_QUOC_FEATURED_ARTICLE.excerpt}
+              </p>
             </div>
           </div>
 
-          <Link
-            href={`#article-${PHU_QUOC_FEATURED_ARTICLE.id}`}
-            aria-label={`Đọc bài viết: ${PHU_QUOC_FEATURED_ARTICLE.title}`}
-            className="w-8 h-8 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center shadow-xs transition-transform active:scale-95 group-hover:scale-105"
-          >
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {/* Footer */}
+          <div className="px-4 pb-4 pt-2 flex items-center justify-between border-t border-slate-50 text-[11px] text-slate-400">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                <span>{PHU_QUOC_FEATURED_ARTICLE.date}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="w-3.5 h-3.5 shrink-0" />
+                <span>{PHU_QUOC_FEATURED_ARTICLE.views}</span>
+              </div>
+            </div>
+
+            <Link
+              href={`#article-${PHU_QUOC_FEATURED_ARTICLE.id}`}
+              aria-label={`Đọc bài viết: ${PHU_QUOC_FEATURED_ARTICLE.title}`}
+              className="w-8 h-8 rounded-full bg-[#0c3b40] hover:bg-[#072528] text-white flex items-center justify-center shadow-xs transition-transform active:scale-95 group-hover:scale-105"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Danh mục (Categories List Card) */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-4 sm:p-5 space-y-3">
@@ -136,6 +139,10 @@ export function PhuQuocSidebar({
         <div className="space-y-1">
           {PHU_QUOC_CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.id
+            const count =
+              cat.id === "all"
+                ? PHU_QUOC_ARTICLES.length
+                : PHU_QUOC_ARTICLES.filter((a) => a.categoryId === cat.id).length
             return (
               <button
                 key={cat.id}
@@ -158,7 +165,7 @@ export function PhuQuocSidebar({
                       : "bg-slate-100 text-slate-500"
                   }`}
                 >
-                  {cat.count}
+                  {count}
                 </span>
               </button>
             )

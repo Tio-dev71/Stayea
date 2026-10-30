@@ -8,7 +8,6 @@ import { PhuQuocArticleCard } from "./phu-quoc-article-card"
 import { PhuQuocSidebar } from "./phu-quoc-sidebar"
 import {
   PHU_QUOC_ARTICLES,
-  PHU_QUOC_CATEGORIES,
 } from "@/features/landing/data/stayea-mock-data"
 import type { PhuQuocArticleItem } from "@/features/landing/data/stayea-mock-data"
 
@@ -83,7 +82,8 @@ export function PhuQuocListingPage({ onNavigate, initialCategory }: PhuQuocListi
     return list
   }, [activeCategory, searchQuery, selectedSort])
 
-  const totalCount = activeCategory === "all" ? 256 : (PHU_QUOC_CATEGORIES.find((c) => c.id === activeCategory)?.count ?? filteredArticles.length)
+  const totalCount = filteredArticles.length
+  const totalPages = Math.ceil(filteredArticles.length / 9)
 
   return (
     <div className="w-full bg-[#f8fafc]/50 min-h-screen">
@@ -177,48 +177,40 @@ export function PhuQuocListingPage({ onNavigate, initialCategory }: PhuQuocListi
               </div>
             )}
 
-            {/* Pagination */}
-            <div className="pt-8 pb-4 flex justify-center">
-              <nav aria-label="Phân trang bài viết" className="flex items-center gap-1.5 text-xs font-semibold select-none">
-                {[1, 2, 3, 4, 5].map((page) => {
-                  const isActive = pageIndex === page
-                  return (
+            {/* Pagination (only if more than 1 page) */}
+            {totalPages > 1 && (
+              <div className="pt-8 pb-4 flex justify-center">
+                <nav aria-label="Phân trang bài viết" className="flex items-center gap-1.5 text-xs font-semibold select-none">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    const isActive = pageIndex === page
+                    return (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setPageIndex(page)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          isActive
+                            ? "bg-[#0c3b40] text-white shadow-xs"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
+                  {pageIndex < totalPages && (
                     <button
-                      key={page}
                       type="button"
-                      onClick={() => setPageIndex(page)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                        isActive
-                          ? "bg-[#0c3b40] text-white shadow-xs"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                      }`}
+                      onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
+                      aria-label="Trang tiếp theo"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors ml-1"
                     >
-                      {page}
+                      <ChevronRight className="w-4 h-4" />
                     </button>
-                  )
-                })}
-                <span className="px-1 text-slate-400">...</span>
-                <button
-                  type="button"
-                  onClick={() => setPageIndex(26)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    pageIndex === 26
-                      ? "bg-[#0c3b40] text-white shadow-xs"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  26
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPageIndex((p) => Math.min(26, p + 1))}
-                  aria-label="Trang tiếp theo"
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors ml-1"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </nav>
-            </div>
+                  )}
+                </nav>
+              </div>
+            )}
           </main>
 
           {/* Right Column: Sidebar (Span 4 or 3) */}

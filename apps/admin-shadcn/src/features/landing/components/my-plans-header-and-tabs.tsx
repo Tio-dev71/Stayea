@@ -8,24 +8,32 @@ interface MyPlansHeaderAndTabsProps {
   readonly activeTab: PlanFilterTab
   readonly onSelectTab: (tab: PlanFilterTab) => void
   readonly onCreateNewPlan: () => void
+  readonly counts?: {
+    upcoming?: number
+    past?: number
+    draft?: number
+    wishlist?: number
+  }
 }
 
 interface PlanTabItem {
   readonly id: PlanFilterTab
   readonly label: string
+  readonly countKey?: "upcoming" | "past" | "draft" | "wishlist"
 }
 
 const PLAN_TABS: readonly PlanTabItem[] = [
-  { id: "upcoming", label: "Chuyến đi sắp tới (2)" },
-  { id: "past", label: "Chuyến đi đã qua (3)" },
-  { id: "draft", label: "Kế hoạch nháp (1)" },
-  { id: "wishlist", label: "Danh sách mong muốn" },
+  { id: "upcoming", label: "Chuyến đi sắp tới", countKey: "upcoming" },
+  { id: "past", label: "Chuyến đi đã qua", countKey: "past" },
+  { id: "draft", label: "Kế hoạch nháp", countKey: "draft" },
+  { id: "wishlist", label: "Danh sách mong muốn", countKey: "wishlist" },
 ]
 
 export function MyPlansHeaderAndTabs({
   activeTab,
   onSelectTab,
   onCreateNewPlan,
+  counts,
 }: MyPlansHeaderAndTabsProps) {
   return (
     <div className="space-y-4">
@@ -67,7 +75,10 @@ export function MyPlansHeaderAndTabs({
                   : "bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.countKey && counts && (
+                <span className="ml-1 opacity-80">({counts[tab.countKey] ?? 0})</span>
+              )}
             </button>
           )
         })}

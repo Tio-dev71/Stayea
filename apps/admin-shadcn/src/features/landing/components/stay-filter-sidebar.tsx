@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { STAY_FILTER_OPTIONS } from "@/features/landing/data/stayea-mock-data"
+import type { StayAccommodationItem } from "@/features/landing/data/stayea-mock-data"
 
 export interface StayFilterState {
   priceMin: number
@@ -17,13 +18,102 @@ interface StayFilterSidebarProps {
   readonly filters: StayFilterState
   readonly onFiltersChange: (newFilters: StayFilterState) => void
   readonly onResetFilters: () => void
+  readonly items?: readonly StayAccommodationItem[]
 }
 
 export function StayFilterSidebar({
   filters,
   onFiltersChange,
   onResetFilters,
+  items = [],
 }: StayFilterSidebarProps) {
+  const counts = React.useMemo(() => {
+    const types = {
+      villas: 0,
+      apartments: 0,
+      homestays: 0,
+      hotels: 0,
+      "long-stay": 0,
+    }
+    const locations = {
+      "bai-truong": 0,
+      "bai-khem": 0,
+      "an-thoi": 0,
+      "duong-dong": 0,
+      "bai-ong-lang": 0,
+      "ganh-dau": 0,
+      khac: 0,
+    }
+    const amenities = {
+      pool: 0,
+      beach: 0,
+      kitchen: 0,
+      wifi: 0,
+      parking: 0,
+      pets: 0,
+    }
+    const suitability = {
+      family: 0,
+      couples: 0,
+      friends: 0,
+      workation: 0,
+      kids: 0,
+    }
+
+    if (Array.isArray(items)) {
+      items.forEach((item) => {
+        const catId = item.categoryId
+        if (catId === "villas" || item.type === "Villa") {
+          types.villas += 1
+        } else if (catId === "apartments" || item.type === "Căn hộ") {
+          types.apartments += 1
+        } else if (catId === "homestays" || item.type === "Homestay") {
+          types.homestays += 1
+        } else if (catId === "hotels" || item.type === "Khách sạn" || item.type === "Resort") {
+          types.hotels += 1
+        } else if (catId === "long-stay" || item.type === "Lưu trú dài hạn") {
+          types["long-stay"] += 1
+        }
+
+        const loc = (item.location + " " + (item.area || "")).toLowerCase()
+        if (loc.includes("trường")) locations["bai-truong"] += 1
+        else if (loc.includes("khem")) locations["bai-khem"] += 1
+        else if (loc.includes("thới") || loc.includes("đội")) locations["an-thoi"] += 1
+        else if (loc.includes("dương đông")) locations["duong-dong"] += 1
+        else if (loc.includes("ông lang")) locations["bai-ong-lang"] += 1
+        else if (loc.includes("gành dầu")) locations["ganh-dau"] += 1
+        else locations.khac += 1
+
+        const ams = item.amenities || []
+        const amsText = JSON.stringify(ams).toLowerCase()
+        if (amsText.includes("hồ bơi") || amsText.includes("pool")) amenities.pool += 1
+        if (amsText.includes("biển") || amsText.includes("beach")) amenities.beach += 1
+        if (amsText.includes("bếp") || amsText.includes("kitchen")) amenities.kitchen += 1
+        if (amsText.includes("wifi") || amsText.includes("wi-fi")) amenities.wifi += 1
+        if (amsText.includes("đỗ xe") || amsText.includes("parking")) amenities.parking += 1
+        if (amsText.includes("thú cưng") || amsText.includes("pet")) amenities.pets += 1
+
+        if (item.type === "Villa" || item.type === "Resort") {
+          suitability.family += 1
+          suitability.couples += 1
+          suitability.friends += 1
+        } else if (item.type === "Căn hộ" || item.type === "Lưu trú dài hạn") {
+          suitability.workation += 1
+          suitability.couples += 1
+        } else {
+          suitability.friends += 1
+          suitability.couples += 1
+        }
+      })
+    }
+
+    return {
+      types: types as Record<string, number>,
+      locations: locations as Record<string, number>,
+      amenities: amenities as Record<string, number>,
+      suitability: suitability as Record<string, number>,
+    }
+  }, [items])
   const handleToggle = (
     category: "types" | "locations" | "amenities" | "suitability",
     id: string
@@ -127,7 +217,7 @@ export function StayFilterSidebar({
                     {item.label}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-600">({item.count})</span>
+                <span className="text-[11px] text-slate-600">({counts.types[item.id] ?? 0})</span>
               </label>
             )
           })}
@@ -162,7 +252,7 @@ export function StayFilterSidebar({
                     {item.label}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-600">({item.count})</span>
+                <span className="text-[11px] text-slate-600">({counts.locations[item.id] ?? 0})</span>
               </label>
             )
           })}
@@ -197,7 +287,7 @@ export function StayFilterSidebar({
                     {item.label}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-600">({item.count})</span>
+                <span className="text-[11px] text-slate-600">({counts.amenities[item.id] ?? 0})</span>
               </label>
             )
           })}
@@ -232,7 +322,7 @@ export function StayFilterSidebar({
                     {item.label}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-600">({item.count})</span>
+                <span className="text-[11px] text-slate-600">({counts.suitability[item.id] ?? 0})</span>
               </label>
             )
           })}

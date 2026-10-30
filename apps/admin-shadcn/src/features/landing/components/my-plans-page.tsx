@@ -175,6 +175,12 @@ export function MyPlansPage({ onNavigate }: MyPlansPageProps) {
             {/* Page Header Title + "Tạo kế hoạch mới +" Button + Status Tabs */}
             <MyPlansHeaderAndTabs
               activeTab={activeStatusTab}
+              counts={{
+                upcoming: plansList.filter((p) => p.status === "upcoming").length,
+                past: plansList.filter((p) => p.status === "past").length,
+                draft: plansList.filter((p) => p.status === "draft").length,
+                wishlist: 0,
+              }}
               onSelectTab={(tab) => {
                 setActiveStatusTab(tab)
                 showToast(`Đang hiển thị mục: ${tab}`)

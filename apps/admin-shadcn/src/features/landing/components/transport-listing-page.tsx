@@ -145,6 +145,7 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
             filters={filters}
             onFiltersChange={setFilters}
             onResetFilters={handleResetFilters}
+            items={TRANSPORT_ITEMS}
           />
 
           {/* Right Main Listing Content */}

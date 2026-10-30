@@ -20,6 +20,7 @@ interface HostsFilterBarProps {
   onExport?: () => void
   activeSegment?: string
   onSegmentChange?: (segmentId: string) => void
+  segmentCounts?: Record<string, number>
 }
 
 export function HostsFilterBar({
@@ -37,6 +38,7 @@ export function HostsFilterBar({
   onExport,
   activeSegment = "all",
   onSegmentChange,
+  segmentCounts,
 }: HostsFilterBarProps) {
   const [internalSearch, setInternalSearch] = useState(searchQuery)
 
@@ -159,6 +161,7 @@ export function HostsFilterBar({
       <div className="flex items-center gap-1.5 border-b border-slate-200/70 overflow-x-auto no-scrollbar pt-1">
         {HOSTS_SEGMENT_TABS.map((tab: HostSegmentItem) => {
           const isActive = activeSegment === tab.id
+          const count = segmentCounts ? (segmentCounts[tab.id] ?? 0) : tab.count
           return (
             <button
               key={tab.id}
@@ -178,7 +181,7 @@ export function HostsFilterBar({
                     : "bg-slate-100 text-slate-500"
                 }`}
               >
-                ({tab.count})
+                ({count})
               </span>
             </button>
           )

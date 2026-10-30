@@ -165,7 +165,7 @@ export function ReportsCustomersTable({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3.5 mt-2 border-t border-slate-100 text-xs text-slate-500">
         {/* Count info */}
         <div>
-          Hiển thị 1 - 5 của 8.420 khách hàng
+          Hiển thị {customers.length === 0 ? 0 : 1} - {Math.min(pageSize, customers.length)} của {customers.length} khách hàng
         </div>
 
         {/* Page numbers */}

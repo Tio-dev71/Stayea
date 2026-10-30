@@ -155,7 +155,7 @@ export function DealsDataTable({ deals, onAction }: DealsDataTableProps) {
 
       {/* Pagination Footer */}
       <div className="p-3 border-t border-slate-100 bg-[#fafbfa] flex items-center justify-between text-xs text-slate-500">
-        <span>Hiển thị 1 - {deals.length} của 24 chương trình</span>
+        <span>Hiển thị {deals.length === 0 ? 0 : 1} - {deals.length} của {deals.length} chương trình</span>
       </div>
     </div>
   )

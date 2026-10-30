@@ -38,6 +38,21 @@ export function StayeaAdminHostsPage({
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
   const [livePartners, setLivePartners] = useState<HostPartnerItem[]>([])
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0)
+
+  useEffect(() => {
+    stayeaApi
+      .getAdminOrdersQueue()
+      .then((orders) => {
+        if (Array.isArray(orders)) {
+          const pending = orders.filter(
+            (o: any) => o.status === "pending_admin" || o.status === "sent_to_partner"
+          ).length
+          setPendingOrdersCount(pending)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     stayeaApi
@@ -127,6 +142,35 @@ export function StayeaAdminHostsPage({
     ]
   }, [livePartners])
 
+  const segmentCounts = useMemo(() => ({
+    all: livePartners.length,
+    individual: livePartners.filter((p) => p.partnerType === "individual").length,
+    management_company: livePartners.filter((p) => p.partnerType === "management_company").length,
+    agency: livePartners.filter((p) => p.partnerType === "agency").length,
+    pending: livePartners.filter((p) => p.status === "pending").length,
+  }), [livePartners])
+
+  const filteredPartners = useMemo(() => {
+    let list = livePartners
+    if (activeSegment !== "all") {
+      if (activeSegment === "pending") {
+        list = list.filter((p) => p.status === "pending")
+      } else {
+        list = list.filter((p) => p.partnerType === activeSegment)
+      }
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim()
+      list = list.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.partnerTypeLabel.toLowerCase().includes(q) ||
+        p.region.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [livePartners, activeSegment, searchQuery])
+
   const handleAddHost = () => {
     setIsCreateModalOpen(true)
   }
@@ -139,7 +183,7 @@ export function StayeaAdminHostsPage({
 
   const handleExport = () => {
     toast.success("Xuất danh sách đối tác", {
-      description: "Đang tải xuống tệp danh sách 428 chủ nhà và đối tác (định dạng Excel .xlsx).",
+      description: `Đang tải xuống tệp danh sách ${livePartners.length} chủ nhà và đối tác (định dạng Excel .xlsx).`,
     })
   }
 
@@ -228,9 +272,11 @@ export function StayeaAdminHostsPage({
                   }`}
               >
                 <span>Hàng Đợi Duyệt Đơn (AI &amp; Khách &rarr; Partner)</span>
-                <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
-                  1 mới
-                </span>
+                {pendingOrdersCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+                    {pendingOrdersCount} mới
+                  </span>
+                )}
               </button>
             </div>
 
@@ -252,13 +298,14 @@ export function StayeaAdminHostsPage({
                     onSearchChange={setSearchQuery}
                     activeSegment={activeSegment}
                     onSegmentChange={setActiveSegment}
+                    segmentCounts={segmentCounts}
                     onAdvancedFilter={handleAdvancedFilter}
                     onExport={handleExport}
                   />
 
                   {/* Hosts Data Table */}
                   <HostsDataTable
-                    hosts={livePartners}
+                    hosts={filteredPartners}
                     onHostAction={async (action, host) => {
                       if (action === "view") {
                         toast.info(`Xem hồ sơ đối tác: ${host.name}`, {
@@ -306,6 +353,7 @@ export function StayeaAdminHostsPage({
                 {/* Right Column (4 cols) */}
                 <div className="lg:col-span-4">
                   <HostsRightSidebar
+                    hosts={livePartners}
                     onBannerAction={() => {
                       toast.info("Hành trình cùng đối tác Stayea", {
                         description: "Chương trình liên minh chia sẻ lợi nhuận và mở rộng mạng lưới lưu trú.",

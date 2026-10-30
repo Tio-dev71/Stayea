@@ -177,7 +177,7 @@ export function ReportsBookingsTable({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3.5 mt-2 border-t border-slate-100 text-xs text-slate-500">
         {/* Count info */}
         <div>
-          Hiển thị 1 - 5 của 1.248 đặt phòng
+          Hiển thị {bookings.length === 0 ? 0 : 1} - {Math.min(pageSize, bookings.length)} của {bookings.length} đặt phòng
         </div>
 
         {/* Page numbers */}

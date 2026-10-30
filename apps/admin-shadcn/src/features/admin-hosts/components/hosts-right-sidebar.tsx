@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import Image from "next/image"
 import {
   ArrowRight,
@@ -11,38 +12,15 @@ import {
   Percent,
   UserPlus,
 } from "lucide-react"
-import {
-  HOST_REGIONAL_DISTRIBUTION,
-  TOP_PERFORMING_HOSTS,
-} from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
+import type { HostPartnerItem } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 
 interface HostsRightSidebarProps {
+  hosts?: readonly HostPartnerItem[]
   onBannerAction?: () => void
   onViewRegionalDetails?: () => void
   onViewAllTopHosts?: () => void
   onQuickAction?: (actionId: string) => void
 }
-
-// Calculate SVG donut segments for regional distribution
-function calculateRegionalDonutSegments() {
-  const radius = 54
-  const circumference = 2 * Math.PI * radius
-  let accumulatedPercent = 0
-
-  return HOST_REGIONAL_DISTRIBUTION.map((item) => {
-    const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`
-    const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
-    accumulatedPercent += item.percentage
-
-    return {
-      ...item,
-      strokeDasharray,
-      strokeDashoffset,
-    }
-  })
-}
-
-const REGIONAL_DONUT_SEGMENTS = calculateRegionalDonutSegments()
 
 function renderRankBadge(rank: number) {
   if (rank === 1) {
@@ -74,11 +52,59 @@ function renderRankBadge(rank: number) {
 }
 
 export function HostsRightSidebar({
+  hosts = [],
   onBannerAction,
   onViewRegionalDetails,
   onViewAllTopHosts,
   onQuickAction,
 }: HostsRightSidebarProps) {
+  const totalHosts = hosts.length
+
+  const regionalDistribution = useMemo(() => {
+    if (totalHosts === 0) return []
+    const countsByRegion: Record<string, number> = {}
+    hosts.forEach((h) => {
+      const reg = h.region || "Phú Quốc"
+      countsByRegion[reg] = (countsByRegion[reg] || 0) + 1
+    })
+    const palette = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#06b6d4", "#ef4444", "#94a3b8"]
+    return Object.entries(countsByRegion).map(([region, count], idx) => ({
+      id: `reg-${idx}`,
+      region,
+      count,
+      percentage: Math.round((count / totalHosts) * 100),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [hosts, totalHosts])
+
+  const donutSegments = useMemo(() => {
+    const radius = 54
+    const circumference = 2 * Math.PI * radius
+    let accumulatedPercent = 0
+
+    return regionalDistribution.map((item) => {
+      const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`
+      const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
+      accumulatedPercent += item.percentage
+
+      return {
+        ...item,
+        strokeDasharray,
+        strokeDashoffset,
+      }
+    })
+  }, [regionalDistribution])
+
+  const topHosts = useMemo(() => {
+    return hosts.slice(0, 5).map((h, idx) => ({
+      id: h.id,
+      rank: idx + 1,
+      name: h.name,
+      revenue: h.revenue || "0 ₫",
+      avatar: h.avatar || "/avatars/avatar-1.jpg",
+      subTitle: h.partnerTypeLabel,
+    }))
+  }, [hosts])
   return (
     <div className="flex flex-col gap-5">
       {/* 1. Top Promo Banner: Cùng chủ nhà kiến tạo những hành trình đáng nhớ */}
@@ -146,7 +172,7 @@ export function HostsRightSidebar({
               />
 
               {/* Segments */}
-              {REGIONAL_DONUT_SEGMENTS.map((seg) => (
+              {donutSegments.map((seg) => (
                 <circle
                   key={seg.id}
                   cx="70"
@@ -165,7 +191,7 @@ export function HostsRightSidebar({
             {/* Center label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
               <span className="text-base font-bold text-slate-900 tracking-tight leading-none">
-                428
+                {totalHosts}
               </span>
               <span className="text-[10px] text-slate-500 font-medium mt-0.5">
                 Chủ nhà/Đối tác
@@ -175,25 +201,31 @@ export function HostsRightSidebar({
 
           {/* Legend */}
           <div className="flex-1 space-y-1.5 text-xs">
-            {HOST_REGIONAL_DISTRIBUTION.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between text-slate-600 hover:text-slate-900"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-[11px] font-medium truncate">
-                    {item.region}
+            {regionalDistribution.length > 0 ? (
+              regionalDistribution.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between text-slate-600 hover:text-slate-900"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-[11px] font-medium truncate">
+                      {item.region}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-800 ml-2 whitespace-nowrap">
+                    {item.percentage}% ({item.count})
                   </span>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-800 ml-2 whitespace-nowrap">
-                  {item.percentage}% ({item.count})
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-[11px] text-slate-400 italic">
+                Chưa có dữ liệu khu vực
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -215,34 +247,40 @@ export function HostsRightSidebar({
           </button>
         </div>
 
-        {/* List of 5 Top Performing Hosts */}
+        {/* List of Top Performing Hosts */}
         <div className="divide-y divide-slate-100">
-          {TOP_PERFORMING_HOSTS.map((item) => (
-            <div
-              key={item.id}
-              className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 group"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                {renderRankBadge(item.rank)}
-                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 ring-1 ring-slate-200/70">
-                  <Image
-                    src={item.avatar}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-xs font-semibold text-slate-800 truncate block group-hover:text-emerald-700 transition-colors">
-                    {item.name}
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-medium block">
-                    {item.revenue}
-                  </span>
+          {topHosts.length > 0 ? (
+            topHosts.map((item) => (
+              <div
+                key={item.id}
+                className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 group"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {renderRankBadge(item.rank)}
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 ring-1 ring-slate-200/70">
+                    <Image
+                      src={item.avatar}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-semibold text-slate-800 truncate block group-hover:text-emerald-700 transition-colors">
+                      {item.name}
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium block">
+                      {item.subTitle} • {item.revenue}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-xs text-slate-400 italic py-4 text-center">
+              Chưa có dữ liệu xếp hạng đối tác.
+            </p>
+          )}
         </div>
       </div>
 

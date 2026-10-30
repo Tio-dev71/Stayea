@@ -5,7 +5,6 @@ import Image from "next/image"
 import {
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   MoreHorizontal,
   Eye,
   FileText,
@@ -74,6 +73,13 @@ export function HostsDataTable({
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
+  const pageSize = 10
+  const totalCount = hosts.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, totalCount)
+  const paginatedHosts = hosts.slice(startIndex, endIndex)
+
   const isAllSelected = hosts.length > 0 && selectedIds.length === hosts.length
 
   const handleToggleSelectAll = () => {
@@ -118,7 +124,8 @@ export function HostsDataTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {hosts.map((host) => {
+            {paginatedHosts.length > 0 ? (
+              paginatedHosts.map((host) => {
               const isSelected = selectedIds.includes(host.id)
               const isMenuOpen = activeMenuId === host.id
 
@@ -260,7 +267,14 @@ export function HostsDataTable({
                   </td>
                 </tr>
               )
-            })}
+            })
+          ) : (
+              <tr>
+                <td colSpan={10} className="py-12 text-center text-slate-400">
+                  Chưa có chủ nhà hoặc đối tác nào trong danh mục này.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -268,72 +282,47 @@ export function HostsDataTable({
       {/* Pagination Footer */}
       <div className="p-3 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
         <span className="font-medium text-slate-600">
-          Hiển thị 1 - 10 của 428 chủ nhà/đối tác
+          Hiển thị {totalCount === 0 ? 0 : startIndex + 1} - {endIndex} của {totalCount} chủ nhà/đối tác
         </span>
 
-        <div className="flex items-center gap-2">
-          {/* Pagination numbers */}
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage(1)}
-              className="w-7 h-7 rounded-lg bg-[#1b7a4e] text-white font-semibold flex items-center justify-center shadow-xs"
-            >
-              1
-            </button>
-
-            {[2, 3, 4, 5].map((pageNum) => (
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
-                key={pageNum}
                 type="button"
-                onClick={() => setCurrentPage(pageNum)}
-                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 font-medium"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {pageNum}
+                <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-            ))}
 
-            <span className="px-1 text-slate-400">...</span>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-7 h-7 rounded-lg font-semibold flex items-center justify-center transition-all ${
+                    currentPage === pageNum
+                      ? "bg-[#1b7a4e] text-white shadow-xs"
+                      : "border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
 
-            <button
-              type="button"
-              onClick={() => setCurrentPage(43)}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 font-medium"
-            >
-              43
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.min(43, p + 1))}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-
-          {/* Page size dropdown */}
-          <div className="relative ml-2">
-            <select
-              defaultValue="10"
-              className="appearance-none pl-2.5 pr-6 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium cursor-pointer focus:outline-none text-xs"
-            >
-              <option value="10">10 / trang</option>
-              <option value="20">20 / trang</option>
-              <option value="50">50 / trang</option>
-            </select>
-            <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

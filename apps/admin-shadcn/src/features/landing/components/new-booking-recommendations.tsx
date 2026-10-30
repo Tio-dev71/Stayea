@@ -18,6 +18,10 @@ export function NewBookingRecommendations({
 }: NewBookingRecommendationsProps) {
   const [favoriteIds, setFavoriteIds] = React.useState<Record<string, boolean>>({})
 
+  if (!items || items.length === 0) {
+    return null
+  }
+
   function toggleFavorite(id: string, e: React.MouseEvent) {
     e.stopPropagation()
     setFavoriteIds((prev) => ({

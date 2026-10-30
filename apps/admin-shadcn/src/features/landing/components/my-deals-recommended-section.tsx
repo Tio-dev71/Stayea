@@ -17,6 +17,10 @@ export function MyDealsRecommendedSection({
 }: MyDealsRecommendedSectionProps) {
   const [savedIds, setSavedIds] = React.useState<Record<string, boolean>>({})
 
+  if (RECOMMENDED_DEALS_LIST.length === 0) {
+    return null
+  }
+
   function handleToggleSave(item: RecommendedDealItem) {
     setSavedIds((prev) => {
       const nextState = !prev[item.id]

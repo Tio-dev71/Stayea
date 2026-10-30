@@ -45,37 +45,44 @@ export function ExperiencesAndPackagesSection({ onNavigate }: ExperiencesAndPack
             </div>
 
             {/* 4 Spacious Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
-              {featuredExperiences.map((exp) => (
-                <div
-                  key={exp.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onNavigate?.("service-detail", undefined, { type: "experience", item: exp })}
-                  onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("service-detail", undefined, { type: "experience", item: exp }) }}
-                  className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)] hover:border-[#0c3b40]/30 transition-all duration-300 text-center hover:-translate-y-1"
-                >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
-                    <Image
-                      src={exp.imageUrl}
-                      alt={exp.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {featuredExperiences.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 text-center space-y-2">
+                <p className="text-xs sm:text-sm font-semibold text-slate-700">Chưa có trải nghiệm nào được đăng tải</p>
+                <p className="text-[11px] text-slate-400">Các hoạt động và tour du lịch mới sẽ được hiển thị tại đây.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
+                {featuredExperiences.map((exp) => (
+                  <div
+                    key={exp.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onNavigate?.("service-detail", undefined, { type: "experience", item: exp })}
+                    onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("service-detail", undefined, { type: "experience", item: exp }) }}
+                    className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)] hover:border-[#0c3b40]/30 transition-all duration-300 text-center hover:-translate-y-1"
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
+                      <Image
+                        src={exp.imageUrl}
+                        alt={exp.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+                    <div className="p-3 flex flex-col justify-center flex-grow">
+                      <h4 className="font-bold text-xs sm:text-[13px] text-slate-800 leading-snug group-hover:text-[#0c3b40] transition-colors">
+                        {exp.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 line-clamp-1 leading-tight">
+                        {exp.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-3 flex flex-col justify-center flex-grow">
-                    <h4 className="font-bold text-xs sm:text-[13px] text-slate-800 leading-snug group-hover:text-[#0c3b40] transition-colors">
-                      {exp.title}
-                    </h4>
-                    <p className="text-[11px] text-slate-400 mt-1 line-clamp-1 leading-tight">
-                      {exp.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Gói hành trình (~42%) */}
@@ -106,37 +113,44 @@ export function ExperiencesAndPackagesSection({ onNavigate }: ExperiencesAndPack
             </div>
 
             {/* 3 Spacious Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
-              {featuredPackages.map((pkg) => (
-                <div
-                  key={pkg.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onNavigate?.("service-detail", undefined, { type: "package", item: pkg })}
-                  onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("service-detail", undefined, { type: "package", item: pkg }) }}
-                  className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)] hover:border-[#0c3b40]/30 transition-all duration-300 text-center hover:-translate-y-1"
-                >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
-                    <Image
-                      src={pkg.imageUrl}
-                      alt={pkg.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 15vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {featuredPackages.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 text-center space-y-2">
+                <p className="text-xs sm:text-sm font-semibold text-slate-700">Chưa có gói hành trình nào được đăng tải</p>
+                <p className="text-[11px] text-slate-400">Các gói combo nghỉ dưỡng và trải nghiệm sẽ được cập nhật tại đây.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+                {featuredPackages.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onNavigate?.("service-detail", undefined, { type: "package", item: pkg })}
+                    onKeyDown={(e) => { if (e.key === "Enter") onNavigate?.("service-detail", undefined, { type: "package", item: pkg }) }}
+                    className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)] hover:border-[#0c3b40]/30 transition-all duration-300 text-center hover:-translate-y-1"
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
+                      <Image
+                        src={pkg.imageUrl}
+                        alt={pkg.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 15vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+                    <div className="p-3 flex flex-col justify-center flex-grow">
+                      <h4 className="font-bold text-xs sm:text-[13px] text-slate-800 leading-snug group-hover:text-[#0c3b40] transition-colors">
+                        {pkg.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 line-clamp-1 leading-tight">
+                        {pkg.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-3 flex flex-col justify-center flex-grow">
-                    <h4 className="font-bold text-xs sm:text-[13px] text-slate-800 leading-snug group-hover:text-[#0c3b40] transition-colors">
-                      {pkg.title}
-                    </h4>
-                    <p className="text-[11px] text-slate-400 mt-1 line-clamp-1 leading-tight">
-                      {pkg.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

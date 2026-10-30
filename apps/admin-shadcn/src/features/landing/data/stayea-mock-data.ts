@@ -593,89 +593,9 @@ export const EXPERIENCE_MEGA_MENU_DATA: ExperienceMegaMenuData = {
   ],
 }
 
-export const EXPERIENCES: readonly ExperienceItem[] = [
-  {
-    id: "tours",
-    title: "Tours",
-    description: "Tham quan nổi bật",
-    imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "island-trips",
-    title: "Island Trips",
-    description: "Khám phá các hòn đảo",
-    imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "snorkeling",
-    title: "Snorkeling",
-    description: "Ngắm san hô rực rỡ",
-    imageUrl: "https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "diving",
-    title: "Diving",
-    description: "Lặn biển khám phá đại dương",
-    imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "cruises",
-    title: "Cruises",
-    description: "Du thuyền trên biển ngọc",
-    imageUrl: "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "food",
-    title: "Food",
-    description: "Tinh hoa ẩm thực",
-    imageUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "spa",
-    title: "Spa",
-    description: "Thư giãn tái tạo năng lượng",
-    imageUrl: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "activities",
-    title: "Activities",
-    description: "Nhiều hoạt động thú vị",
-    imageUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=400&q=80",
-  },
-]
+export const EXPERIENCES: readonly ExperienceItem[] = []
 
-export const PACKAGES: readonly PackageItem[] = [
-  {
-    id: "couple",
-    title: "Couple",
-    description: "Lãng mạn cùng nhau",
-    imageUrl: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "family",
-    title: "Family",
-    description: "Kết nối gia đình",
-    imageUrl: "https://images.unsplash.com/photo-1609220136736-443140cffec6?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "friends",
-    title: "Friends",
-    description: "Cùng bạn bè khám phá",
-    imageUrl: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "long-stay-pack",
-    title: "Long Stay",
-    description: "Sống chậm tận hưởng",
-    imageUrl: "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "workation",
-    title: "Workation",
-    description: "Làm việc từ thiên đường",
-    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80",
-  },
-]
+export const PACKAGES: readonly PackageItem[] = []
 
 export const EXPLORE_GUIDES: readonly ExploreGuideItem[] = [
   {
@@ -728,32 +648,7 @@ export const EXPLORE_GUIDES: readonly ExploreGuideItem[] = [
   },
 ]
 
-export const TRANSPORTATION_SERVICES: readonly TransportationItem[] = [
-  {
-    id: "airport-shuttle",
-    title: "Đón tiễn sân bay",
-    description: "Thuận tiện, đúng giờ",
-    imageUrl: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "car-rental",
-    title: "Thuê xe ô tô",
-    description: "Tự do khám phá",
-    imageUrl: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "scooter-rental",
-    title: "Thuê xe máy",
-    description: "Linh hoạt, tiết kiệm",
-    imageUrl: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "private-driver",
-    title: "Tài xế riêng",
-    description: "Riêng tư, thoải mái",
-    imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=600&q=80",
-  },
-]
+export const TRANSPORTATION_SERVICES: readonly TransportationItem[] = []
 
 export const PROMO_BANNERS: readonly PromoBanner[] = [
   {
@@ -2132,52 +2027,7 @@ export interface DealsFeaturedCard {
   readonly imageUrl: string
 }
 
-export const DEALS_FEATURED_CARDS: readonly DealsFeaturedCard[] = [
-  {
-    id: 'vietjet-air-phu-quoc',
-    category: 'Vé máy bay',
-    categoryTag: 'flight',
-    discount: 'Giảm đến 30%',
-    discountColor: 'bg-[#FF3B30]',
-    title: 'Bay Phú Quốc giá tốt',
-    highlight: 'cùng Vietjet Air',
-    subtitle: 'Áp dụng cho nhiều chặng bay',
-    imageUrl: '/deals/plane-vietjet.jpg',
-  },
-  {
-    id: 'superdong-ferry-he',
-    category: 'Tàu cao tốc',
-    categoryTag: 'ferry',
-    discount: 'Giảm 20%',
-    discountColor: 'bg-[#FF9500]',
-    title: 'Tàu cao tốc Superdong',
-    highlight: 'Ưu đãi mùa hè',
-    subtitle: 'Áp dụng tuyến Rạch Giá – Phú Quốc',
-    imageUrl: '/deals/ferry-superdong.jpg',
-  },
-  {
-    id: 'toyota-vios-rental',
-    category: 'Thuê xe',
-    categoryTag: 'car-rental',
-    discount: 'Giảm 15%',
-    discountColor: 'bg-[#FF9500]',
-    title: 'Thuê xe Toyota Vios',
-    highlight: 'Giá chỉ từ 600.000đ/ngày',
-    subtitle: 'Tự lái · Thủ tục nhanh gọn',
-    imageUrl: '/deals/car-vios.jpg',
-  },
-  {
-    id: 'airport-van-transfer',
-    category: 'Xe đưa đón',
-    categoryTag: 'transfer',
-    discount: 'Giảm 20%',
-    discountColor: 'bg-[#FF3B30]',
-    title: 'Xe đưa đón sân bay',
-    highlight: 'An tâm di chuyển',
-    subtitle: 'Đón tiễn sân bay – Khách sạn',
-    imageUrl: '/deals/transfer-van.jpg',
-  },
-]
+export const DEALS_FEATURED_CARDS: readonly DealsFeaturedCard[] = []
 
 export interface DealsCategoryItem {
   readonly id: string
@@ -2522,60 +2372,7 @@ export interface NewBookingRecommendationItem {
   readonly isFavorite?: boolean
 }
 
-export const NEW_BOOKING_RECOMMENDATIONS: readonly NewBookingRecommendationItem[] = [
-  {
-    id: "rec-1",
-    category: "stay",
-    title: "Premier Residences Phu Quoc Emerald Bay",
-    rating: 4.8,
-    reviewsCount: 320,
-    location: "Bãi Khem, Phú Quốc",
-    priceDisplay: "7.500.000đ",
-    priceNum: 7_500_000,
-    priceUnit: "3 đêm",
-    imageUrl: "/auth/auth-villa-bg.jpg",
-    targetRoute: "stay",
-  },
-  {
-    id: "rec-2",
-    category: "experience",
-    title: "Tour 3 đảo Phú Quốc",
-    rating: 4.7,
-    reviewsCount: 218,
-    location: "Hòn Thơm, Phú Quốc",
-    priceDisplay: "1.200.000đ",
-    priceNum: 1_200_000,
-    priceUnit: "người",
-    imageUrl: "/stay/the-shell-resort.jpg",
-    targetRoute: "experience",
-  },
-  {
-    id: "rec-3",
-    category: "transport",
-    title: "Vé máy bay Vietjet Air",
-    rating: 4.6,
-    reviewsCount: 156,
-    location: "Hà Nội (HAN) ➔ Phú Quốc (PQC)",
-    priceDisplay: "4.800.000đ",
-    priceNum: 4_800_000,
-    priceUnit: "vé",
-    imageUrl: "/deals/plane-vietjet.jpg",
-    targetRoute: "transport",
-  },
-  {
-    id: "rec-4",
-    category: "transport",
-    title: "Xe đưa đón sân bay",
-    rating: 4.9,
-    reviewsCount: 98,
-    location: "Sân bay Phú Quốc (PQC)",
-    priceDisplay: "350.000đ",
-    priceNum: 350_000,
-    priceUnit: "xe",
-    imageUrl: "/transport/family-airport-van.jpg",
-    targetRoute: "transport",
-  },
-]
+export const NEW_BOOKING_RECOMMENDATIONS: readonly NewBookingRecommendationItem[] = []
 
 
 // ==========================================
@@ -2630,40 +2427,7 @@ export interface PlanRecommendedAddonItem {
   readonly imageUrl: string
 }
 
-export const PLAN_RECOMMENDED_ADDONS: readonly PlanRecommendedAddonItem[] = [
-  {
-    id: "addon-1",
-    title: "Sunset Sanato",
-    location: "Dương Đông, Phú Quốc",
-    rating: 4.6,
-    reviewsCount: "1.2k đánh giá",
-    imageUrl: "/profile/sunset-sanato.jpg",
-  },
-  {
-    id: "addon-2",
-    title: "VinWonders Phú Quốc",
-    location: "Bãi Dài, Phú Quốc",
-    rating: 4.7,
-    reviewsCount: "3.5k đánh giá",
-    imageUrl: "/profile/vinwonders.jpg",
-  },
-  {
-    id: "addon-3",
-    title: "Tour ẩm thực chợ đêm",
-    location: "Chợ đêm Dương Đông",
-    rating: 4.5,
-    reviewsCount: "892 đánh giá",
-    imageUrl: "/profile/cho-dem.jpg",
-  },
-  {
-    id: "addon-4",
-    title: "Grand World",
-    location: "Gành Dầu, Phú Quốc",
-    rating: 4.6,
-    reviewsCount: "1.1k đánh giá",
-    imageUrl: "/profile/grand-world.jpg",
-  },
-]
+export const PLAN_RECOMMENDED_ADDONS: readonly PlanRecommendedAddonItem[] = []
 
 // ==========================================
 // 20. FAVORITES SCREEN MOCK DATA (YÊU THÍCH)
@@ -3093,78 +2857,7 @@ export interface MyVoucherItem {
   readonly terms?: string
 }
 
-export const MY_VOUCHERS_LIST: readonly MyVoucherItem[] = [
-  {
-    id: "vouch-1",
-    title: "Giảm 10% vé máy bay Vietjet Air",
-    description: "Áp dụng chặng Hà Nội - Phú Quốc",
-    category: "voucher",
-    code: "STAYFLY10",
-    expiryDate: "30/06/2025",
-    status: "active",
-    badgeText: "Còn hiệu lực",
-    badgeVariant: "emerald",
-    imageUrl: "/deals/vietjet-air.jpg",
-    minSpend: "Không giới hạn",
-    terms: "Áp dụng khi đặt vé máy bay Vietjet Air chặng Hà Nội - Phú Quốc qua nền tảng STAYEA. Mã giảm trực tiếp 10% trên giá vé cơ bản.",
-  },
-  {
-    id: "vouch-2",
-    title: "Miễn phí xe đưa đón sân bay",
-    description: "Cho đơn từ 3 đêm lưu trú",
-    category: "voucher",
-    code: "PICKUPFREE",
-    expiryDate: "20/06/2025",
-    status: "active",
-    badgeText: "Độc quyền",
-    badgeVariant: "purple",
-    imageUrl: "/deals/van-airport.jpg",
-    minSpend: "Đơn đặt phòng tối thiểu 3 đêm",
-    terms: "Áp dụng xe Limousine hoặc SUV 7 chỗ đón tiễn 2 chiều sân bay quốc tế Phú Quốc về khách sạn/resort đối tác.",
-  },
-  {
-    id: "vouch-3",
-    title: "Giảm 15% tour 3 đảo",
-    description: "Áp dụng cho 2 khách trở lên",
-    category: "member",
-    code: "ISLAND15",
-    expiryDate: "28/06/2025",
-    status: "active",
-    badgeText: "Staya Club",
-    badgeVariant: "blue",
-    imageUrl: "/experience/tour-3-dao.jpg",
-    minSpend: "Tối thiểu 2 khách",
-    terms: "Đặc quyền hội viên Staya Club: Khám phá cano cao cấp 3 đảo Nam Phú Quốc kèm bữa trưa hải sản tươi sống và quay chụp flycam miễn phí.",
-  },
-  {
-    id: "vouch-4",
-    title: "Nâng hạng phòng Deluxe",
-    description: "Tại Premier Residences Phu Quoc Emerald Bay",
-    category: "discount",
-    code: "UPGRADEDLX",
-    expiryDate: "18/06/2025",
-    status: "active",
-    badgeText: "Giới hạn",
-    badgeVariant: "amber",
-    imageUrl: "/deals/member-luxury.jpg",
-    minSpend: "Đặt từ hạng phòng Superior",
-    terms: "Nâng cấp miễn phí lên phòng Deluxe Ocean View tại Premier Residences khi nhận phòng (tùy thuộc vào tình trạng phòng thực tế).",
-  },
-  {
-    id: "vouch-5",
-    title: "Giảm 20% Sunset Sanato",
-    description: "Áp dụng cho vé tham quan và ẩm thực",
-    category: "expired",
-    code: "SUNSET20",
-    expiryDate: "10/05/2025",
-    status: "expired",
-    badgeText: "Hết hạn",
-    badgeVariant: "gray",
-    imageUrl: "/profile/sunset-sanato.jpg",
-    minSpend: "Không giới hạn",
-    terms: "Voucher đã hết hạn áp dụng vào ngày 10/05/2025. Vui lòng theo dõi các chương trình ưu đãi mùa mới từ STAYEA.",
-  },
-]
+export const MY_VOUCHERS_LIST: readonly MyVoucherItem[] = []
 
 export interface RecommendedDealItem {
   readonly id: string
@@ -3175,40 +2868,7 @@ export interface RecommendedDealItem {
   readonly actionType: "save" | "view"
 }
 
-export const RECOMMENDED_DEALS_LIST: readonly RecommendedDealItem[] = [
-  {
-    id: "rec-1",
-    title: "Combo nghỉ dưỡng Phú Quốc 3N2Đ",
-    discountTag: "Giảm đến 20%",
-    subtitle: "Kèm bữa sáng + đưa đón",
-    imageUrl: "/stay/lahana-villa.jpg",
-    actionType: "save",
-  },
-  {
-    id: "rec-2",
-    title: "Vé Sun World Phú Quốc",
-    discountTag: "Giảm 15%",
-    subtitle: "Áp dụng cho vé người lớn",
-    imageUrl: "/experience/hon-thom-cable-car.jpg",
-    actionType: "save",
-  },
-  {
-    id: "rec-3",
-    title: "Ưu đãi spa & chăm sóc sức khỏe",
-    discountTag: "Giảm 20%",
-    subtitle: "Tại các resort đối tác",
-    imageUrl: "/experience/spa-wellness.jpg",
-    actionType: "view",
-  },
-  {
-    id: "rec-4",
-    title: "Du thuyền ngắm hoàng hôn",
-    discountTag: "Giảm 10%",
-    subtitle: "Kèm tiệc tối cao cấp",
-    imageUrl: "/experience/sunset-cruise.jpg",
-    actionType: "save",
-  },
-]
+export const RECOMMENDED_DEALS_LIST: readonly RecommendedDealItem[] = []
 
 
 // ============================================================================
@@ -3292,48 +2952,7 @@ export interface StayeaClubOfferItem {
   readonly buttonText: string
 }
 
-export const STAYEA_CLUB_OFFERS: readonly StayeaClubOfferItem[] = [
-  {
-    id: "club-off-1",
-    title: "Giảm 10% vé máy bay",
-    description: "Áp dụng cho tất cả chặng bay nội địa và quốc tế",
-    badgeText: "Độc quyền",
-    badgeVariant: "emerald",
-    expiryDate: "30/06/2025",
-    imageUrl: "/deals/vietjet-air.jpg",
-    buttonText: "Nhận ưu đãi",
-  },
-  {
-    id: "club-off-2",
-    title: "Miễn phí đón sân bay",
-    description: "Áp dụng cho đơn lưu trú từ 3 đêm",
-    badgeText: "Stayea Club",
-    badgeVariant: "blue",
-    expiryDate: "31/07/2025",
-    imageUrl: "/deals/van-airport.jpg",
-    buttonText: "Nhận ưu đãi",
-  },
-  {
-    id: "club-off-3",
-    title: "Nâng hạng phòng ưu đãi",
-    description: "Tại Premier Residences Phu Quoc Emerald Bay",
-    badgeText: "Ưu đãi hạng phòng",
-    badgeVariant: "amber",
-    expiryDate: "30/06/2025",
-    imageUrl: "/deals/member-luxury.jpg",
-    buttonText: "Xem chi tiết",
-  },
-  {
-    id: "club-off-4",
-    title: "Tour ngắm hoàng hôn giảm 15%",
-    description: "Khám phá vẻ đẹp Phú Quốc lúc hoàng hôn",
-    badgeText: "Trải nghiệm",
-    badgeVariant: "cyan",
-    expiryDate: "15/07/2025",
-    imageUrl: "/experience/sunset-cruise.jpg",
-    buttonText: "Nhận ưu đãi",
-  },
-]
+export const STAYEA_CLUB_OFFERS: readonly StayeaClubOfferItem[] = []
 
 export interface StayeaClubPointsTransaction {
   readonly id: string
@@ -3362,16 +2981,16 @@ export const STAYEA_CLUB_TIERS: readonly StayeaClubTierTierItem[] = [
     id: "silver",
     name: "Silver",
     subtitle: "Thành viên Bạc",
-    isCurrent: false,
+    isCurrent: true,
     crownColor: "text-slate-400",
     features: ["Giảm giá đến 5%", "Tích 1 điểm/10.000đ", "Hỗ trợ ưu tiên"],
-    buttonText: "Xem chi tiết",
+    buttonText: "Đặc quyền của tôi",
   },
   {
     id: "gold",
     name: "Gold",
     subtitle: "Thành viên Vàng",
-    isCurrent: true,
+    isCurrent: false,
     crownColor: "text-amber-500",
     features: [
       "Giảm giá đến 10%",
@@ -3379,7 +2998,7 @@ export const STAYEA_CLUB_TIERS: readonly StayeaClubTierTierItem[] = [
       "Ưu tiên hỗ trợ 24/7",
       "Quà tặng sinh nhật",
     ],
-    buttonText: "Đặc quyền của tôi",
+    buttonText: "Xem chi tiết",
   },
   {
     id: "platinum",
@@ -3479,38 +3098,7 @@ export const STAYEA_CLUB_CLAIMED_OFFER: StayeaClubClaimedOfferDetails = {
   availableVouchersCount: 13,
 }
 
-export const STAYEA_CLUB_OTHER_OFFERS: readonly StayeaClubOtherOfferItem[] = [
-  {
-    id: "other-off-1",
-    title: "Miễn phí đón sân bay",
-    description: "Áp dụng cho đơn lưu trú từ 3 đêm",
-    badgeText: "Stayea Club",
-    badgeVariant: "blue",
-    expiryDate: "31/07/2025",
-    imageUrl: "/deals/van-airport.jpg",
-    buttonText: "Nhận ưu đãi",
-  },
-  {
-    id: "other-off-2",
-    title: "Tặng bữa tối hải sản",
-    description: "Áp dụng khi đặt combo nghỉ dưỡng 2 đêm",
-    badgeText: "Ẩm thực",
-    badgeVariant: "amber",
-    expiryDate: "10/08/2025",
-    imageUrl: "/experience/tour-am-thuc.jpg",
-    buttonText: "Nhận ưu đãi",
-  },
-  {
-    id: "other-off-3",
-    title: "Tour ngắm hoàng hôn giảm 15%",
-    description: "Khám phá vẻ đẹp Phú Quốc lúc hoàng hôn",
-    badgeText: "Trải nghiệm",
-    badgeVariant: "cyan",
-    expiryDate: "15/07/2025",
-    imageUrl: "/packages/sunset-cruise.jpg",
-    buttonText: "Nhận ưu đãi",
-  },
-]
+export const STAYEA_CLUB_OTHER_OFFERS: readonly StayeaClubOtherOfferItem[] = []
 
 // ==========================================
 // SECTION 28: STAYEA FLIGHT BOOKING (ĐẶT VÉ MÁY BAY ĐẾN PHÚ QUỐC)

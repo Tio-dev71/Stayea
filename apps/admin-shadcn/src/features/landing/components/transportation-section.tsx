@@ -34,39 +34,46 @@ export function TransportationSection({ onNavigate }: TransportationSectionProps
         </div>
 
         {/* 4 Landscape Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {TRANSPORTATION_SERVICES.map((item) => (
-            <div
-              key={item.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onNavigate?.("transport")}
-              onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("transport") }}
-              className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-300 hover:-translate-y-1"
-            >
-              {/* Landscape Image */}
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
-              </div>
+        {TRANSPORTATION_SERVICES.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-8 text-center space-y-2">
+            <p className="text-sm font-semibold text-slate-700">Chưa có dịch vụ di chuyển nào được đăng tải</p>
+            <p className="text-xs text-slate-400">Các dịch vụ xe đưa đón sân bay và thuê xe tự lái tại Phú Quốc sẽ được hiển thị tại đây.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {TRANSPORTATION_SERVICES.map((item) => (
+              <div
+                key={item.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onNavigate?.("transport")}
+                onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.("transport") }}
+                className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-300 hover:-translate-y-1"
+              >
+                {/* Landscape Image */}
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
+                </div>
 
-              {/* Text Info */}
-              <div className="p-3.5 flex flex-col justify-center">
-                <h4 className="font-bold text-sm text-slate-800 group-hover:text-[#0c3b40] transition-colors">
-                  {item.title}
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {item.description}
-                </p>
+                {/* Text Info */}
+                <div className="p-3.5 flex flex-col justify-center">
+                  <h4 className="font-bold text-sm text-slate-800 group-hover:text-[#0c3b40] transition-colors">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {item.description}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

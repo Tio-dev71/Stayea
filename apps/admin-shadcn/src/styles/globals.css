@@ -28,7 +28,7 @@ input[type="range"] {
     #0c3b40 var(--range-progress, 100%),
     #e2e8f0 var(--range-progress, 100%),
     #e2e8f0 100%
-  ) !important;
+  );
   border-radius: 9999px !important;
   outline: none !important;
   border: none !important;

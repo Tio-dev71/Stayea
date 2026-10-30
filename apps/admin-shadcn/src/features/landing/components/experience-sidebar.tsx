@@ -149,7 +149,10 @@ export function ExperienceSidebar({
                 max={5_000_000}
                 step={100_000}
                 value={filters.priceMax}
-                style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
+                style={{
+                  '--range-progress': `${progress}%`,
+                  background: `linear-gradient(to right, #0c3b40 0%, #0c3b40 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`,
+                } as React.CSSProperties}
                 onChange={handlePriceChange}
                 className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
               />

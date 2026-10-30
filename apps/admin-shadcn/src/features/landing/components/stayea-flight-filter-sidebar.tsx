@@ -231,7 +231,10 @@ export const StayeaFlightFilterSidebar: React.FC<StayeaFlightFilterSidebarProps>
                 max="5000000"
                 step="100000"
                 value={priceRange}
-                style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
+                style={{
+                  '--range-progress': `${progress}%`,
+                  background: `linear-gradient(to right, #0c3b40 0%, #0c3b40 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`,
+                } as React.CSSProperties}
                 onChange={(e) => setPriceRange(Number(e.target.value))}
                 className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
                 aria-label="Khoảng giá"

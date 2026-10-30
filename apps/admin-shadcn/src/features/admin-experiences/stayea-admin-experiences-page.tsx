@@ -324,7 +324,7 @@ export function StayeaAdminExperiencesPage({
               {/* Left Column (8 cols) */}
               <div className="lg:col-span-8 space-y-6">
                 {/* 4 KPI Cards */}
-                <ExperiencesKpiCards />
+                <ExperiencesKpiCards experiences={experiences} />
 
                 {/* Filter Bar */}
                 <ExperiencesFilterBar

@@ -30,7 +30,6 @@ import {
   Car,
   Compass,
   FileCheck,
-  ThumbsUp,
 } from "lucide-react"
 
 import { stayeaApi } from "@/lib/stayea-api-service"
@@ -1054,130 +1053,85 @@ export function ServiceDetailPage({
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 text-xl font-extrabold text-slate-900">
                     <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                    <span>{(activeItem.rating || 4.9).toFixed(1)}</span>
+                    <span>{(activeItem.rating || 5.0).toFixed(1)}</span>
                   </div>
                   <span className="text-slate-400">/ 5.0</span>
                   <span className="text-xs text-slate-500 font-medium ml-2">
-                    Dựa trên {activeItem.reviewsCount || 96} đánh giá khách hàng đã xác thực
+                    {activeItem.reviewsCount ? `Dựa trên ${activeItem.reviewsCount} đánh giá đã xác thực` : "Chưa có đánh giá nào"}
                   </span>
                 </div>
-                <div className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                  98% khách hài lòng tuyệt đối
-                </div>
+                {activeItem.reviewsCount ? (
+                  <div className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                    100% đánh giá thực tế
+                  </div>
+                ) : null}
               </div>
 
-              {/* Rating criteria breakdown */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Độ sạch sẽ</span>
-                    <span className="font-bold text-slate-900">4.9</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0c3b40] rounded-full w-[98%]" />
-                  </div>
+              {!activeItem.reviewsCount || activeItem.reviewsCount === 0 ? (
+                <div className="py-8 text-center text-slate-500 text-xs sm:text-sm">
+                  Chưa có đánh giá nào cho dịch vụ này. Hãy là khách hàng đầu tiên trải nghiệm và để lại đánh giá!
                 </div>
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Vị trí & Cảnh quan</span>
-                    <span className="font-bold text-slate-900">5.0</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Dịch vụ & Nhân viên</span>
-                    <span className="font-bold text-slate-900">4.9</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0c3b40] rounded-full w-[98%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Tiện nghi cao cấp</span>
-                    <span className="font-bold text-slate-900">4.8</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0c3b40] rounded-full w-[96%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Độ chính xác hình ảnh</span>
-                    <span className="font-bold text-slate-900">5.0</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Giá trị tương xứng</span>
-                    <span className="font-bold text-slate-900">4.8</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0c3b40] rounded-full w-[96%]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sample Detailed Reviews */}
-              <div className="space-y-4 pt-2">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center">
-                        HL
+              ) : (
+                <>
+                  {/* Rating criteria breakdown */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                      <div className="flex justify-between text-slate-600 mb-1">
+                        <span>Độ sạch sẽ</span>
+                        <span className="font-bold text-slate-900">5.0</span>
                       </div>
-                      <div>
-                        <div className="font-bold text-xs text-slate-900">Hoàng Linh (Hà Nội)</div>
-                        <div className="text-[10px] text-slate-400">Kỳ nghỉ gia đình · Tháng 9, 2026</div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-amber-400">
-                      {[1, 2, 3, 4, 5].map((starIdx) => (
-                        <Star key={`review-star-1-${starIdx}`} className="w-3 h-3 fill-amber-400" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    "Kỳ nghỉ tuyệt vời nhất của gia đình mình tại Phú Quốc! Biệt thự thực sự đẹp hơn trong ảnh, hồ bơi riêng sạch sẽ và bãi biển cát trắng mịn màng. Quản gia Stayea hỗ trợ nhiệt tình từ lúc đón sân bay đến chuẩn bị tiệc BBQ nướng bên bờ biển. Chắc chắn sẽ quay lại!"
-                  </p>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400 pt-1">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>24 người thấy đánh giá này hữu ích</span>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-amber-600 text-white font-bold text-xs flex items-center justify-center">
-                        TA
+                    <div>
+                      <div className="flex justify-between text-slate-600 mb-1">
+                        <span>Vị trí & Cảnh quan</span>
+                        <span className="font-bold text-slate-900">5.0</span>
                       </div>
-                      <div>
-                        <div className="font-bold text-xs text-slate-900">Tuấn Anh & Mai Phương (TP. HCM)</div>
-                        <div className="text-[10px] text-slate-400">Cặp đôi kỷ niệm ngày cưới · Tháng 10, 2026</div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-amber-400">
-                      {[1, 2, 3, 4, 5].map((starIdx) => (
-                        <Star key={`review-star-1-${starIdx}`} className="w-3 h-3 fill-amber-400" />
-                      ))}
+                    <div>
+                      <div className="flex justify-between text-slate-600 mb-1">
+                        <span>Dịch vụ & Nhân viên</span>
+                        <span className="font-bold text-slate-900">5.0</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-slate-600 mb-1">
+                        <span>Tiện nghi cao cấp</span>
+                        <span className="font-bold text-slate-900">5.0</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-slate-600 mb-1">
+                        <span>Độ chính xác hình ảnh</span>
+                        <span className="font-bold text-slate-900">5.0</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-slate-600 mb-1">
+                        <span>Giá trị tương xứng</span>
+                        <span className="font-bold text-slate-900">5.0</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#0c3b40] rounded-full w-[100%]" />
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    "Không gian vô cùng lãng mạn và riêng tư. Bữa sáng phục vụ tại hồ bơi rất ngon và đẹp mắt. Hoàng hôn ngắm từ ban công phòng ngủ thực sự ngoạn mục. Rất đáng từng đồng chi phí!"
-                  </p>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400 pt-1">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>18 người thấy đánh giá này hữu ích</span>
-                  </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
 
             {/* H. Policies & Check-in Details */}

@@ -181,21 +181,27 @@ export function StayeaAdminRightSidebar({
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="space-y-3.5">
-          {activities.map((act) => (
-            <div key={act.id} className="flex items-center gap-3">
-              {getActivityIcon(act.type)}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-800 truncate">
-                  {act.title}
-                </p>
-                <p className="text-[11px] text-slate-400 font-medium">
-                  {act.timeAgo}
-                </p>
+        {activities.length === 0 ? (
+          <div className="py-6 text-center text-slate-400 text-xs">
+            Chưa có hoạt động mới nào được ghi nhận.
+          </div>
+        ) : (
+          <div className="space-y-3.5">
+            {activities.map((act) => (
+              <div key={act.id} className="flex items-center gap-3">
+                {getActivityIcon(act.type)}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 truncate">
+                    {act.title}
+                  </p>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    {act.timeAgo}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 4. Du lịch bền vững Phú Quốc */}

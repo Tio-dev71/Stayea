@@ -89,44 +89,44 @@ export const MOCK_MARKETING_KPIS: MarketingKpiItem[] = [
   {
     id: "reach",
     label: "Tổng lượt tiếp cận",
-    value: "258.4K",
-    trend: "+42%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
     iconType: "megaphone",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     bgLightColor: "bg-emerald-50 border-emerald-100/80",
     iconColor: "text-emerald-600",
   },
   {
     id: "engagement",
     label: "Lượt tương tác",
-    value: "36.7K",
-    trend: "+28%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
     iconType: "users",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     bgLightColor: "bg-amber-50 border-amber-100/80",
     iconColor: "text-amber-500",
   },
   {
     id: "web-traffic",
     label: "Lượt truy cập website",
-    value: "112.5K",
-    trend: "+35%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
     iconType: "mouse-pointer",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     bgLightColor: "bg-sky-50 border-sky-100/80",
     iconColor: "text-sky-600",
   },
   {
     id: "orders",
     label: "Lượt đặt hàng từ Marketing",
-    value: "3.826",
-    trend: "+50%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
     iconType: "bar-chart",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     bgLightColor: "bg-amber-50 border-amber-100/80",
     iconColor: "text-amber-600",
   },
@@ -150,156 +150,27 @@ export const MOCK_MARKETING_CATEGORY_TABS = [
 /* ==========================================================================
    3. TIMELINE DATA (Hiệu quả theo thời gian - 3 series: Tiếp cận, Tương tác, Đặt hàng)
    ========================================================================== */
-export const MOCK_MARKETING_TIMELINE: MarketingTimelinePoint[] = [
-  { date: "01/06", reach: 18, engagement: 8, orders: 4 },
-  { date: "15/06", reach: 38, engagement: 18, orders: 12 },
-  { date: "01/07", reach: 35, engagement: 16, orders: 9 },
-  { date: "15/07", reach: 48, engagement: 25, orders: 15 },
-  { date: "01/08", reach: 45, engagement: 22, orders: 12 },
-  { date: "15/08", reach: 64, engagement: 38, orders: 20 },
-  { date: "31/08", reach: 74, engagement: 48, orders: 28 },
-]
+export const MOCK_MARKETING_TIMELINE: MarketingTimelinePoint[] = []
 
 /* ==========================================================================
    4. CHANNELS SHARE (Hiệu quả theo kênh - Donut Chart: 258.4K Lượt tiếp cận)
    ========================================================================== */
-export const MOCK_MARKETING_CHANNELS: MarketingChannelSlice[] = [
-  { name: "Facebook", percentage: 38, value: "98.2K", color: "#3b82f6" },
-  { name: "Google", percentage: 24, value: "61.9K", color: "#ef4444" },
-  { name: "Instagram", percentage: 18, value: "46.5K", color: "#ec4899" },
-  { name: "Email Marketing", percentage: 8, value: "20.6K", color: "#f59e0b" },
-  { name: "Zalo", percentage: 7, value: "18.1K", color: "#0ea5e9" },
-  { name: "TikTok", percentage: 5, value: "12.9K", color: "#1e293b" },
-]
+export const MOCK_MARKETING_CHANNELS: MarketingChannelSlice[] = []
 
 /* ==========================================================================
    5. ORDERS BY CHANNEL (Lượt đặt hàng theo kênh marketing - Bar Chart)
    ========================================================================== */
-export const MOCK_MARKETING_ORDERS_BY_CHANNEL: MarketingOrdersByChannelItem[] = [
-  { channel: "Facebook", orders: 1250, color: "#3b82f6" },
-  { channel: "Google", orders: 980, color: "#ef4444" },
-  { channel: "Instagram", orders: 760, color: "#ec4899" },
-  { channel: "Email Marketing", orders: 540, color: "#f59e0b" },
-  { channel: "Zalo", orders: 220, color: "#0ea5e9" },
-  { channel: "TikTok", orders: 76, color: "#334155" },
-]
+export const MOCK_MARKETING_ORDERS_BY_CHANNEL: MarketingOrdersByChannelItem[] = []
 
 /* ==========================================================================
    6. CONVERSION FUNNEL (Phễu chuyển đổi marketing)
    ========================================================================== */
-export const MOCK_MARKETING_CONVERSION_FUNNEL: MarketingFunnelStage[] = [
-  { id: "reach", stage: "Tiếp cận", countFormatted: "258.4K", conversionRate: "100%", color: "#007a48" },
-  { id: "visits", stage: "Lượt truy cập", countFormatted: "112.5K", conversionRate: "43.5%", color: "#0284c7" },
-  { id: "engagement", stage: "Tương tác", countFormatted: "36.7K", conversionRate: "14.2%", color: "#8b5cf6" },
-  { id: "favorites", stage: "Thêm vào yêu thích", countFormatted: "12.4K", conversionRate: "4.8%", color: "#f59e0b" },
-  { id: "orders", stage: "Đặt phòng", countFormatted: "3.826", conversionRate: "1.5%", color: "#ef4444" },
-]
+export const MOCK_MARKETING_CONVERSION_FUNNEL: MarketingFunnelStage[] = []
 
 /* ==========================================================================
    7. TOP 5 MARKETING CAMPAIGNS (Top chiến dịch marketing)
    ========================================================================== */
-export const MOCK_TOP_MARKETING_CAMPAIGNS: MarketingCampaignItem[] = [
-  {
-    id: "camp-1",
-    rank: 1,
-    title: "Khám phá Phú Quốc hè 2024",
-    subtitle: "Biển xanh, trải nghiệm thật",
-    image: "/packages/kham-pha-4-dao.jpg",
-    channel: "Facebook",
-    channelType: "Quảng cáo trả phí",
-    dateRange: "01/06 - 31/08/2024",
-    costFormatted: "20.000.000 đ",
-    reachFormatted: "98.2K",
-    ordersCount: "1.250",
-    roas: 5.4,
-    status: "running",
-    statusLabel: "Đang chạy",
-    budget: 20_000_000,
-    budgetFormatted: "20.000.000 đ",
-    resultValue: "98.2K",
-    resultUnit: "Tiếp cận",
-  },
-  {
-    id: "camp-2",
-    rank: 2,
-    title: "Early Bird Đà Nẵng",
-    subtitle: "Đặt sớm, giá tốt",
-    image: "/explore/phu-quoc.jpg",
-    channel: "Google",
-    channelType: "Google Ads",
-    dateRange: "01/07 - 30/09/2024",
-    costFormatted: "15.000.000 đ",
-    reachFormatted: "61.9K",
-    ordersCount: "980",
-    roas: 4.8,
-    status: "running",
-    statusLabel: "Đang chạy",
-    budget: 15_000_000,
-    budgetFormatted: "15.000.000 đ",
-    resultValue: "61.9K",
-    resultUnit: "Tiếp cận",
-  },
-  {
-    id: "camp-3",
-    rank: 3,
-    title: "Trải nghiệm ẩm thực Việt",
-    subtitle: "Hương vị ba miền",
-    image: "/experience/tour-am-thuc.jpg",
-    channel: "Instagram",
-    channelType: "Nội dung mạng xã hội",
-    dateRange: "15/07 - 15/09/2024",
-    costFormatted: "5.000.000 đ",
-    reachFormatted: "46.5K",
-    ordersCount: "760",
-    roas: 4.1,
-    status: "running",
-    statusLabel: "Đang chạy",
-    budget: 5_000_000,
-    budgetFormatted: "5.000.000 đ",
-    resultValue: "46.5K",
-    resultUnit: "Tiếp cận",
-  },
-  {
-    id: "camp-4",
-    rank: 4,
-    title: "Ưu đãi cuối tuần",
-    subtitle: "Deal hot mỗi tuần",
-    image: "/stay/salinda-resort.jpg",
-    channel: "Zalo",
-    channelType: "Zalo Official Account",
-    dateRange: "01/08 - 31/08/2024",
-    costFormatted: "8.000.000 đ",
-    reachFormatted: "18.1K",
-    ordersCount: "220",
-    roas: 3.6,
-    status: "running",
-    statusLabel: "Đang chạy",
-    budget: 8_000_000,
-    budgetFormatted: "8.000.000 đ",
-    resultValue: "18.1K",
-    resultUnit: "Tiếp cận",
-  },
-  {
-    id: "camp-5",
-    rank: 5,
-    title: "Newsletter tháng 8",
-    subtitle: "Gợi ý trải nghiệm mới",
-    image: "/about/conversion-club.jpg",
-    channel: "Email Marketing",
-    channelType: "Email Marketing",
-    dateRange: "01/08 - 31/08/2024",
-    costFormatted: "3.000.000 đ",
-    reachFormatted: "12.9K",
-    ordersCount: "76",
-    roas: 2.9,
-    status: "completed",
-    statusLabel: "Đã hoàn thành",
-    budget: 3_000_000,
-    budgetFormatted: "3.000.000 đ",
-    resultValue: "12.9K",
-    resultUnit: "Mở email",
-  },
-]
+export const MOCK_TOP_MARKETING_CAMPAIGNS: MarketingCampaignItem[] = []
 
 // Backwards compatibility alias
 export const MOCK_MARKETING_CAMPAIGNS = MOCK_TOP_MARKETING_CAMPAIGNS
@@ -311,36 +182,36 @@ export const MOCK_MARKETING_KEY_METRICS: MarketingKeyMetricItem[] = [
   {
     id: "metric-cr",
     label: "Tỷ lệ chuyển đổi",
-    value: "3.2%",
-    trend: "↑ +18%",
+    value: "0%",
+    trend: "0%",
     trendDirection: "up",
   },
   {
     id: "metric-cpa",
     label: "Chi phí/đặt phòng (CPA)",
-    value: "85.000đ",
-    trend: "↓ -22%",
+    value: "0 đ",
+    trend: "0%",
     trendDirection: "down",
   },
   {
     id: "metric-roas",
     label: "ROAS (Doanh thu/Chi phí)",
-    value: "4.8",
-    trend: "↑ +36%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
   },
   {
     id: "metric-ctr",
     label: "Tỷ lệ nhấp (CTR)",
-    value: "2.6%",
-    trend: "↑ +14%",
+    value: "0%",
+    trend: "0%",
     trendDirection: "up",
   },
   {
     id: "metric-engagement",
     label: "Tỷ lệ tương tác (Engagement)",
-    value: "5.8%",
-    trend: "↑ +27%",
+    value: "0%",
+    trend: "0%",
     trendDirection: "up",
   },
 ]

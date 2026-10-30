@@ -35,7 +35,7 @@ export const ADMIN_KPIS_VI: readonly AdminKpiItem[] = [
   {
     id: "active-properties",
     title: "Bất động sản đang hoạt động",
-    value: "4",
+    value: "0",
     change: "0%",
     comparisonText: "so với tuần trước",
     isPositive: true,
@@ -106,38 +106,7 @@ export interface AdminActivityItem {
   type: "booking" | "property" | "review" | "payment" | "partner"
 }
 
-export const ADMIN_RECENT_ACTIVITIES_VI: readonly AdminActivityItem[] = [
-  {
-    id: "act-1",
-    title: "Đơn đặt phòng mới",
-    timeAgo: "2 phút trước",
-    type: "booking",
-  },
-  {
-    id: "act-2",
-    title: "Cập nhật thông tin bất động sản",
-    timeAgo: "15 phút trước",
-    type: "property",
-  },
-  {
-    id: "act-3",
-    title: "Có đánh giá mới",
-    timeAgo: "28 phút trước",
-    type: "review",
-  },
-  {
-    id: "act-4",
-    title: "Thanh toán thành công",
-    timeAgo: "1 giờ trước",
-    type: "payment",
-  },
-  {
-    id: "act-5",
-    title: "Đối tác mới đăng ký",
-    timeAgo: "2 giờ trước",
-    type: "partner",
-  },
-]
+export const ADMIN_RECENT_ACTIVITIES_VI: readonly AdminActivityItem[] = []
 
 export interface SidebarNavMenuItem {
   id: string

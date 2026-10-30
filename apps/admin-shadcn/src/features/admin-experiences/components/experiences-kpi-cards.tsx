@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import {
   Compass,
   Users,
@@ -8,12 +9,69 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react"
-import { EXPERIENCES_KPIS } from "@/features/admin-experiences/stayea-admin-experiences-mock-data"
+import type { ExperienceItem, ExperienceKpiMetric } from "@/features/admin-experiences/stayea-admin-experiences-mock-data"
 
-export function ExperiencesKpiCards() {
+interface ExperiencesKpiCardsProps {
+  readonly experiences?: readonly ExperienceItem[]
+}
+
+export function ExperiencesKpiCards({ experiences = [] }: ExperiencesKpiCardsProps) {
+  const dynamicKpis: ExperienceKpiMetric[] = useMemo(() => {
+    const total = experiences.length
+    const active = experiences.filter((e) => e.status === "active").length
+    const paused = experiences.filter((e) => e.status !== "active").length
+    const avgRating =
+      total > 0
+        ? (experiences.reduce((sum, e) => sum + (e.rating || 5), 0) / total).toFixed(1)
+        : "0.0"
+
+    return [
+      {
+        id: "total",
+        title: "Tổng trải nghiệm / Tour",
+        value: total.toString(),
+        trend: total > 0 ? "100%" : "0%",
+        trendLabel: total > 0 ? "dữ liệu thực tế" : "chưa có tour",
+        trendType: "up",
+        icon: "compass",
+        color: "emerald",
+      },
+      {
+        id: "active",
+        title: "Đang hoạt động",
+        value: active.toString(),
+        trend: total > 0 ? `${Math.round((active / total) * 100)}%` : "0%",
+        trendLabel: active > 0 ? "sẵn sàng đặt" : "chưa có tour hoạt động",
+        trendType: "up",
+        icon: "users",
+        color: "amber",
+      },
+      {
+        id: "paused",
+        title: "Tạm ngưng",
+        value: paused.toString(),
+        trend: total > 0 ? `${Math.round((paused / total) * 100)}%` : "0%",
+        trendLabel: paused > 0 ? "đang bảo trì" : "không có tour tạm dừng",
+        trendType: "down",
+        icon: "alert",
+        color: "rose",
+      },
+      {
+        id: "rating",
+        title: "Đánh giá trung bình",
+        value: `${avgRating}/5`,
+        trend: total > 0 ? "100%" : "0%",
+        trendLabel: total > 0 ? "chất lượng dịch vụ" : "chưa có đánh giá",
+        trendType: "up",
+        icon: "star",
+        color: "amber",
+      },
+    ]
+  }, [experiences])
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-      {EXPERIENCES_KPIS.map((metric) => {
+      {dynamicKpis.map((metric) => {
         return (
           <div
             key={metric.id}

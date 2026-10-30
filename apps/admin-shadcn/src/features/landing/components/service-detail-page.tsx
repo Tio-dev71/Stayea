@@ -125,11 +125,14 @@ export function ServiceDetailPage({
 
   // Gallery images array
   const galleryImages = React.useMemo(() => {
+    if (Array.isArray(activeItem.gallery) && activeItem.gallery.length > 0) {
+      return activeItem.gallery.slice(0, 5)
+    }
     const defaultPhotos = LUXURY_GALLERY_PHOTOS[type] || LUXURY_GALLERY_PHOTOS.stay
     const mainPhoto = activeItem.imageUrl || defaultPhotos[0]
     const otherPhotos = defaultPhotos.filter((p: string) => p !== mainPhoto)
     return [mainPhoto, ...otherPhotos].slice(0, 5)
-  }, [activeItem.imageUrl, type])
+  }, [activeItem.imageUrl, activeItem.gallery, type])
 
   // UI state
   const [isWishlisted, setIsWishlisted] = React.useState(false)

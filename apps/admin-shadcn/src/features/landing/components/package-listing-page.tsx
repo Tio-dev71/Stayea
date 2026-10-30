@@ -11,6 +11,7 @@ import { PackageHero } from "./package-hero"
 import { PackageFilterToolbar } from "./package-filter-toolbar"
 import { PackageCard } from "./package-card"
 import { PackageCustomBanner } from "./package-custom-banner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import {
   PACKAGE_LISTINGS,
   PACKAGE_FILTER_DURATIONS,
@@ -31,6 +32,37 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
     onNavigate?.("service-detail", undefined, { type: "package", item })
   }, [onNavigate])
   const [selectedAudience, setSelectedAudience] = React.useState<string>(initialAudience || "all")
+  const [packages, setPackages] = React.useState<readonly PackageListingItem[]>(PACKAGE_LISTINGS)
+
+  React.useEffect(() => {
+    let isMounted = true
+    stayeaApi.getPackages().then((res) => {
+      if (!isMounted || !res || !Array.isArray(res.items) || res.items.length === 0) return
+      const mapped: PackageListingItem[] = res.items.map((db: any) => {
+        const p = Number(db.price || 0)
+        return {
+          id: db.id,
+          title: db.title,
+          tag: db.badge || "Tiết kiệm",
+          tagColor: "emerald" as const,
+          audienceId: (db.audience === "couple" || db.audience === "family" || db.audience === "friends" || db.audience === "long-stay" || db.audience === "workation" ? db.audience : "all") as PackageListingItem["audienceId"],
+          category: "Combo nghỉ dưỡng",
+          duration: db.duration || "3 ngày 2 đêm",
+          highlight: Array.isArray(db.includedServices) && db.includedServices[0] ? db.includedServices[0] : "Trọn gói nghỉ dưỡng",
+          highlightIcon: "building" as const,
+          rating: Number(db.rating || 5.0),
+          reviewsCount: `${db.reviewCount || 0} đánh giá`,
+          price: p,
+          formattedPrice: `${p.toLocaleString("vi-VN")}đ/khách`,
+          imageUrl: db.imageUrl,
+        }
+      })
+      setPackages(mapped)
+    }).catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   React.useEffect(() => {
     if (initialAudience) {
@@ -71,7 +103,7 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
 
   // Filter and sort items
   const filteredItems = React.useMemo(() => {
-    let list: PackageListingItem[] = [...PACKAGE_LISTINGS]
+    let list: PackageListingItem[] = [...packages]
 
     // 1. Audience category filter
     if (selectedAudience !== "all") {

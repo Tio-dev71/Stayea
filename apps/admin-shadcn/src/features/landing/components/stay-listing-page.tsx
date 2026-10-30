@@ -8,6 +8,7 @@ import { StayFilterSidebar } from "./stay-filter-sidebar"
 import type { StayFilterState } from "./stay-filter-sidebar"
 import { StayCard } from "./stay-card"
 import { StayPromoBanner } from "./stay-promo-banner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { STAY_ACCOMMODATION_LISTINGS } from "@/features/landing/data/stayea-mock-data"
 import type { StayAccommodationItem } from "@/features/landing/data/stayea-mock-data"
 
@@ -42,6 +43,73 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
   }, [initialCategory])
 
   const [activeCategoryTab, setActiveCategoryTab] = React.useState<string>(normalizedInit)
+  const [accommodations, setAccommodations] = React.useState<readonly StayAccommodationItem[]>(STAY_ACCOMMODATION_LISTINGS)
+
+  React.useEffect(() => {
+    let isMounted = true
+    stayeaApi.getAccommodations().then((res) => {
+      if (!isMounted || !res || !Array.isArray(res.items) || res.items.length === 0) return
+      const mapped: StayAccommodationItem[] = res.items.map((db: any) => {
+        const cat = (db.category || "").toLowerCase()
+        let categoryId: StayAccommodationItem["categoryId"] = "hotels"
+        let type: StayAccommodationItem["type"] = "Khách sạn"
+        if (cat === "villa") {
+          categoryId = "villas"
+          type = "Villa"
+        } else if (cat === "resort") {
+          categoryId = "hotels"
+          type = "Resort"
+        } else if (cat === "apartment") {
+          categoryId = "apartments"
+          type = "Căn hộ"
+        } else if (cat === "homestay") {
+          categoryId = "homestays"
+          type = "Homestay"
+        }
+
+        let badgeVariant: "select" | "verified" | "bestseller" | "longstay" = "verified"
+        if (db.badge?.toLowerCase().includes("choice") || db.badge?.toLowerCase().includes("select")) {
+          badgeVariant = "select"
+        } else if (db.badge?.toLowerCase().includes("hot") || db.badge?.toLowerCase().includes("bán chạy")) {
+          badgeVariant = "bestseller"
+        }
+
+        const priceNum = Number(db.pricePerNight || 0)
+
+        let area = "Phú Quốc"
+        if (db.location?.includes("Bãi Khem")) area = "Bãi Khem"
+        else if (db.location?.includes("Bãi Trường")) area = "Bãi Trường"
+        else if (db.location?.includes("Mũi Ông Đội") || db.location?.includes("Ông Đội")) area = "Mũi Ông Đội"
+        else if (db.location?.includes("An Thới")) area = "An Thới"
+        else if (db.location?.includes("Dương Đông")) area = "Dương Đông"
+
+        return {
+          id: db.id,
+          title: db.title,
+          type,
+          location: db.location,
+          rating: Number(db.rating || 5.0),
+          reviewsCount: Number(db.reviewCount || 0),
+          pricePerNight: priceNum,
+          formattedPrice: `${priceNum.toLocaleString("vi-VN")} đ`,
+          imageUrl: db.imageUrl,
+          badge: db.badge ? { text: db.badge, variant: badgeVariant } : undefined,
+          categoryId,
+          area,
+          amenities: Array.isArray(db.amenities)
+            ? db.amenities.map((a: any) => ({
+                icon: a.icon || "sparkles",
+                label: a.label || a.name || "",
+              }))
+            : [],
+        }
+      })
+      setAccommodations(mapped)
+    }).catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   React.useEffect(() => {
     if (normalizedInit) {
@@ -67,7 +135,7 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
 
   // Filtered & Sorted items
   const filteredItems = React.useMemo(() => {
-    return STAY_ACCOMMODATION_LISTINGS.filter((item: StayAccommodationItem) => {
+    return accommodations.filter((item: StayAccommodationItem) => {
       // 1. Tab category filter
       if (activeCategoryTab === "villas" && item.categoryId !== "villas") return false
       if (activeCategoryTab === "apartments" && item.categoryId !== "apartments") return false
@@ -98,7 +166,7 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
           return 0
       }
     })
-  }, [activeCategoryTab, filters])
+  }, [accommodations, activeCategoryTab, filters])
 
   return (
     <div className="w-full bg-[#fbfcfd] min-h-screen">
@@ -125,7 +193,7 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
               <span>Bộ lọc</span>
             </button>
             <span className="text-xs text-slate-500 font-medium">
-              324 lưu trú tại Phú Quốc
+              {filteredItems.length} lưu trú tại Phú Quốc
             </span>
           </div>
 
@@ -170,12 +238,12 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
             {/* Results Header Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
               <h2 className="font-bold text-slate-900 text-lg sm:text-[19px] tracking-tight">
-                Có 324 lưu trú tại Phú Quốc
+                Có {filteredItems.length} lưu trú tại Phú Quốc
               </h2>
 
               <div className="flex items-center gap-3 text-xs text-slate-500 font-medium select-none">
                 <span className="hidden sm:inline">
-                  Hiển thị 1 - {Math.min(pageSize, filteredItems.length)} của 324 kết quả
+                  Hiển thị {filteredItems.length === 0 ? 0 : 1} - {Math.min(pageSize, filteredItems.length)} của {filteredItems.length} kết quả
                 </span>
 
                 {/* View Mode Toggle: Grid / List */}

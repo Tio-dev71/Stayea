@@ -7,6 +7,7 @@ import { ExperienceHero } from "./experience-hero"
 import { ExperienceSidebar } from "./experience-sidebar"
 import type { ExperienceFilterState } from "./experience-sidebar"
 import { ExperienceCard } from "./experience-card"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import {
   EXPERIENCE_LISTINGS,
 } from "@/features/landing/data/stayea-mock-data"
@@ -31,6 +32,36 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
     ...INITIAL_FILTERS,
     category: initialCategory || "all",
   }))
+  const [experiences, setExperiences] = React.useState<readonly ExperienceListingItem[]>(EXPERIENCE_LISTINGS)
+
+  React.useEffect(() => {
+    let isMounted = true
+    stayeaApi.getExperiences().then((res) => {
+      if (!isMounted || !res || !Array.isArray(res.items) || res.items.length === 0) return
+      const mapped: ExperienceListingItem[] = res.items.map((db: any) => {
+        const p = Number(db.price || 0)
+        return {
+          id: db.id,
+          title: db.title,
+          tag: db.badge || "Trải nghiệm",
+          categoryId: db.category === "tour" ? "tours" : db.category,
+          rating: Number(db.rating || 5.0),
+          reviewsCount: `${db.reviewCount || 0} đánh giá`,
+          description: db.description || "",
+          duration: db.duration || "Nửa ngày",
+          highlight: Array.isArray(db.highlights) && db.highlights[0] ? db.highlights[0] : "Trải nghiệm độc đáo",
+          highlightIcon: "palmtree",
+          price: p,
+          formattedPrice: `${p.toLocaleString("vi-VN")}đ/khách`,
+          imageUrl: db.imageUrl,
+        }
+      })
+      setExperiences(mapped)
+    }).catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   React.useEffect(() => {
     if (initialCategory) {
@@ -44,7 +75,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
 
   // Filter logic
   const filteredItems = React.useMemo(() => {
-    return EXPERIENCE_LISTINGS.filter((item: ExperienceListingItem) => {
+    return experiences.filter((item: ExperienceListingItem) => {
       // 1. Category filter
       if (filters.category !== "all" && item.categoryId !== filters.category) {
         return false
@@ -77,7 +108,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
       if (sortBy === "rating") return b.rating - a.rating
       return 0
     })
-  }, [filters, searchQuery, sortBy])
+  }, [experiences, filters, searchQuery, sortBy])
 
   const sortLabelMap: Record<string, string> = {
     popular: "Phổ biến nhất",
@@ -116,7 +147,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
           {/* Right Controls: Count + Search + Sort */}
           <div className="flex flex-wrap items-center gap-3 shrink-0 select-none">
             <span className="text-xs text-slate-500 font-medium">
-              Hiển thị 1-{Math.min(12, filteredItems.length)} trong 120 trải nghiệm
+              Hiển thị {filteredItems.length === 0 ? 0 : 1}-{Math.min(12, filteredItems.length)} trong {filteredItems.length} trải nghiệm
             </span>
 
             {/* Search Input Box */}

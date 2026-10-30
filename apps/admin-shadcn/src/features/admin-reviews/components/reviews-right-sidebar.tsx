@@ -43,6 +43,7 @@ interface ReviewsRightSidebarProps {
   categories?: CategoryReviewCountItem[]
   locations?: LocationReviewCountItem[]
   quickActions?: ReviewQuickActionItem[]
+  totalReviews?: number
   onViewDistributionDetails?: () => void
   onViewCategoryDetails?: () => void
   onViewLocationDetails?: () => void
@@ -93,6 +94,7 @@ export function ReviewsRightSidebar({
   categories = MOCK_CATEGORY_REVIEWS,
   locations = MOCK_LOCATION_REVIEWS,
   quickActions = MOCK_REVIEW_QUICK_ACTIONS,
+  totalReviews,
   onViewDistributionDetails,
   onViewCategoryDetails,
   onViewLocationDetails,
@@ -100,6 +102,8 @@ export function ReviewsRightSidebar({
   onPromoClick,
 }: ReviewsRightSidebarProps) {
   const [mounted, setMounted] = useState(false)
+
+  const total = totalReviews !== undefined ? totalReviews : distribution.reduce((acc, d) => acc + (d.count || 0), 0)
 
   useEffect(() => {
     setMounted(true)
@@ -203,7 +207,7 @@ export function ReviewsRightSidebar({
             {/* Center Text Badge */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-base sm:text-lg font-black text-slate-900 leading-none">
-                1.248
+                {total}
               </span>
               <span className="text-[10px] text-slate-400 font-medium mt-0.5">
                 Đánh giá

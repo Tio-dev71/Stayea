@@ -1,21 +1,42 @@
 "use client"
 
+import { useMemo } from "react"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 import { BookingsScheduleCard } from "./bookings-schedule-card"
 import { BookingsChannelChart } from "./bookings-channel-chart"
+import type { BookingRecord } from "../stayea-admin-bookings-mock-data"
 
 interface BookingsRightSidebarProps {
+  bookings?: readonly BookingRecord[]
   onBannerAction?: () => void
   onViewAllSchedule?: () => void
   onViewChannelDetails?: () => void
 }
 
 export function BookingsRightSidebar({
+  bookings = [],
   onBannerAction,
   onViewAllSchedule,
   onViewChannelDetails,
 }: BookingsRightSidebarProps) {
+  const totalBookings = bookings.length
+
+  const channelData = useMemo(() => {
+    if (!bookings || bookings.length === 0) return []
+    const counts: Record<string, number> = {}
+    bookings.forEach((b) => {
+      const ch = b.channel || "Website"
+      counts[ch] = (counts[ch] || 0) + 1
+    })
+    const palette = ["#10b981", "#ef4444", "#3b82f6", "#f59e0b", "#8b5cf6", "#64748b"]
+    return Object.entries(counts).map(([ch, count], idx) => ({
+      channel: ch,
+      percentage: Math.round((count / bookings.length) * 100),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [bookings])
+
   return (
     <div className="flex flex-col gap-5">
       {/* 1. Top Banner */}
@@ -50,7 +71,11 @@ export function BookingsRightSidebar({
       <BookingsScheduleCard onViewAll={onViewAllSchedule} />
 
       {/* 3. Tình trạng đặt phòng theo kênh */}
-      <BookingsChannelChart onViewDetails={onViewChannelDetails} />
+      <BookingsChannelChart
+        data={channelData}
+        totalCount={totalBookings}
+        onViewDetails={onViewChannelDetails}
+      />
     </div>
   )
 }

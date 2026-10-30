@@ -356,6 +356,7 @@ export function StayeaAdminExperiencesPage({
               {/* Right Column (4 cols) */}
               <div className="lg:col-span-4">
                 <ExperiencesRightSidebar
+                  experiences={experiences}
                   onBannerAction={() => {
                     toast.info("Khám phá trải nghiệm Phú Quốc", {
                       description: "Chương trình tour tuyển chọn từ các đối tác uy tín hàng đầu.",

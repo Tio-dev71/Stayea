@@ -318,6 +318,7 @@ export function StayeaAdminPropertiesPage({
               {/* Right Column (4 cols) */}
               <div className="lg:col-span-4">
                 <PropertiesRightSidebar
+                  properties={propertiesList}
                   onBannerAction={() => {
                     toast.info("Cổng tiếp thị chủ nhà", {
                       description: "Hướng dẫn tối ưu hóa hình ảnh và đăng bài tiếp cận triệu khách.",

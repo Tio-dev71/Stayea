@@ -300,6 +300,7 @@ export function StayeaAdminCustomersPage({
               {/* Right Column (4 cols) */}
               <div className="lg:col-span-4">
                 <CustomersRightSidebar
+                  customers={customersList}
                   onBannerAction={() => {
                     toast.info("Hành trình khách hàng hạnh phúc", {
                       description: "Quy chuẩn dịch vụ 5 sao nâng tầm trải nghiệm lưu trú.",

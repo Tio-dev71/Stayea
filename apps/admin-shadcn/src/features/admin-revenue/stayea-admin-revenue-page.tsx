@@ -8,7 +8,6 @@ import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import {
-  MOCK_REVENUE_KPIS,
   MOCK_REVENUE_TIMELINE,
   MOCK_REVENUE_CATEGORIES,
   MOCK_PAYMENT_METHODS,
@@ -42,7 +41,48 @@ export function StayeaAdminRevenuePage({
   const [selectedPartner, setSelectedPartner] = useState("Tất cả đối tác")
 
   const [ordersList, setOrdersList] = useState<RevenueOrderItem[]>([])
-  const [revenueKpis, setRevenueKpis] = useState<RevenueKpiItem[]>(MOCK_REVENUE_KPIS)
+  const [revenueKpis, setRevenueKpis] = useState<RevenueKpiItem[]>([
+    {
+      id: "total-revenue",
+      title: "Tổng doanh thu",
+      value: "0 ₫",
+      trendPercent: "0%",
+      trendLabel: "dữ liệu thực tế",
+      isPositive: true,
+      icon: "wallet",
+      colorTheme: "green",
+    },
+    {
+      id: "paid-revenue",
+      title: "Doanh thu đã thanh toán",
+      value: "0 ₫",
+      trendPercent: "0%",
+      trendLabel: "đã đối soát",
+      isPositive: true,
+      icon: "paid",
+      colorTheme: "blue",
+    },
+    {
+      id: "pending-revenue",
+      title: "Doanh thu chờ thanh toán",
+      value: "0 ₫",
+      trendPercent: "0%",
+      trendLabel: "cần thu",
+      isPositive: true,
+      icon: "pending",
+      colorTheme: "orange",
+    },
+    {
+      id: "platform-commission",
+      title: "Hoa hồng nền tảng (12%)",
+      value: "0 ₫",
+      trendPercent: "0%",
+      trendLabel: "phí hệ thống",
+      isPositive: true,
+      icon: "commission",
+      colorTheme: "purple",
+    },
+  ])
 
   useEffect(() => {
     async function fetchRevenueData() {
@@ -133,7 +173,48 @@ export function StayeaAdminRevenuePage({
           ])
         } else {
           setOrdersList([])
-          setRevenueKpis(MOCK_REVENUE_KPIS)
+          setRevenueKpis([
+            {
+              id: "total-revenue",
+              title: "Tổng doanh thu",
+              value: "0 ₫",
+              trendPercent: "0%",
+              trendLabel: "dữ liệu thực tế",
+              isPositive: true,
+              icon: "wallet",
+              colorTheme: "green",
+            },
+            {
+              id: "paid-revenue",
+              title: "Doanh thu đã thanh toán",
+              value: "0 ₫",
+              trendPercent: "0%",
+              trendLabel: "đã đối soát",
+              isPositive: true,
+              icon: "paid",
+              colorTheme: "blue",
+            },
+            {
+              id: "pending-revenue",
+              title: "Doanh thu chờ thanh toán",
+              value: "0 ₫",
+              trendPercent: "0%",
+              trendLabel: "cần thu",
+              isPositive: true,
+              icon: "pending",
+              colorTheme: "orange",
+            },
+            {
+              id: "platform-commission",
+              title: "Hoa hồng nền tảng (12%)",
+              value: "0 ₫",
+              trendPercent: "0%",
+              trendLabel: "phí hệ thống",
+              isPositive: true,
+              icon: "commission",
+              colorTheme: "purple",
+            },
+          ])
         }
       } catch (err) {
         console.error("Error fetching revenue bookings:", err)

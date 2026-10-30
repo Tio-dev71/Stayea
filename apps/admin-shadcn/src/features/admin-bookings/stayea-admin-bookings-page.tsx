@@ -352,6 +352,7 @@ export function StayeaAdminBookingsPage({
               {/* Right Column (4 cols) */}
               <div className="lg:col-span-4">
                 <BookingsRightSidebar
+                  bookings={bookingsList}
                   onBannerAction={() => {
                     toast.info("Chiến lược nâng cao công suất phòng", {
                       description: "Các giải pháp tối ưu hóa tỷ lệ lấp đầy phòng tại Phú Quốc.",

@@ -1,9 +1,9 @@
 "use client"
 
+import { useMemo } from "react"
 import Image from "next/image"
 import {
   ArrowRight,
-  ChevronRight,
   FileSpreadsheet,
   Gift,
   Mail,
@@ -11,45 +11,63 @@ import {
   UserPlus,
   Users,
 } from "lucide-react"
-import {
-  CUSTOMER_NATIONALITY_DISTRIBUTION,
-  RECENT_CUSTOMERS_LIST,
-} from "@/features/admin-customers/stayea-admin-customers-mock-data"
+import type { CustomerItem } from "@/features/admin-customers/stayea-admin-customers-mock-data"
 
 interface CustomersRightSidebarProps {
+  customers?: readonly CustomerItem[]
   onBannerAction?: () => void
   onViewNationalityDetails?: () => void
   onViewAllRecentCustomers?: () => void
   onQuickAction?: (actionId: string) => void
 }
 
-// Calculate SVG donut segments
-function calculateDonutSegments() {
-  const radius = 54
-  const circumference = 2 * Math.PI * radius
-  let accumulatedPercent = 0
-
-  return CUSTOMER_NATIONALITY_DISTRIBUTION.map((item) => {
-    const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`
-    const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
-    accumulatedPercent += item.percentage
-
-    return {
-      ...item,
-      strokeDasharray,
-      strokeDashoffset,
-    }
-  })
-}
-
-const DONUT_SEGMENTS = calculateDonutSegments()
-
 export function CustomersRightSidebar({
+  customers = [],
   onBannerAction,
   onViewNationalityDetails,
   onViewAllRecentCustomers,
   onQuickAction,
 }: CustomersRightSidebarProps) {
+  const totalCustomers = customers.length
+
+  const nationalityDistribution = useMemo(() => {
+    if (totalCustomers === 0) return []
+    const counts: Record<string, number> = {}
+    customers.forEach((c) => {
+      const nat = c.nationality || "Việt Nam"
+      counts[nat] = (counts[nat] || 0) + 1
+    })
+    const palette = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#06b6d4", "#94a3b8"]
+    return Object.entries(counts).map(([country, count], idx) => ({
+      id: `nat-${idx}`,
+      country,
+      percentage: Math.round((count / totalCustomers) * 100),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [customers, totalCustomers])
+
+  const donutSegments = useMemo(() => {
+    const radius = 54
+    const circumference = 2 * Math.PI * radius
+    let accumulatedPercent = 0
+
+    return nationalityDistribution.map((item) => {
+      const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`
+      const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
+      accumulatedPercent += item.percentage
+
+      return {
+        ...item,
+        strokeDasharray,
+        strokeDashoffset,
+      }
+    })
+  }, [nationalityDistribution])
+
+  const recentCustomers = useMemo(() => {
+    return customers.slice(0, 5)
+  }, [customers])
+
   return (
     <div className="flex flex-col gap-5">
       {/* 1. Top Promo Banner: Khách hàng hạnh phúc là hành trình bền vững */}
@@ -117,7 +135,7 @@ export function CustomersRightSidebar({
               />
 
               {/* Segments */}
-              {DONUT_SEGMENTS.map((seg) => (
+              {donutSegments.map((seg) => (
                 <circle
                   key={seg.id}
                   cx="70"
@@ -136,7 +154,7 @@ export function CustomersRightSidebar({
             {/* Center label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
               <span className="text-base font-bold text-slate-900 tracking-tight leading-none">
-                2.716
+                {totalCustomers}
               </span>
               <span className="text-[10px] text-slate-500 font-medium mt-0.5">
                 Khách hàng
@@ -146,25 +164,29 @@ export function CustomersRightSidebar({
 
           {/* Legend */}
           <div className="flex-1 space-y-1.5 text-xs">
-            {CUSTOMER_NATIONALITY_DISTRIBUTION.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between text-slate-600 hover:text-slate-900"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-[11px] font-medium truncate">
-                    {item.country}
+            {nationalityDistribution.length === 0 ? (
+              <div className="text-xs text-slate-400 py-2">Chưa có dữ liệu quốc tịch.</div>
+            ) : (
+              nationalityDistribution.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between text-slate-600 hover:text-slate-900"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-[11px] font-medium truncate">
+                      {item.country}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-800 ml-2">
+                    {item.percentage}%
                   </span>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-800 ml-2">
-                  {item.percentage}%
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -186,120 +208,100 @@ export function CustomersRightSidebar({
           </button>
         </div>
 
-        {/* List of 5 Recent Customers */}
+        {/* List of Recent Customers */}
         <div className="divide-y divide-slate-100">
-          {RECENT_CUSTOMERS_LIST.map((customer) => (
-            <div
-              key={customer.id}
-              className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 group"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 ring-1 ring-slate-200/70">
-                  <Image
-                    src={customer.avatar}
-                    alt={customer.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-semibold text-slate-800 truncate group-hover:text-emerald-700 transition-colors">
-                    {customer.name}
-                  </span>
-                  <span className="text-xs shrink-0">{customer.flag}</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                aria-label={`Tùy chọn cho ${customer.name}`}
-                onClick={() => onQuickAction?.(`view-recent-${customer.id}`)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
+          {recentCustomers.length === 0 ? (
+            <div className="py-6 text-center text-xs text-slate-400 flex flex-col items-center gap-1.5">
+              <Users className="w-5 h-5 text-slate-300 stroke-[1.5]" />
+              <span>Chưa có khách hàng nào trong hệ thống.</span>
             </div>
-          ))}
+          ) : (
+            recentCustomers.map((customer) => (
+              <div
+                key={customer.id}
+                className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 group"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 ring-1 ring-slate-200/70">
+                    <Image
+                      src={customer.avatar}
+                      alt={customer.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-xs font-semibold text-slate-800 truncate group-hover:text-emerald-700 transition-colors">
+                      {customer.name}
+                    </span>
+                    <span className="text-xs shrink-0">{customer.flag}</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label={`Tùy chọn cho ${customer.name}`}
+                  onClick={() => onQuickAction?.(`view-recent-${customer.id}`)}
+                  className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* 4. Thao tác nhanh */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3">
-        <h2 className="text-xs sm:text-sm font-bold text-slate-800">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-2">
+        <h2 className="text-xs sm:text-sm font-bold text-slate-800 mb-2">
           Thao tác nhanh
         </h2>
 
-        <div className="space-y-1.5">
-          <button
-            type="button"
-            onClick={() => onQuickAction?.("add-customer")}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                <UserPlus className="w-3.5 h-3.5" />
-              </div>
-              <span>Thêm khách hàng mới</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+        <button
+          type="button"
+          onClick={() => onQuickAction?.("add-customer")}
+          className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition-colors"
+        >
+          <UserPlus className="w-4 h-4 text-slate-400" />
+          <span>Thêm khách hàng mới</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => onQuickAction?.("import-excel")}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-              </div>
-              <span>Nhập danh sách từ Excel</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+        <button
+          type="button"
+          onClick={() => onQuickAction?.("import-excel")}
+          className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition-colors"
+        >
+          <FileSpreadsheet className="w-4 h-4 text-slate-400" />
+          <span>Xuất tệp khách hàng</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => onQuickAction?.("bulk-messages")}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                <Mail className="w-3.5 h-3.5" />
-              </div>
-              <span>Gửi email/SMS hàng loạt</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+        <button
+          type="button"
+          onClick={() => onQuickAction?.("bulk-messages")}
+          className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition-colors"
+        >
+          <Mail className="w-4 h-4 text-slate-400" />
+          <span>Gửi email/SMS hàng loạt</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => onQuickAction?.("loyalty-program")}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                <Gift className="w-3.5 h-3.5" />
-              </div>
-              <span>Tạo chương trình khách hàng thân thiết</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+        <button
+          type="button"
+          onClick={() => onQuickAction?.("loyalty-program")}
+          className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition-colors"
+        >
+          <Gift className="w-4 h-4 text-slate-400" />
+          <span>Tạo chương trình tri ân</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => onQuickAction?.("segmentation")}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                <Users className="w-3.5 h-3.5" />
-              </div>
-              <span>Phân nhóm khách hàng</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => onQuickAction?.("segmentation")}
+          className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition-colors"
+        >
+          <Users className="w-4 h-4 text-slate-400" />
+          <span>Phân nhóm khách hàng</span>
+        </button>
       </div>
     </div>
   )

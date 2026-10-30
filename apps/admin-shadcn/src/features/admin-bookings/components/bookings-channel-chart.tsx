@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { ArrowRight } from "lucide-react"
 import type { ChannelSlice } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
-import { BOOKING_CHANNELS_DATA } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
 
 interface BookingsChannelChartProps {
   data?: readonly ChannelSlice[]
@@ -13,8 +12,8 @@ interface BookingsChannelChartProps {
 }
 
 export function BookingsChannelChart({
-  data = BOOKING_CHANNELS_DATA,
-  totalCount = 342,
+  data = [],
+  totalCount = 0,
   onViewDetails,
 }: BookingsChannelChartProps) {
   const [mounted, setMounted] = useState(false)
@@ -22,6 +21,11 @@ export function BookingsChannelChart({
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const displayData: ChannelSlice[] =
+    totalCount > 0 && data.length > 0
+      ? (data as ChannelSlice[])
+      : [{ channel: "Chưa có dữ liệu", percentage: 100, color: "#e2e8f0" }]
 
   return (
     <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
@@ -47,33 +51,35 @@ export function BookingsChannelChart({
           {mounted ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length > 0 && payload[0]?.payload) {
-                      const item = payload[0].payload as ChannelSlice
-                      return (
-                        <div className="bg-slate-900 text-white rounded-xl px-3 py-1.5 text-xs shadow-lg border border-slate-800">
-                          <span className="font-semibold">{item.channel}: </span>
-                          <span className="text-emerald-400">{item.percentage}%</span>
-                        </div>
-                      )
-                    }
-                    return null
-                  }}
-                />
+                {totalCount > 0 && (
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length > 0 && payload[0]?.payload) {
+                        const item = payload[0].payload as ChannelSlice
+                        return (
+                          <div className="bg-slate-900 text-white rounded-xl px-3 py-1.5 text-xs shadow-lg border border-slate-800">
+                            <span className="font-semibold">{item.channel}: </span>
+                            <span className="text-emerald-400">{item.percentage}%</span>
+                          </div>
+                        )
+                      }
+                      return null
+                    }}
+                  />
+                )}
                 <Pie
-                  data={data as ChannelSlice[]}
+                  data={displayData}
                   dataKey="percentage"
                   nameKey="channel"
                   cx="50%"
                   cy="50%"
                   innerRadius={46}
                   outerRadius={66}
-                  paddingAngle={2}
+                  paddingAngle={totalCount > 0 ? 2 : 0}
                   stroke="#ffffff"
                   strokeWidth={2}
                 >
-                  {data.map((entry) => (
+                  {displayData.map((entry) => (
                     <Cell key={entry.channel} fill={entry.color} />
                   ))}
                 </Pie>
@@ -98,22 +104,28 @@ export function BookingsChannelChart({
 
         {/* Legend */}
         <div className="flex-1 w-full space-y-2 text-xs">
-          {data.map((item) => (
-            <div key={item.channel} className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-slate-600 font-medium truncate">
-                  {item.channel}
+          {totalCount === 0 || data.length === 0 ? (
+            <div className="text-center sm:text-left text-xs text-slate-400 py-2">
+              Chưa có dữ liệu đặt phòng theo kênh OTA.
+            </div>
+          ) : (
+            data.map((item) => (
+              <div key={item.channel} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-slate-600 font-medium truncate">
+                    {item.channel}
+                  </span>
+                </div>
+                <span className="text-slate-900 font-bold text-[11px]">
+                  {item.percentage}%
                 </span>
               </div>
-              <span className="text-slate-900 font-bold text-[11px]">
-                {item.percentage}%
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

@@ -7,7 +7,6 @@ import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import {
-  MOCK_DEAL_KPIS,
   MOCK_DEALS,
 } from "./stayea-admin-deals-mock-data"
 import type { DealItem } from "./stayea-admin-deals-mock-data"
@@ -42,6 +41,49 @@ export function StayeaAdminDealsPage({
   // Filters state
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStatusTab, setSelectedStatusTab] = useState("all")
+
+  const activeCount = useMemo(() => deals.filter((d) => d.status === "active").length, [deals])
+  const upcomingCount = useMemo(() => deals.filter((d) => d.status === "upcoming").length, [deals])
+  const expiredCount = useMemo(() => deals.filter((d) => d.status === "expired").length, [deals])
+
+  const dynamicKpis = useMemo(() => [
+    {
+      id: "total",
+      title: "Tổng chương trình",
+      value: String(deals.length),
+      change: "0%",
+      trend: "up" as const,
+      subtext: "dữ liệu thời gian thực",
+      icon: "tag" as const,
+    },
+    {
+      id: "active",
+      title: "Đang hoạt động",
+      value: String(activeCount),
+      change: "0%",
+      trend: "up" as const,
+      subtext: "đang mang lại doanh thu",
+      icon: "percent" as const,
+    },
+    {
+      id: "upcoming",
+      title: "Sắp diễn ra",
+      value: String(upcomingCount),
+      change: "0%",
+      trend: "up" as const,
+      subtext: "đã lên lịch sẵn",
+      icon: "clock" as const,
+    },
+    {
+      id: "conversion",
+      title: "Tỷ lệ sử dụng",
+      value: deals.length > 0 ? "100%" : "0%",
+      change: "0%",
+      trend: "up" as const,
+      subtext: "trên tổng số booking",
+      icon: "check-circle" as const,
+    },
+  ], [deals.length, activeCount, upcomingCount])
 
   // Filtered deals
   const filteredDeals = useMemo(() => {
@@ -108,10 +150,6 @@ export function StayeaAdminDealsPage({
     }
   }
 
-  const activeCount = useMemo(() => deals.filter((d) => d.status === "active").length, [deals])
-  const upcomingCount = useMemo(() => deals.filter((d) => d.status === "upcoming").length, [deals])
-  const expiredCount = useMemo(() => deals.filter((d) => d.status === "expired").length, [deals])
-
   return (
     <div className="min-h-screen bg-[#f8faf9] flex flex-col font-sans text-slate-800 antialiased selection:bg-emerald-100 selection:text-emerald-900">
       {/* 1. Header */}
@@ -166,7 +204,7 @@ export function StayeaAdminDealsPage({
           </div>
 
           {/* KPI Cards */}
-          <DealsKpiCards stats={MOCK_DEAL_KPIS} />
+          <DealsKpiCards stats={dynamicKpis} />
 
           {/* Grid Layout: Main Table (8/12) + Right Sidebar (4/12) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -190,6 +228,7 @@ export function StayeaAdminDealsPage({
             {/* Right 4 cols: Analytics, Top Deals & Quick Actions */}
             <div className="lg:col-span-4">
               <DealsRightSidebar
+                deals={deals}
                 onOpenCreateModal={() => setIsCreateModalOpen(true)}
                 onQuickAction={handleQuickAction}
               />

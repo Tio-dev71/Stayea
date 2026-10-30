@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import Image from "next/image"
 import {
   ArrowRight,
@@ -9,41 +10,17 @@ import {
   FolderTree,
   Coins,
   FileSpreadsheet,
+  Compass,
 } from "lucide-react"
-import {
-  EXPERIENCE_CATEGORY_DISTRIBUTION,
-  POPULAR_LOCATIONS,
-  QUICK_ACTIONS,
-} from "@/features/admin-experiences/stayea-admin-experiences-mock-data"
-import type { QuickActionItem } from "@/features/admin-experiences/stayea-admin-experiences-mock-data"
+import type { ExperienceItem } from "@/features/admin-experiences/stayea-admin-experiences-mock-data"
 
 interface ExperiencesRightSidebarProps {
+  experiences?: readonly ExperienceItem[]
   onBannerAction?: () => void
   onViewCategoryDetails?: () => void
   onViewLocationDetails?: () => void
   onQuickAction?: (actionId: string) => void
 }
-
-// Calculate SVG donut segments
-function calculateDonutSegments() {
-  const radius = 54
-  const circumference = 2 * Math.PI * radius
-  let accumulatedPercent = 0
-
-  return EXPERIENCE_CATEGORY_DISTRIBUTION.map((item) => {
-    const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`
-    const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
-    accumulatedPercent += item.percentage
-
-    return {
-      ...item,
-      strokeDasharray,
-      strokeDashoffset,
-    }
-  })
-}
-
-const DONUT_SEGMENTS = calculateDonutSegments()
 
 function renderRankBadge(rank: number) {
   if (rank === 1) {
@@ -60,60 +37,94 @@ function renderRankBadge(rank: number) {
   )
 }
 
-function renderQuickActionIcon(icon: QuickActionItem["icon"]) {
-  const iconClass = "w-4 h-4 text-emerald-600"
-  switch (icon) {
-    case "user-plus":
-      return <UserPlus className={iconClass} />
-    case "handshake":
-      return <Handshake className={iconClass} />
-    case "folder":
-      return <FolderTree className={iconClass} />
-    case "settings":
-      return <Coins className={iconClass} />
-    case "download":
-      return <FileSpreadsheet className={iconClass} />
-    default:
-      return <UserPlus className={iconClass} />
-  }
-}
-
 export function ExperiencesRightSidebar({
+  experiences = [],
   onBannerAction,
   onViewCategoryDetails,
   onViewLocationDetails,
   onQuickAction,
 }: ExperiencesRightSidebarProps) {
+  const totalCount = experiences.length
+
+  const categoryDistribution = useMemo(() => {
+    if (totalCount === 0) return []
+    const counts: Record<string, number> = {}
+    experiences.forEach((exp) => {
+      const cat = exp.category || "Tour trải nghiệm"
+      counts[cat] = (counts[cat] || 0) + 1
+    })
+    const palette = ["#10b981", "#059669", "#047857", "#065f46", "#34d399", "#6ee7b7"]
+    return Object.entries(counts).map(([name, count], idx) => ({
+      name,
+      count,
+      percentage: Math.round((count / totalCount) * 100),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [experiences, totalCount])
+
+  const donutSegments = useMemo(() => {
+    const radius = 54
+    const circumference = 2 * Math.PI * radius
+    let accumulatedPercent = 0
+
+    return categoryDistribution.map((item) => {
+      const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`
+      const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
+      accumulatedPercent += item.percentage
+
+      return {
+        ...item,
+        strokeDasharray,
+        strokeDashoffset,
+      }
+    })
+  }, [categoryDistribution])
+
+  const popularLocations = useMemo(() => {
+    if (totalCount === 0) return []
+    const counts: Record<string, number> = {}
+    experiences.forEach((exp) => {
+      const loc = exp.location || "Phú Quốc"
+      counts[loc] = (counts[loc] || 0) + 1
+    })
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count], idx) => ({
+        rank: idx + 1,
+        name,
+        count,
+        image: "/experience/cano-4-islands.jpg",
+      }))
+  }, [experiences, totalCount])
+
   return (
     <div className="flex flex-col gap-5">
-      {/* 1. Top Promo Banner: Trải nghiệm trọn vẹn khám phá muôn nơi */}
-      <div
-        className="relative overflow-hidden rounded-2xl aspect-[16/6] border border-sky-100 shadow-xs group cursor-pointer"
-        onClick={onBannerAction}
-      >
+      {/* 1. Top Banner Card */}
+      <div className="relative overflow-hidden rounded-2xl aspect-[16/7] border border-slate-200/80 shadow-xs group">
         <Image
-          src="/explore/phu-quoc.jpg"
-          alt="Trải nghiệm trọn vẹn khám phá muôn nơi"
+          src="/experience/cano-4-islands.jpg"
+          alt="Trải nghiệm độc bản"
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 1024px) 100vw, 360px"
         />
-        {/* Subtle light/dark gradient for high contrast readability matching design */}
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-900/60 via-sky-800/40 to-transparent flex items-center justify-between p-4 text-white">
-          <div className="max-w-[200px]">
-            <h2 className="text-sm font-bold text-white leading-snug drop-shadow-xs">
-              Trải nghiệm trọn vẹn
-            </h2>
-            <p className="text-xs text-sky-100 font-semibold leading-snug mt-0.5 drop-shadow-xs">
-              khám phá muôn nơi
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/85 via-emerald-900/50 to-transparent flex items-center justify-between p-4 sm:p-5 text-white">
+          <div className="space-y-1">
+            <h3 className="text-xs sm:text-sm font-bold tracking-tight leading-snug">
+              Trải nghiệm độc bản
+            </h3>
+            <p className="text-[11px] text-emerald-100 font-medium">
+              Khám phá trọn vẹn đảo ngọc
             </p>
           </div>
           <button
             type="button"
-            aria-label="Khám phá ngay"
-            className="w-8 h-8 rounded-full bg-white text-slate-800 flex items-center justify-center shadow-md hover:bg-emerald-50 transition-colors shrink-0 group-hover:translate-x-0.5"
+            aria-label="Khám phá trải nghiệm"
+            onClick={onBannerAction}
+            className="w-8 h-8 rounded-full bg-white text-slate-800 flex items-center justify-center shrink-0 shadow-md hover:scale-105 active:scale-95 transition-transform"
           >
-            <ArrowRight className="w-4 h-4 text-slate-800" />
+            <ArrowRight className="w-4 h-4 text-emerald-700" />
           </button>
         </div>
       </div>
@@ -142,7 +153,6 @@ export function ExperiencesRightSidebar({
               viewBox="0 0 140 140"
               aria-label="Biểu đồ tròn phân bổ loại hình trải nghiệm"
             >
-              {/* Background circle track */}
               <circle
                 cx="70"
                 cy="70"
@@ -152,8 +162,7 @@ export function ExperiencesRightSidebar({
                 strokeWidth="18"
               />
 
-              {/* Slices */}
-              {DONUT_SEGMENTS.map((seg) => (
+              {donutSegments.map((seg) => (
                 <circle
                   key={seg.name}
                   cx="70"
@@ -169,10 +178,9 @@ export function ExperiencesRightSidebar({
               ))}
             </svg>
 
-            {/* Donut Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
               <span className="text-lg font-bold text-slate-900 tracking-tight leading-none">
-                156
+                {totalCount}
               </span>
               <span className="text-[10px] text-slate-500 font-medium mt-0.5">
                 Trải nghiệm
@@ -182,28 +190,32 @@ export function ExperiencesRightSidebar({
 
           {/* Legend */}
           <div className="flex-1 space-y-1 text-xs">
-            {EXPERIENCE_CATEGORY_DISTRIBUTION.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center justify-between text-slate-600 hover:text-slate-900 py-0.5 transition-colors"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-[11px] font-medium text-slate-600 truncate">
-                    {item.name}
-                  </span>
+            {categoryDistribution.length === 0 ? (
+              <div className="text-xs text-slate-400 py-2">Chưa có loại hình trải nghiệm.</div>
+            ) : (
+              categoryDistribution.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between text-slate-600 hover:text-slate-900 py-0.5 transition-colors"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-[11px] font-medium text-slate-600 truncate">
+                      {item.name}
+                    </span>
+                  </div>
+                  <div className="text-[11px] font-medium text-slate-700 shrink-0 ml-1">
+                    <span>{item.percentage}%</span>
+                    <span className="text-slate-400 font-normal ml-0.5">
+                      ({item.count})
+                    </span>
+                  </div>
                 </div>
-                <div className="text-[11px] font-medium text-slate-700 shrink-0 ml-1">
-                  <span>{item.percentage}%</span>
-                  <span className="text-slate-400 font-normal ml-0.5">
-                    ({item.count})
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -225,34 +237,41 @@ export function ExperiencesRightSidebar({
         </div>
 
         <div className="divide-y divide-slate-50 pt-1">
-          {POPULAR_LOCATIONS.map((item) => (
-            <div
-              key={item.rank}
-              className="py-2.5 first:pt-2 last:pb-1 flex items-center justify-between gap-3 group cursor-pointer"
-              onClick={onViewLocationDetails}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                {renderRankBadge(item.rank)}
-                <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform"
-                    sizes="32px"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-xs font-semibold text-slate-800 truncate block group-hover:text-emerald-700 transition-colors">
-                    {item.name}
-                  </span>
-                  <span className="text-[11px] text-slate-400 block">
-                    {item.count} trải nghiệm
-                  </span>
+          {popularLocations.length === 0 ? (
+            <div className="py-6 text-center text-xs text-slate-400 flex flex-col items-center gap-1.5">
+              <Compass className="w-5 h-5 text-slate-300 stroke-[1.5]" />
+              <span>Chưa có địa điểm tour nào được ghi nhận.</span>
+            </div>
+          ) : (
+            popularLocations.map((item) => (
+              <div
+                key={item.rank}
+                className="py-2.5 first:pt-2 last:pb-1 flex items-center justify-between gap-3 group cursor-pointer"
+                onClick={onViewLocationDetails}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {renderRankBadge(item.rank)}
+                  <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                      sizes="32px"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-semibold text-slate-800 truncate block group-hover:text-emerald-700 transition-colors">
+                      {item.name}
+                    </span>
+                    <span className="text-[11px] text-slate-400 block">
+                      {item.count} trải nghiệm
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -263,24 +282,85 @@ export function ExperiencesRightSidebar({
         </h2>
 
         <div className="divide-y divide-slate-100/70 pt-1">
-          {QUICK_ACTIONS.map((action) => (
-            <button
-              key={action.id}
-              type="button"
-              onClick={() => onQuickAction?.(action.id)}
-              className="w-full py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/80 px-1 -mx-1 rounded-lg transition-colors text-left group"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/60 group-hover:bg-emerald-100/80 transition-colors">
-                  {renderQuickActionIcon(action.icon)}
-                </div>
-                <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-800 transition-colors truncate">
-                  {action.label}
-                </span>
+          <button
+            type="button"
+            onClick={() => onQuickAction?.("add_new")}
+            className="w-full py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/80 px-1 -mx-1 rounded-lg transition-colors text-left group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/60 group-hover:bg-emerald-100/80 transition-colors">
+                <UserPlus className="w-4 h-4 text-emerald-600" />
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0" />
-            </button>
-          ))}
+              <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-800 transition-colors truncate">
+                Thêm trải nghiệm mới
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onQuickAction?.("partners")}
+            className="w-full py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/80 px-1 -mx-1 rounded-lg transition-colors text-left group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/60 group-hover:bg-emerald-100/80 transition-colors">
+                <Handshake className="w-4 h-4 text-emerald-600" />
+              </div>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-800 transition-colors truncate">
+                Đối tác cung cấp
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onQuickAction?.("categories")}
+            className="w-full py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/80 px-1 -mx-1 rounded-lg transition-colors text-left group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/60 group-hover:bg-emerald-100/80 transition-colors">
+                <FolderTree className="w-4 h-4 text-emerald-600" />
+              </div>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-800 transition-colors truncate">
+                Quản lý danh mục
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onQuickAction?.("pricing")}
+            className="w-full py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/80 px-1 -mx-1 rounded-lg transition-colors text-left group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/60 group-hover:bg-emerald-100/80 transition-colors">
+                <Coins className="w-4 h-4 text-emerald-600" />
+              </div>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-800 transition-colors truncate">
+                Chính sách giá & chiết khấu
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onQuickAction?.("export")}
+            className="w-full py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/80 px-1 -mx-1 rounded-lg transition-colors text-left group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/60 group-hover:bg-emerald-100/80 transition-colors">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              </div>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-800 transition-colors truncate">
+                Xuất file Excel/CSV
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </button>
         </div>
       </div>
     </div>

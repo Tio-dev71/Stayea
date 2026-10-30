@@ -2,12 +2,8 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, CalendarDays } from "lucide-react"
 import type { ScheduleItem } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
-import {
-  TODAY_CHECKIN_ITEMS,
-  TODAY_CHECKOUT_ITEMS,
-} from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
 
 interface BookingsScheduleCardProps {
   checkInItems?: readonly ScheduleItem[]
@@ -16,11 +12,18 @@ interface BookingsScheduleCardProps {
 }
 
 export function BookingsScheduleCard({
-  checkInItems = TODAY_CHECKIN_ITEMS,
-  checkOutItems = TODAY_CHECKOUT_ITEMS,
+  checkInItems = [],
+  checkOutItems = [],
   onViewAll,
 }: BookingsScheduleCardProps) {
   const [activeTab, setActiveTab] = useState<"checkin" | "checkout">("checkin")
+
+  const todayFormatted = new Date().toLocaleDateString("vi-VN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
 
   const items = activeTab === "checkin" ? checkInItems : checkOutItems
 
@@ -32,8 +35,8 @@ export function BookingsScheduleCard({
           <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">
             Lịch check-in / check-out hôm nay
           </h3>
-          <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-            Thứ Sáu, 25/04/2025
+          <p className="text-[11px] text-slate-400 font-medium mt-0.5 capitalize">
+            {todayFormatted}
           </p>
         </div>
         <button
@@ -57,7 +60,7 @@ export function BookingsScheduleCard({
               : "text-slate-500 hover:text-slate-900"
           }`}
         >
-          Check-in ({checkInItems.length + 3})
+          Check-in ({checkInItems.length})
         </button>
         <button
           type="button"
@@ -68,39 +71,46 @@ export function BookingsScheduleCard({
               : "text-slate-500 hover:text-slate-900"
           }`}
         >
-          Check-out ({checkOutItems.length + 3})
+          Check-out ({checkOutItems.length})
         </button>
       </div>
 
       {/* List */}
       <div className="space-y-3">
-        {items.map((item) => (
-          <div key={item.id} className="flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
-                <Image
-                  src={item.guestAvatar}
-                  alt={item.guestName}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-slate-800 truncate">
-                  {item.guestName}
-                </p>
-                <p className="text-[11px] text-slate-400 truncate">
-                  {item.propertyName} · {item.guestsCountText}
-                </p>
-              </div>
-            </div>
-
-            {/* Time Pill */}
-            <span className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[11px]">
-              {item.time}
-            </span>
+        {items.length === 0 ? (
+          <div className="py-6 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+            <span>Chưa có lượt {activeTab === "checkin" ? "check-in" : "check-out"} nào hôm nay.</span>
           </div>
-        ))}
+        ) : (
+          items.map((item) => (
+            <div key={item.id} className="flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-slate-200 shrink-0">
+                  <Image
+                    src={item.guestAvatar}
+                    alt={item.guestName}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-800 truncate">
+                    {item.guestName}
+                  </p>
+                  <p className="text-[11px] text-slate-400 truncate">
+                    {item.propertyName} · {item.guestsCountText}
+                  </p>
+                </div>
+              </div>
+
+              {/* Time Pill */}
+              <span className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[11px]">
+                {item.time}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )

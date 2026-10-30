@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import Image from "next/image"
 import {
   ArrowRight,
@@ -9,12 +10,10 @@ import {
   Layers,
   ShieldCheck,
 } from "lucide-react"
-import {
-  PROPERTIES_AREA_DISTRIBUTION,
-  PROPERTY_TYPE_DISTRIBUTION,
-} from "@/features/admin-properties/stayea-admin-properties-mock-data"
+import type { PropertyItem } from "@/features/admin-properties/stayea-admin-properties-mock-data"
 
 interface PropertiesRightSidebarProps {
+  properties?: readonly PropertyItem[]
   onBannerAction?: () => void
   onViewAreaDetails?: () => void
   onViewTypeDetails?: () => void
@@ -22,15 +21,53 @@ interface PropertiesRightSidebarProps {
 }
 
 export function PropertiesRightSidebar({
+  properties = [],
   onBannerAction,
   onViewAreaDetails,
   onViewTypeDetails,
   onQuickAction,
 }: PropertiesRightSidebarProps) {
+  const totalProperties = properties.length
+
+  const areaDistribution = useMemo(() => {
+    if (totalProperties === 0) return []
+    const counts: Record<string, number> = {}
+    properties.forEach((p) => {
+      const area = p.location || "Phú Quốc"
+      counts[area] = (counts[area] || 0) + 1
+    })
+    const palette = ["#10b981", "#eab308", "#3b82f6", "#f97316", "#06b6d4", "#a855f7", "#22c55e"]
+    return Object.entries(counts).map(([area, count], idx) => ({
+      id: `area-${idx}`,
+      area,
+      count,
+      percentage: Math.round((count / totalProperties) * 100),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [properties, totalProperties])
+
+  const typeDistribution = useMemo(() => {
+    if (totalProperties === 0) return []
+    const counts: Record<string, number> = {}
+    properties.forEach((p) => {
+      const t = p.propertyType || "Khác"
+      counts[t] = (counts[t] || 0) + 1
+    })
+    const palette = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#94a3b8"]
+    return Object.entries(counts).map(([typeName, count], idx) => ({
+      id: `type-${idx}`,
+      typeName,
+      count,
+      percentage: Math.round((count / totalProperties) * 100),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [properties, totalProperties])
+
   return (
     <div className="space-y-6">
       {/* 1. Top Banner Card: Đăng tin dễ dàng */}
-      <div className="relative overflow-hidden rounded-2xl aspect-[16/6] sm:aspect-[16/7] border border-slate-200/80 shadow-xs group cursor-pointer"
+      <div
+        className="relative overflow-hidden rounded-2xl aspect-[16/6] sm:aspect-[16/7] border border-slate-200/80 shadow-xs group cursor-pointer"
         onClick={onBannerAction}
       >
         <Image
@@ -78,14 +115,12 @@ export function PropertiesRightSidebar({
         <div className="grid grid-cols-12 gap-3 items-center">
           {/* Mini Phu Quoc Island Map Graphic */}
           <div className="col-span-5 relative h-44 rounded-xl bg-gradient-to-b from-sky-50 to-emerald-50/40 border border-sky-100 flex items-center justify-center overflow-hidden">
-            {/* SVG silhouette of Phu Quoc Island */}
             <svg
               viewBox="0 0 100 160"
               className="w-full h-full p-2 drop-shadow-sm select-none"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Island Shape */}
               <path
                 d="M48 10 C58 12, 65 25, 62 42 C60 52, 68 70, 60 90 C55 105, 52 125, 46 142 C40 148, 32 145, 34 135 C36 120, 30 100, 32 75 C34 50, 38 25, 48 10 Z"
                 fill="#86efac"
@@ -93,45 +128,9 @@ export function PropertiesRightSidebar({
                 strokeWidth="1.5"
                 opacity="0.85"
               />
-              {/* Secondary island / islets */}
               <circle cx="44" cy="150" r="2.5" fill="#86efac" stroke="#22c55e" strokeWidth="1" />
               <circle cx="50" cy="148" r="2" fill="#86efac" stroke="#22c55e" strokeWidth="1" />
               <circle cx="38" cy="152" r="1.5" fill="#86efac" stroke="#22c55e" strokeWidth="1" />
-
-              {/* Gành Dầu Pin (North - Blue) */}
-              <g transform="translate(42, 22)">
-                <circle cx="0" cy="0" r="4" fill="#3b82f6" />
-                <circle cx="0" cy="0" r="1.5" fill="white" />
-              </g>
-
-              {/* Cửa Cạn Pin (Mid-North - Orange) */}
-              <g transform="translate(38, 52)">
-                <circle cx="0" cy="0" r="3.5" fill="#f97316" />
-                <circle cx="0" cy="0" r="1.2" fill="white" />
-              </g>
-
-              {/* Dương Đông Pin (Central - Green) */}
-              <g transform="translate(44, 76)">
-                <circle cx="0" cy="0" r="5" fill="#15803d" />
-                <circle cx="0" cy="0" r="2" fill="white" />
-              </g>
-
-              {/* Hàm Ninh Pin (East - Purple) */}
-              <g transform="translate(58, 86)">
-                <circle cx="0" cy="0" r="3.5" fill="#a855f7" />
-                <circle cx="0" cy="0" r="1.2" fill="white" />
-              </g>
-
-              {/* An Thới Pin (South - Yellow) */}
-              <g transform="translate(43, 134)">
-                <circle cx="0" cy="0" r="4.5" fill="#eab308" />
-                <circle cx="0" cy="0" r="1.5" fill="white" />
-              </g>
-
-              {/* Sea Water Marks */}
-              <path d="M12 40 Q20 38 28 40" stroke="#bae6fd" strokeWidth="1.2" strokeLinecap="round" />
-              <path d="M72 65 Q80 63 88 65" stroke="#bae6fd" strokeWidth="1.2" strokeLinecap="round" />
-              <path d="M15 110 Q23 108 30 110" stroke="#bae6fd" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
             <span className="absolute bottom-1 right-2 text-[9px] font-bold text-sky-800/60 uppercase tracking-widest pointer-events-none">
               Phú Quốc
@@ -140,24 +139,30 @@ export function PropertiesRightSidebar({
 
           {/* Area Breakdown List */}
           <div className="col-span-7 space-y-1.5 text-xs">
-            {PROPERTIES_AREA_DISTRIBUTION.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between text-slate-700 hover:text-slate-900 transition-colors"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="truncate font-medium">{item.area}</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold shrink-0">
-                  <span>{item.percentage}%</span>
-                  <span className="text-slate-400 font-normal">({item.count})</span>
-                </div>
+            {areaDistribution.length === 0 ? (
+              <div className="text-slate-400 text-xs py-4 text-center">
+                Chưa có dữ liệu khu vực.
               </div>
-            ))}
+            ) : (
+              areaDistribution.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between text-slate-700 hover:text-slate-900 transition-colors"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="truncate font-medium">{item.area}</span>
+                  </div>
+                  <div className="flex items-center gap-1 font-semibold shrink-0">
+                    <span>{item.percentage}%</span>
+                    <span className="text-slate-400 font-normal">({item.count})</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -182,85 +187,39 @@ export function PropertiesRightSidebar({
           {/* SVG Donut Chart */}
           <div className="relative w-32 h-32 shrink-0">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-              {/* Segments:
-                  Biệt thự: 38% -> stroke-dasharray: 38 62
-                  Căn hộ: 24% -> stroke-dasharray: 24 76, offset -38
-                  Homestay: 18% -> stroke-dasharray: 18 82, offset -62
-                  Khách sạn: 10% -> stroke-dasharray: 10 90, offset -80
-                  Resort: 6% -> stroke-dasharray: 6 94, offset -90
-                  Khác: 4% -> stroke-dasharray: 4 96, offset -96
-              */}
               <circle
                 cx="50"
                 cy="50"
                 r="36"
                 fill="none"
-                stroke="#10b981"
+                stroke="#f1f5f9"
                 strokeWidth="15"
-                pathLength="100"
-                strokeDasharray="38 62"
-                strokeDashoffset="0"
               />
-              <circle
-                cx="50"
-                cy="50"
-                r="36"
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="15"
-                pathLength="100"
-                strokeDasharray="24 76"
-                strokeDashoffset="-38"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="36"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="15"
-                pathLength="100"
-                strokeDasharray="18 82"
-                strokeDashoffset="-62"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="36"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="15"
-                pathLength="100"
-                strokeDasharray="10 90"
-                strokeDashoffset="-80"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="36"
-                fill="none"
-                stroke="#8b5cf6"
-                strokeWidth="15"
-                pathLength="100"
-                strokeDasharray="6 94"
-                strokeDashoffset="-90"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="36"
-                fill="none"
-                stroke="#94a3b8"
-                strokeWidth="15"
-                pathLength="100"
-                strokeDasharray="4 96"
-                strokeDashoffset="-96"
-              />
+              {typeDistribution.map((item, idx) => {
+                let offset = 0
+                for (let i = 0; i < idx; i++) {
+                  offset += typeDistribution[i]!.percentage
+                }
+                return (
+                  <circle
+                    key={item.id}
+                    cx="50"
+                    cy="50"
+                    r="36"
+                    fill="none"
+                    stroke={item.color}
+                    strokeWidth="15"
+                    pathLength="100"
+                    strokeDasharray={`${item.percentage} ${100 - item.percentage}`}
+                    strokeDashoffset={-offset}
+                  />
+                )
+              })}
             </svg>
             {/* Center Label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
               <span className="text-xl font-bold text-slate-900 leading-none">
-                342
+                {totalProperties}
               </span>
               <span className="text-[10px] text-slate-500 font-medium mt-0.5">
                 Bất động sản
@@ -270,33 +229,36 @@ export function PropertiesRightSidebar({
 
           {/* Legend */}
           <div className="flex-1 space-y-1.5 text-xs">
-            {PROPERTY_TYPE_DISTRIBUTION.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between text-slate-700"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="font-medium">{item.typeName}</span>
+            {typeDistribution.length === 0 ? (
+              <div className="text-slate-400 text-xs py-2">Chưa có loại hình lưu trú.</div>
+            ) : (
+              typeDistribution.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between text-slate-700"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="font-medium text-slate-700">{item.typeName}</span>
+                  </div>
+                  <span className="font-bold text-slate-900">{item.percentage}%</span>
                 </div>
-                <span className="font-semibold">{item.percentage}%</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
 
-      {/* 4. Thao tác nhanh (Quick Actions) */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
+      {/* 4. Thao tác nhanh */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
         <h2 className="text-sm font-bold text-slate-900">
           Thao tác nhanh
         </h2>
 
-        <div className="space-y-1 text-xs sm:text-sm">
-          {/* Action 1 */}
+        <div className="space-y-2 text-xs">
           <button
             type="button"
             onClick={() => onQuickAction?.("create")}
@@ -313,7 +275,6 @@ export function PropertiesRightSidebar({
             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-colors" />
           </button>
 
-          {/* Action 2 */}
           <button
             type="button"
             onClick={() => onQuickAction?.("import-excel")}
@@ -330,7 +291,6 @@ export function PropertiesRightSidebar({
             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-colors" />
           </button>
 
-          {/* Action 3 */}
           <button
             type="button"
             onClick={() => onQuickAction?.("amenities")}
@@ -347,7 +307,6 @@ export function PropertiesRightSidebar({
             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-colors" />
           </button>
 
-          {/* Action 4 */}
           <button
             type="button"
             onClick={() => onQuickAction?.("audit")}

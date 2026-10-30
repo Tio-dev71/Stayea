@@ -308,6 +308,7 @@ export function StayeaAdminReviewsPage({
               {/* Right Column (col-span-3 on xl, col-span-4 on lg) */}
               <div className="xl:col-span-3">
                 <ReviewsRightSidebar
+                  totalReviews={filteredReviews.length}
                   distribution={MOCK_RATING_DISTRIBUTION}
                   categories={MOCK_CATEGORY_REVIEWS}
                   locations={MOCK_LOCATION_REVIEWS}

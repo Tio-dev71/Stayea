@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { CheckCircle2, X } from "lucide-react"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { ProfileSidebar } from "./profile-sidebar"
 import { PaymentMethodsHeroBanner } from "./payment-methods-hero-banner"
 import { AddPaymentMethodBreadcrumb } from "./add-payment-method-breadcrumb"
@@ -30,13 +31,56 @@ export function AddPaymentMethodPage({ onNavigate }: AddPaymentMethodPageProps) 
     onNavigate?.("payment")
   }
 
-  function handleSubmit(data: NewPaymentMethodPayload) {
-    if (data.type === "card") {
-      showToast(`Đã thêm thẻ ${data.cardBrand?.toUpperCase() || "mới"} thành công!`)
-    } else if (data.type === "bank") {
-      showToast(`Đã liên kết tài khoản ngân hàng ${data.bankName} thành công!`)
-    } else {
-      showToast(`Đã liên kết ví điện tử ${data.walletType} thành công!`)
+  async function handleSubmit(data: NewPaymentMethodPayload) {
+    try {
+      if (data.type === "card") {
+        const cleanNumber = (data.cardNumber || "").replaceAll(/\s/g, "")
+        const last4 = cleanNumber.slice(-4) || "8888"
+        await stayeaApi.addPaymentMethod({
+          type: "credit_card",
+          brand: data.cardBrand || "visa",
+          title: `${(data.cardBrand || "Visa").toUpperCase()} •••• ${last4}`,
+          isDefault: Boolean(data.isDefault),
+          details: {
+            cardNumber: cleanNumber,
+            maskedCard: `•••• •••• •••• ${last4}`,
+            cardHolder: data.cardHolder,
+            expiry: data.cardExpiry,
+            country: data.country,
+            billingAddress: data.billingAddress,
+          },
+        })
+        showToast(`Đã thêm thẻ ${data.cardBrand?.toUpperCase() || "mới"} thành công!`)
+      } else if (data.type === "bank") {
+        const last4 = (data.bankAccountNumber || "").slice(-4) || "8888"
+        await stayeaApi.addPaymentMethod({
+          type: "bank_account",
+          brand: data.bankName?.toLowerCase().includes("vcb") ? "vcb" : "techcombank",
+          title: data.bankName || "Tài khoản ngân hàng",
+          isDefault: Boolean(data.isDefault),
+          details: {
+            accountNumber: data.bankAccountNumber,
+            maskedAccount: `**** ${last4}`,
+            accountHolder: "Chủ tài khoản",
+            bankName: data.bankName,
+          },
+        })
+        showToast(`Đã liên kết tài khoản ngân hàng ${data.bankName} thành công!`)
+      } else {
+        await stayeaApi.addPaymentMethod({
+          type: "e_wallet",
+          brand: data.walletType,
+          title: `Ví ${data.walletType?.toUpperCase()}`,
+          isDefault: false,
+          details: {
+            phone: data.walletPhone,
+            walletType: data.walletType,
+          },
+        })
+        showToast(`Đã liên kết ví điện tử ${data.walletType} thành công!`)
+      }
+    } catch (e: any) {
+      console.warn("Lỗi lưu phương thức thanh toán:", e)
     }
 
     setTimeout(() => {

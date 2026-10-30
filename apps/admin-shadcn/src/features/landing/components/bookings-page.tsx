@@ -47,24 +47,33 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
       try {
         const raw = await stayeaApi.getUserBookings()
         if (raw && raw.length > 0) {
-          const mapped: ServiceBookingItem[] = raw.map((b: any) => ({
-            id: b.id,
-            code: b.bookingCode || b.id,
-            category: (b.category as any) || "stay",
-            status: b.status === "cancelled" ? "cancelled" : "upcoming",
-            statusLabel: b.status === "cancelled" ? "Đã hủy" : "Sắp diễn ra",
-            title: b.title || "Dịch vụ tuyển chọn STAYEA",
-            dates: b.dates || `${new Date(b.checkInDate || Date.now()).toLocaleDateString("vi-VN")} - ${new Date(b.checkOutDate || Date.now()).toLocaleDateString("vi-VN")}`,
-            location: b.details?.location || "Phú Quốc, Kiên Giang",
-            guests: `${b.guestCount || 2} khách`,
-            detailInfo: b.details?.packageName || b.details?.roomName || "Gói tiêu chuẩn tuyển chọn",
-            detailIcon: b.category === "experience" ? "sparkles" : b.category === "transport" ? "plane" : "bed",
-            price: `${Number(b.finalAmount || b.totalAmount || 0).toLocaleString("vi-VN")}đ`,
-            priceNum: Number(b.finalAmount || b.totalAmount || 0),
-            imageUrl: b.details?.imageUrl || "/bookings/premier-residences.jpg",
-            primaryActionLabel: "Quản lý đặt phòng",
-            secondaryActionLabel: "Liên hệ hỗ trợ",
-          }))
+          const mapped: ServiceBookingItem[] = raw.map((b: any) => {
+            const cat = b.bookingType || b.category || "stay"
+            const start = b.startDate || b.checkInDate
+            const end = b.endDate || b.checkOutDate
+            const dateStr = start && end
+              ? `${new Date(start).toLocaleDateString("vi-VN")} - ${new Date(end).toLocaleDateString("vi-VN")}`
+              : "Thời gian linh hoạt"
+
+            return {
+              id: b.id,
+              code: b.bookingCode || b.id,
+              category: (cat === "flight" ? "transport" : cat) as any,
+              status: b.status === "cancelled" ? "cancelled" : "upcoming",
+              statusLabel: b.status === "cancelled" ? "Đã hủy" : "Sắp diễn ra",
+              title: b.title || "Dịch vụ tuyển chọn STAYEA",
+              dates: b.dates || dateStr,
+              location: b.destination || b.details?.location || "Phú Quốc, Kiên Giang",
+              guests: `${b.guestCount || 2} khách`,
+              detailInfo: b.details?.packageName || b.details?.roomType || b.details?.roomName || "Gói tiêu chuẩn tuyển chọn",
+              detailIcon: cat === "experience" ? "sparkles" : (cat === "transport" || cat === "flight") ? "plane" : "bed",
+              price: `${Number(b.finalAmount || b.totalAmount || 0).toLocaleString("vi-VN")}đ`,
+              priceNum: Number(b.finalAmount || b.totalAmount || 0),
+              imageUrl: b.details?.imageUrl || "/bookings/premier-residences.jpg",
+              primaryActionLabel: "Quản lý đặt phòng",
+              secondaryActionLabel: "Liên hệ hỗ trợ",
+            }
+          })
           setLiveBookings(mapped)
         }
       } catch {

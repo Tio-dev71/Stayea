@@ -11,12 +11,12 @@ import {
 
 export class CreateBookingDto {
   @ApiProperty({
-    enum: ["stay", "flight", "experience", "package", "combo"],
+    enum: ["stay", "flight", "experience", "package", "combo", "transport"],
     example: "stay",
   })
-  @IsEnum(["stay", "flight", "experience", "package", "combo"])
+  @IsEnum(["stay", "flight", "experience", "package", "combo", "transport"])
   @IsNotEmpty()
-  bookingType: "stay" | "flight" | "experience" | "package" | "combo"
+  bookingType: "stay" | "flight" | "experience" | "package" | "combo" | "transport"
 
   @ApiProperty({ example: "Premier Village Phu Quoc Resort - Eden Bay Villa" })
   @IsString()

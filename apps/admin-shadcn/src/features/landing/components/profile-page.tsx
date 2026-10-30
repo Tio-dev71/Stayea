@@ -81,13 +81,15 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
           return st === "CONFIRMED" || st === "PENDING" || st === "PAID" || st === "UPCOMING"
         })
         if (upcoming) {
+          const start = upcoming.startDate || upcoming.checkInDate
+          const end = upcoming.endDate || upcoming.checkOutDate
           setUpcomingTrip({
             id: upcoming.id,
             title: upcoming.title || "Kỳ nghỉ STAYEA Phú Quốc",
-            statusBadge: upcoming.status === "CONFIRMED" ? "Đã xác nhận" : "Sắp diễn ra",
-            dates: upcoming.dates || (upcoming.checkInDate ? `${new Date(upcoming.checkInDate).toLocaleDateString("vi-VN")} - ${new Date(upcoming.checkOutDate).toLocaleDateString("vi-VN")}` : "Kỳ nghỉ sắp tới"),
+            statusBadge: upcoming.status === "CONFIRMED" || upcoming.status === "confirmed" ? "Đã xác nhận" : "Sắp diễn ra",
+            dates: upcoming.dates || (start && end ? `${new Date(start).toLocaleDateString("vi-VN")} - ${new Date(end).toLocaleDateString("vi-VN")}` : "Kỳ nghỉ sắp tới"),
             guests: `${upcoming.guestCount || 2} người`,
-            tripType: upcoming.details?.packageName || "Nghỉ dưỡng & Trải nghiệm",
+            tripType: upcoming.details?.packageName || upcoming.details?.roomType || "Nghỉ dưỡng & Trải nghiệm",
             imageUrl: upcoming.details?.imageUrl || "/profile/phu-quoc-upcoming.jpg",
             bookingCode: upcoming.bookingCode || upcoming.id,
           })
@@ -97,14 +99,18 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
 
         const past = bookingsArr.filter((b: any) => {
           const st = (b.status || "").toUpperCase()
-          return st === "COMPLETED"
-        }).map((b: any) => ({
-          id: b.id,
-          title: b.title || "Kỳ nghỉ Phú Quốc",
-          dates: b.dates || (b.checkInDate ? `${new Date(b.checkInDate).toLocaleDateString("vi-VN")} - ${new Date(b.checkOutDate).toLocaleDateString("vi-VN")}` : "Đã hoàn thành"),
-          location: b.details?.location || "Phú Quốc",
-          imageUrl: b.details?.imageUrl || "/profile/sunset-sanato.jpg",
-        }))
+          return st === "COMPLETED" || st === "completed"
+        }).map((b: any) => {
+          const start = b.startDate || b.checkInDate
+          const end = b.endDate || b.checkOutDate
+          return {
+            id: b.id,
+            title: b.title || "Kỳ nghỉ Phú Quốc",
+            dates: b.dates || (start && end ? `${new Date(start).toLocaleDateString("vi-VN")} - ${new Date(end).toLocaleDateString("vi-VN")}` : "Đã hoàn thành"),
+            location: b.destination || b.details?.location || "Phú Quốc",
+            imageUrl: b.details?.imageUrl || "/profile/sunset-sanato.jpg",
+          }
+        })
         setPastTrips(past)
 
         if (liveUser) {

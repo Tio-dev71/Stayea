@@ -70,17 +70,23 @@ export function StayeaAdminBookingsPage({
           return {
             id: item.id || `booking-real-${idx}`,
             code: item.bookingCode || `STAY-${1000 + idx}`,
-            guestName: item.contactName || item.metadata?.contactName || "Khách hàng VIP",
+            guestName:
+              item.details?.contactInfo?.fullName ||
+              item.contactName ||
+              item.metadata?.contactName ||
+              "Khách hàng STAYEA",
             guestAvatar: "/about/team-1.jpg",
             guestFlag: "🇻🇳",
-            propertyName: item.title || item.metadata?.propertyName || "Sunset Sanato Villa",
-            checkIn: item.checkInDate
-              ? new Date(item.checkInDate).toLocaleDateString("vi-VN")
-              : "25/04/2025",
-            checkOut: item.checkOutDate
-              ? new Date(item.checkOutDate).toLocaleDateString("vi-VN")
-              : "28/04/2025",
-            guestsCount: item.guestsCount || 2,
+            propertyName: item.title || item.metadata?.propertyName || "Dịch vụ STAYEA",
+            checkIn:
+              item.startDate || item.checkInDate
+                ? new Date(item.startDate || item.checkInDate).toLocaleDateString("vi-VN")
+                : "Chưa xác định",
+            checkOut:
+              item.endDate || item.checkOutDate
+                ? new Date(item.endDate || item.checkOutDate).toLocaleDateString("vi-VN")
+                : "Chưa xác định",
+            guestsCount: item.guestCount || item.guestsCount || 1,
             bookingStatus,
             paymentStatus,
             totalAmount: formattedTotal,

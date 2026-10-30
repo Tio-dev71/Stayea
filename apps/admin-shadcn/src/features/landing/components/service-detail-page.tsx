@@ -330,10 +330,11 @@ export function ServiceDetailPage({
         setBookingCode(result.bookingCode)
         setBookingSuccessMessage(result.message || "Đặt dịch vụ thành công!")
         setBookingSuccess(true)
+      } else {
+        alert(result.message || "Không thể khởi tạo đặt chỗ. Vui lòng thử lại.")
       }
-    } catch {
-      setBookingCode("STA-202610-" + Math.floor(1000 + Math.random() * 9000))
-      setBookingSuccess(true)
+    } catch (err: any) {
+      alert("Đã xảy ra lỗi khi gửi yêu cầu đặt dịch vụ: " + (err?.message || "Vui lòng thử lại sau."))
     } finally {
       setIsSubmittingBooking(false)
     }

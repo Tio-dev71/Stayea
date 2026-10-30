@@ -21,7 +21,7 @@ export const stayeaBookingsTable = pgTable(
     bookingCode: text("booking_code").notNull().unique(),
     userId: text("user_id").notNull(),
     bookingType: text("booking_type", {
-      enum: ["stay", "flight", "experience", "package", "combo"],
+      enum: ["stay", "flight", "experience", "package", "combo", "transport"],
     }).notNull(),
     title: text("title").notNull(),
     destination: text("destination").notNull(),

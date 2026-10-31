@@ -77,10 +77,10 @@ export interface BookingStatusSlice {
 }
 
 export const BOOKING_STATUS_DATA_VI: readonly BookingStatusSlice[] = [
-  { status: "Đã xác nhận", percentage: 0, count: 0, color: "#166534" },
-  { status: "Chờ xác nhận", percentage: 0, count: 0, color: "#eab308" },
+  { status: "Đã xác nhận", percentage: 0, count: 0, color: "#1b7a4e" },
+  { status: "Chờ xác nhận", percentage: 0, count: 0, color: "#f59e0b" },
   { status: "Đã hủy", percentage: 0, count: 0, color: "#ef4444" },
-  { status: "Đã hoàn thành", percentage: 0, count: 0, color: "#94a3b8" },
+  { status: "Đã hoàn thành", percentage: 0, count: 0, color: "#64748b" },
 ]
 
 export interface AdminRecentBooking {

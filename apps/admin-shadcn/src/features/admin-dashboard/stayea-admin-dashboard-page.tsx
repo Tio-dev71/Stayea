@@ -113,10 +113,10 @@ export function StayeaAdminDashboardPage({
         const total = bookings.length || 1
 
         setLiveStatusData([
-          { status: "Đã xác nhận", percentage: bookings.length > 0 ? Math.round((confirmedCount / total) * 100) : 0, count: confirmedCount, color: "#166534" },
-          { status: "Chờ xác nhận", percentage: bookings.length > 0 ? Math.round((pendingCount / total) * 100) : 0, count: pendingCount, color: "#eab308" },
+          { status: "Đã xác nhận", percentage: bookings.length > 0 ? Math.round((confirmedCount / total) * 100) : 0, count: confirmedCount, color: "#1b7a4e" },
+          { status: "Chờ xác nhận", percentage: bookings.length > 0 ? Math.round((pendingCount / total) * 100) : 0, count: pendingCount, color: "#f59e0b" },
           { status: "Đã hủy", percentage: bookings.length > 0 ? Math.round((cancelledCount / total) * 100) : 0, count: cancelledCount, color: "#ef4444" },
-          { status: "Đã hoàn thành", percentage: bookings.length > 0 ? Math.round((completedCount / total) * 100) : 0, count: completedCount, color: "#94a3b8" },
+          { status: "Đã hoàn thành", percentage: bookings.length > 0 ? Math.round((completedCount / total) * 100) : 0, count: completedCount, color: "#64748b" },
         ])
 
         // 4. Recent Bookings Table

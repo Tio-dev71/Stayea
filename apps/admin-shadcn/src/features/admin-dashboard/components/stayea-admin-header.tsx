@@ -42,7 +42,7 @@ export function StayeaAdminHeader({
     email: string
   }>({
     name: userName,
-    email: "admin@example.com",
+    email: "",
   })
 
   const menuRef = useRef<HTMLDivElement>(null)

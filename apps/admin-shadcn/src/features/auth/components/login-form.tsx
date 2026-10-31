@@ -35,7 +35,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const { control, handleSubmit, setError } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: 'admin@example.com', password: '12345678' },
+    defaultValues: { email: '', password: '' },
   })
 
   const loginMutation = $api.useMutation('post', '/api/auth/login', {
@@ -84,7 +84,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   {...field}
                   id={field.name}
                   type="email"
-                  placeholder="admin@example.com / user@example.com"
+                  placeholder="admin@stayea.com"
                   aria-invalid={fieldState.invalid}
                   autoComplete="email"
                 />

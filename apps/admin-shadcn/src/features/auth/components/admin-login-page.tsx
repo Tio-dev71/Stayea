@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2, AlertCircle, CheckCircle2, Sparkles } from "lucide-react"
+import { Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
 import { setToken, setUser } from "@/lib/token"
 
@@ -11,8 +11,8 @@ interface AdminLoginPageProps {
 }
 
 export function AdminLoginPage({ onLoginSuccess }: AdminLoginPageProps) {
-  const [email, setEmail] = React.useState("admin@example.com")
-  const [password, setPassword] = React.useState("12345678")
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
   const [showPassword, setShowPassword] = React.useState(false)
   const [rememberMe, setRememberMe] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -76,15 +76,6 @@ export function AdminLoginPage({ onLoginSuccess }: AdminLoginPageProps) {
       setErrorMessage(err?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.")
       setIsLoading(false)
     }
-  }
-
-  const handleQuickAdminLogin = () => {
-    setEmail("admin@example.com")
-    setPassword("12345678")
-    // Trigger submit after state update
-    setTimeout(() => {
-      handleLogin()
-    }, 50)
   }
 
   return (
@@ -175,7 +166,7 @@ export function AdminLoginPage({ onLoginSuccess }: AdminLoginPageProps) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="admin@stayea.com"
                   autoComplete="email"
                   required
                   disabled={isLoading}
@@ -255,19 +246,6 @@ export function AdminLoginPage({ onLoginSuccess }: AdminLoginPageProps) {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Login Option */}
-          <div className="mt-4 pt-4 border-t border-slate-800/80">
-            <button
-              type="button"
-              onClick={handleQuickAdminLogin}
-              disabled={isLoading}
-              className="w-full py-2 px-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-emerald-300 hover:text-emerald-200 border border-emerald-500/20 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Đăng nhập nhanh với tài khoản Admin mặc định</span>
-            </button>
-          </div>
 
           {/* Footer Back Link */}
           <div className="mt-5 text-center">

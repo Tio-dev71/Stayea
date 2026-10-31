@@ -123,7 +123,7 @@ export function ReportsCustomersRightSidebar({
               key={link.id}
               type="button"
               onClick={() => {
-                if (link.id === "rel-export-list") {
+                if ((link.id as string) === "rel-export-list") {
                   onExportCustomerList?.()
                 } else {
                   toast.success(`Đã mở ${link.label}`)

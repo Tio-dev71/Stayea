@@ -145,7 +145,14 @@ export function MarketingCampaignsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {campaigns.map((item, index) => (
+            {campaigns.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-8 text-center text-xs text-slate-400">
+                  Chưa có dữ liệu chiến dịch marketing phát sinh
+                </td>
+              </tr>
+            ) : (
+              campaigns.map((item, index) => (
               <tr
                 key={item.id}
                 className="hover:bg-slate-50/70 transition-colors group"
@@ -233,7 +240,7 @@ export function MarketingCampaignsTable({
                   </button>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

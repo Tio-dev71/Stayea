@@ -301,10 +301,10 @@ export const MOCK_CAMPAIGN_PAGE_KPIS: CampaignPageKpiItem[] = [
   {
     id: "kpi-camp-total",
     label: "Tổng số chiến dịch",
-    value: "24",
-    trend: "↑ +33%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "megaphone",
     bgLightColor: "bg-[#e6f5ef]",
     iconColor: "text-[#007a48]",
@@ -312,10 +312,10 @@ export const MOCK_CAMPAIGN_PAGE_KPIS: CampaignPageKpiItem[] = [
   {
     id: "kpi-camp-running",
     label: "Đang chạy",
-    value: "8",
-    trend: "↑ +14%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "users",
     bgLightColor: "bg-[#fef3c7]",
     iconColor: "text-[#d97706]",
@@ -323,10 +323,10 @@ export const MOCK_CAMPAIGN_PAGE_KPIS: CampaignPageKpiItem[] = [
   {
     id: "kpi-camp-completed",
     label: "Đã hoàn thành",
-    value: "12",
-    trend: "↑ +50%",
+    value: "0",
+    trend: "0%",
     trendDirection: "up",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "check-circle",
     bgLightColor: "bg-[#ecfdf5]",
     iconColor: "text-[#10b981]",
@@ -334,10 +334,10 @@ export const MOCK_CAMPAIGN_PAGE_KPIS: CampaignPageKpiItem[] = [
   {
     id: "kpi-camp-paused",
     label: "Tạm dừng",
-    value: "4",
-    trend: "↓ -20%",
+    value: "0",
+    trend: "0%",
     trendDirection: "down",
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "pause-circle",
     bgLightColor: "bg-[#fef2f2]",
     iconColor: "text-[#ef4444]",
@@ -351,23 +351,9 @@ export interface CampaignTypeShareItem {
   color: string
 }
 
-export const MOCK_CAMPAIGN_TYPES_DONUT: CampaignTypeShareItem[] = [
-  { name: "Quảng cáo trả phí", count: 9, percentage: 37, color: "#2563eb" },
-  { name: "Nội dung mạng xã hội", count: 6, percentage: 25, color: "#9333ea" },
-  { name: "Email marketing", count: 4, percentage: 15, color: "#ec4899" },
-  { name: "Chương trình hợp tác", count: 3, percentage: 12, color: "#f59e0b" },
-  { name: "Ưu đãi/Khuyến mãi", count: 2, percentage: 8, color: "#0ea5e9" },
-  { name: "Khác", count: 1, percentage: 3, color: "#1e293b" },
-]
+export const MOCK_CAMPAIGN_TYPES_DONUT: CampaignTypeShareItem[] = []
 
-export const MOCK_CAMPAIGN_BOOKINGS_BY_CHANNEL: MarketingOrdersByChannelItem[] = [
-  { channel: "Facebook", orders: 1250, color: "#3b82f6" },
-  { channel: "Google", orders: 980, color: "#ef4444" },
-  { channel: "Instagram", orders: 760, color: "#ec4899" },
-  { channel: "Zalo", orders: 540, color: "#f59e0b" },
-  { channel: "Email", orders: 220, color: "#14b8a6" },
-  { channel: "TikTok", orders: 76, color: "#334155" },
-]
+export const MOCK_CAMPAIGN_BOOKINGS_BY_CHANNEL: MarketingOrdersByChannelItem[] = []
 
 export interface CampaignCostRoasItem {
   id: string
@@ -377,126 +363,9 @@ export interface CampaignCostRoasItem {
   barWidthPercent: number
 }
 
-export const MOCK_CAMPAIGN_COST_ROAS_TOP5: CampaignCostRoasItem[] = [
-  {
-    id: "cr-1",
-    title: "Khám phá Phú Quốc hè 2024",
-    costFormatted: "20.000.000 đ",
-    roas: 5.4,
-    barWidthPercent: 100,
-  },
-  {
-    id: "cr-2",
-    title: "Early Bird Đà Nẵng",
-    costFormatted: "15.000.000 đ",
-    roas: 4.8,
-    barWidthPercent: 75,
-  },
-  {
-    id: "cr-3",
-    title: "Trải nghiệm ẩm thực Việt",
-    costFormatted: "5.000.000 đ",
-    roas: 4.1,
-    barWidthPercent: 25,
-  },
-  {
-    id: "cr-4",
-    title: "Ưu đãi cuối tuần",
-    costFormatted: "8.000.000 đ",
-    roas: 3.6,
-    barWidthPercent: 40,
-  },
-  {
-    id: "cr-5",
-    title: "Newsletter tháng 8",
-    costFormatted: "3.000.000 đ",
-    roas: 2.9,
-    barWidthPercent: 15,
-  },
-]
+export const MOCK_CAMPAIGN_COST_ROAS_TOP5: CampaignCostRoasItem[] = []
 
-export const MOCK_CAMPAIGN_FULL_LIST: MarketingCampaignItem[] = [
-  {
-    id: "camp-1",
-    rank: 1,
-    title: "Khám phá Phú Quốc hè 2024",
-    subtitle: "Quảng cáo trả phí mùa du lịch biển đảo",
-    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=400&auto=format&fit=crop",
-    channel: "Facebook",
-    channelType: "Quảng cáo trả phí",
-    dateRange: "01/06 - 31/08/2024",
-    costFormatted: "20.000.000 đ",
-    reachFormatted: "98.2K",
-    ordersCount: "1.250",
-    roas: 5.4,
-    status: "running",
-    statusLabel: "Đang chạy",
-  },
-  {
-    id: "camp-2",
-    rank: 2,
-    title: "Early Bird Đà Nẵng",
-    subtitle: "Google Search & Performance Max",
-    image: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=80&w=400&auto=format&fit=crop",
-    channel: "Google",
-    channelType: "Google Ads",
-    dateRange: "01/07 - 30/09/2024",
-    costFormatted: "15.000.000 đ",
-    reachFormatted: "61.9K",
-    ordersCount: "980",
-    roas: 4.8,
-    status: "running",
-    statusLabel: "Đang chạy",
-  },
-  {
-    id: "camp-3",
-    rank: 3,
-    title: "Trải nghiệm ẩm thực Việt",
-    subtitle: "Instagram Reels & Influencer Content",
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=400&auto=format&fit=crop",
-    channel: "Instagram",
-    channelType: "Nội dung mạng xã hội",
-    dateRange: "15/07 - 15/09/2024",
-    costFormatted: "5.000.000 đ",
-    reachFormatted: "46.5K",
-    ordersCount: "760",
-    roas: 4.1,
-    status: "running",
-    statusLabel: "Đang chạy",
-  },
-  {
-    id: "camp-4",
-    rank: 4,
-    title: "Ưu đãi cuối tuần",
-    subtitle: "Thông báo Zalo OA khách hàng thân thiết",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop",
-    channel: "Zalo",
-    channelType: "Zalo Offical Account",
-    dateRange: "01/08 - 31/08/2024",
-    costFormatted: "8.000.000 đ",
-    reachFormatted: "18.1K",
-    ordersCount: "220",
-    roas: 3.6,
-    status: "paused",
-    statusLabel: "Tạm dừng",
-  },
-  {
-    id: "camp-5",
-    rank: 5,
-    title: "Newsletter tháng 8",
-    subtitle: "Bản tin du lịch & voucher độc quyền",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400&auto=format&fit=crop",
-    channel: "Email Marketing",
-    channelType: "Email Marketing",
-    dateRange: "01/08 - 31/08/2024",
-    costFormatted: "3.000.000 đ",
-    reachFormatted: "12.9K",
-    ordersCount: "76",
-    roas: 2.9,
-    status: "completed",
-    statusLabel: "Đã hoàn thành",
-  },
-]
+export const MOCK_CAMPAIGN_FULL_LIST: MarketingCampaignItem[] = []
 
 export interface CampaignTopBookedItem {
   rank: number
@@ -505,38 +374,7 @@ export interface CampaignTopBookedItem {
   bookingsFormatted: string
 }
 
-export const MOCK_CAMPAIGN_TOP_BOOKINGS_SIDEBAR: CampaignTopBookedItem[] = [
-  {
-    rank: 1,
-    title: "Khám phá Phú Quốc hè 2024",
-    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=300&auto=format&fit=crop",
-    bookingsFormatted: "1.250",
-  },
-  {
-    rank: 2,
-    title: "Early Bird Đà Nẵng",
-    image: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=80&w=300&auto=format&fit=crop",
-    bookingsFormatted: "980",
-  },
-  {
-    rank: 3,
-    title: "Trải nghiệm ẩm thực Việt",
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=300&auto=format&fit=crop",
-    bookingsFormatted: "760",
-  },
-  {
-    rank: 4,
-    title: "Ưu đãi cuối tuần",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=300&auto=format&fit=crop",
-    bookingsFormatted: "540",
-  },
-  {
-    rank: 5,
-    title: "Newsletter tháng 8",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop",
-    bookingsFormatted: "220",
-  },
-]
+export const MOCK_CAMPAIGN_TOP_BOOKINGS_SIDEBAR: CampaignTopBookedItem[] = []
 
 export interface CampaignOptimizationSuggestion {
   id: string
@@ -631,46 +469,46 @@ export const MOCK_CHANNEL_PAGE_KPIS: ChannelPageKpi[] = [
   {
     id: "reach",
     label: "Tổng lượt tiếp cận",
-    value: "258.4K",
-    trend: "+42%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "pointer",
   },
   {
     id: "engagement",
     label: "Lượt tương tác",
-    value: "36.7K",
-    trend: "+28%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "users",
   },
   {
     id: "bookings",
     label: "Lượt đặt phòng",
-    value: "8.420",
-    trend: "+31%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "cart",
   },
   {
     id: "revenue",
     label: "Doanh thu",
-    value: "425.3M đ",
-    trend: "+18%",
+    value: "0 ₫",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "revenue",
   },
   {
     id: "roas",
     label: "ROAS trung bình",
-    value: "4.8",
-    trend: "+36%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "roas",
   },
 ]
@@ -685,15 +523,7 @@ export interface ChannelTimelineTrendPoint {
   other: number
 }
 
-export const MOCK_CHANNEL_TIMELINE_TRENDS: ChannelTimelineTrendPoint[] = [
-  { date: "01/06", facebook: 20, google: 16, instagram: 12, zalo: 7, email: 5, other: 3 },
-  { date: "15/06", facebook: 42, google: 22, instagram: 18, zalo: 11, email: 8, other: 4 },
-  { date: "01/07", facebook: 38, google: 20, instagram: 16, zalo: 10, email: 7, other: 3 },
-  { date: "15/07", facebook: 50, google: 28, instagram: 24, zalo: 14, email: 10, other: 5 },
-  { date: "01/08", facebook: 46, google: 24, instagram: 20, zalo: 12, email: 9, other: 4 },
-  { date: "15/08", facebook: 68, google: 42, instagram: 32, zalo: 18, email: 14, other: 6 },
-  { date: "31/08", facebook: 78, google: 52, instagram: 38, zalo: 22, email: 16, other: 7 },
-]
+export const MOCK_CHANNEL_TIMELINE_TRENDS: ChannelTimelineTrendPoint[] = []
 
 export interface ChannelReachDonutItem {
   id: string
@@ -703,14 +533,7 @@ export interface ChannelReachDonutItem {
   color: string
 }
 
-export const MOCK_CHANNEL_REACH_DONUT: ChannelReachDonutItem[] = [
-  { id: "facebook", name: "Facebook", percent: 38, formattedReach: "98.2K", color: "#1877f2" },
-  { id: "google", name: "Google", percent: 24, formattedReach: "61.9K", color: "#ea4335" },
-  { id: "instagram", name: "Instagram", percent: 18, formattedReach: "46.5K", color: "#e1306c" },
-  { id: "zalo", name: "Zalo", percent: 7, formattedReach: "18.1K", color: "#0068ff" },
-  { id: "email", name: "Email Marketing", percent: 8, formattedReach: "20.6K", color: "#10b981" },
-  { id: "tiktok", name: "TikTok", percent: 5, formattedReach: "12.9K", color: "#111827" },
-]
+export const MOCK_CHANNEL_REACH_DONUT: ChannelReachDonutItem[] = []
 
 export interface ChannelBookingsBarItem {
   channel: string
@@ -718,14 +541,7 @@ export interface ChannelBookingsBarItem {
   color: string
 }
 
-export const MOCK_CHANNEL_BOOKINGS_BAR: ChannelBookingsBarItem[] = [
-  { channel: "Facebook", orders: 1250, color: "#1877f2" },
-  { channel: "Google", orders: 980, color: "#ea4335" },
-  { channel: "Instagram", orders: 760, color: "#e1306c" },
-  { channel: "Zalo", orders: 540, color: "#0068ff" },
-  { channel: "Email", orders: 220, color: "#10b981" },
-  { channel: "TikTok", orders: 76, color: "#1e293b" },
-]
+export const MOCK_CHANNEL_BOOKINGS_BAR: ChannelBookingsBarItem[] = []
 
 export interface ChannelRevenueBarItem {
   id: string
@@ -735,14 +551,7 @@ export interface ChannelRevenueBarItem {
   color: string
 }
 
-export const MOCK_CHANNEL_REVENUE_BAR: ChannelRevenueBarItem[] = [
-  { id: "fb", channel: "Facebook", revenueNum: 162.5, revenueFormatted: "162.5M đ", color: "#1877f2" },
-  { id: "gg", channel: "Google", revenueNum: 76.6, revenueFormatted: "76.6M đ", color: "#ea4335" },
-  { id: "ig", channel: "Instagram", revenueNum: 63.8, revenueFormatted: "63.8M đ", color: "#e1306c" },
-  { id: "zl", channel: "Zalo", revenueNum: 34, revenueFormatted: "34.0M đ", color: "#0068ff" },
-  { id: "em", channel: "Email Marketing", revenueNum: 12.4, revenueFormatted: "12.4M đ", color: "#10b981" },
-  { id: "tt", channel: "TikTok", revenueNum: 8.1, revenueFormatted: "8.1M đ", color: "#1e293b" },
-]
+export const MOCK_CHANNEL_REVENUE_BAR: ChannelRevenueBarItem[] = []
 
 export interface ChannelPerformanceTableItem {
   rank: number
@@ -760,98 +569,7 @@ export interface ChannelPerformanceTableItem {
   trendPositive: boolean
 }
 
-export const MOCK_CHANNEL_PERFORMANCE_TABLE: ChannelPerformanceTableItem[] = [
-  {
-    rank: 1,
-    id: "ch-fb",
-    name: "Facebook",
-    iconType: "facebook",
-    reach: "98.2K",
-    engagement: "14.5K",
-    bookings: "1.250",
-    cost: "20.000.000 đ",
-    revenue: "162.500.000 đ",
-    roas: 5.4,
-    conversionRate: "1.27%",
-    trend: "+28%",
-    trendPositive: true,
-  },
-  {
-    rank: 2,
-    id: "ch-gg",
-    name: "Google",
-    iconType: "google",
-    reach: "61.9K",
-    engagement: "9.8K",
-    bookings: "980",
-    cost: "15.000.000 đ",
-    revenue: "76.600.000 đ",
-    roas: 4.8,
-    conversionRate: "1.58%",
-    trend: "+22%",
-    trendPositive: true,
-  },
-  {
-    rank: 3,
-    id: "ch-ig",
-    name: "Instagram",
-    iconType: "instagram",
-    reach: "46.5K",
-    engagement: "7.2K",
-    bookings: "760",
-    cost: "5.000.000 đ",
-    revenue: "63.800.000 đ",
-    roas: 4.1,
-    conversionRate: "1.63%",
-    trend: "+46%",
-    trendPositive: true,
-  },
-  {
-    rank: 4,
-    id: "ch-zl",
-    name: "Zalo",
-    iconType: "zalo",
-    reach: "18.1K",
-    engagement: "3.4K",
-    bookings: "540",
-    cost: "8.000.000 đ",
-    revenue: "34.000.000 đ",
-    roas: 3.6,
-    conversionRate: "2.98%",
-    trend: "+31%",
-    trendPositive: true,
-  },
-  {
-    rank: 5,
-    id: "ch-em",
-    name: "Email Marketing",
-    iconType: "email",
-    reach: "20.6K",
-    engagement: "2.1K",
-    bookings: "220",
-    cost: "3.000.000 đ",
-    revenue: "12.400.000 đ",
-    roas: 2.9,
-    conversionRate: "7.20%",
-    trend: "+18%",
-    trendPositive: true,
-  },
-  {
-    rank: 6,
-    id: "ch-tt",
-    name: "TikTok",
-    iconType: "tiktok",
-    reach: "12.9K",
-    engagement: "1.6K",
-    bookings: "76",
-    cost: "2.000.000 đ",
-    revenue: "8.100.000 đ",
-    roas: 2.7,
-    conversionRate: "0.59%",
-    trend: "+12%",
-    trendPositive: true,
-  },
-]
+export const MOCK_CHANNEL_PERFORMANCE_TABLE: ChannelPerformanceTableItem[] = []
 
 export interface ChannelHighlightItem {
   id: string
@@ -862,48 +580,7 @@ export interface ChannelHighlightItem {
   badgeType: "link" | "text" | "percentage" | "arrow"
 }
 
-export const MOCK_CHANNEL_HIGHLIGHTS: ChannelHighlightItem[] = [
-  {
-    id: "hl-1",
-    channelName: "Facebook",
-    iconType: "facebook",
-    note: "Lượt đặt phòng cao nhất",
-    badgeValue: "1.250 đơn >",
-    badgeType: "link",
-  },
-  {
-    id: "hl-2",
-    channelName: "Google",
-    iconType: "google",
-    note: "ROAS cao nhất 5.4",
-    badgeValue: "5.4",
-    badgeType: "text",
-  },
-  {
-    id: "hl-3",
-    channelName: "Instagram",
-    iconType: "instagram",
-    note: "Tương tác tăng nhanh",
-    badgeValue: "+46%",
-    badgeType: "percentage",
-  },
-  {
-    id: "hl-4",
-    channelName: "Zalo",
-    iconType: "zalo",
-    note: "Chi phí thấp, hiệu quả tốt",
-    badgeValue: ">",
-    badgeType: "arrow",
-  },
-  {
-    id: "hl-5",
-    channelName: "Email Marketing",
-    iconType: "email",
-    note: "Tỷ lệ chuyển đổi cao nhất",
-    badgeValue: "7.2%",
-    badgeType: "percentage",
-  },
-]
+export const MOCK_CHANNEL_HIGHLIGHTS: ChannelHighlightItem[] = []
 
 export interface ChannelOptimizationTip {
   id: string
@@ -964,46 +641,46 @@ export const MOCK_CONTENT_PAGE_KPIS: ContentPageKpi[] = [
   {
     id: "total_content",
     label: "Tổng số nội dung",
-    value: "320",
-    trend: "+28%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "file-text",
   },
   {
     id: "total_views",
     label: "Tổng lượt xem",
-    value: "1.2M",
-    trend: "+42%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "eye",
   },
   {
     id: "total_engagement",
     label: "Tổng lượt tương tác",
-    value: "96.5K",
-    trend: "+35%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "heart",
   },
   {
     id: "link_clicks",
     label: "Lượt nhấp liên kết",
-    value: "25.8K",
-    trend: "+27%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "link",
   },
   {
     id: "conversions",
     label: "Chuyển đổi từ nội dung",
-    value: "1.850",
-    trend: "+18%",
+    value: "0",
+    trend: "0%",
     trendIsPositive: true,
-    comparisonText: "so với 3 tháng trước",
+    comparisonText: "dữ liệu thời gian thực",
     iconType: "users",
   },
 ]
@@ -1015,15 +692,7 @@ export interface ContentTimelinePoint {
   clicks: number
 }
 
-export const MOCK_CONTENT_TIMELINE: ContentTimelinePoint[] = [
-  { date: "01/06", views: 50, engagement: 25, clicks: 10 },
-  { date: "15/06", views: 110, engagement: 50, clicks: 20 },
-  { date: "01/07", views: 100, engagement: 45, clicks: 18 },
-  { date: "15/07", views: 140, engagement: 60, clicks: 30 },
-  { date: "01/08", views: 130, engagement: 55, clicks: 25 },
-  { date: "15/08", views: 175, engagement: 85, clicks: 40 },
-  { date: "31/08", views: 205, engagement: 105, clicks: 48 },
-]
+export const MOCK_CONTENT_TIMELINE: ContentTimelinePoint[] = []
 
 export interface ContentFormatDonutItem {
   id: string
@@ -1033,14 +702,7 @@ export interface ContentFormatDonutItem {
   color: string
 }
 
-export const MOCK_CONTENT_FORMAT_DONUT: ContentFormatDonutItem[] = [
-  { id: "blog", name: "Bài viết blog", percent: 32, count: 102, color: "#1877f2" },
-  { id: "video", name: "Video", percent: 28, count: 90, color: "#f43f5e" },
-  { id: "image", name: "Hình ảnh", percent: 20, count: 64, color: "#0ea5e9" },
-  { id: "reels", name: "Reels/Shorts", percent: 12, count: 38, color: "#f97316" },
-  { id: "infographic", name: "Infographic", percent: 5, count: 16, color: "#10b981" },
-  { id: "other", name: "Khác", percent: 3, count: 10, color: "#475569" },
-]
+export const MOCK_CONTENT_FORMAT_DONUT: ContentFormatDonutItem[] = []
 
 export interface ContentChannelBarItem {
   channel: string
@@ -1048,14 +710,7 @@ export interface ContentChannelBarItem {
   engagement: number
 }
 
-export const MOCK_CONTENT_CHANNELS_BAR: ContentChannelBarItem[] = [
-  { channel: "Facebook", views: 320, engagement: 85 },
-  { channel: "Instagram", views: 280, engagement: 70 },
-  { channel: "Website/Blog", views: 210, engagement: 55 },
-  { channel: "Zalo", views: 150, engagement: 35 },
-  { channel: "Email", views: 90, engagement: 20 },
-  { channel: "TikTok", views: 80, engagement: 18 },
-]
+export const MOCK_CONTENT_CHANNELS_BAR: ContentChannelBarItem[] = []
 
 export interface ContentTopicItem {
   id: string
@@ -1065,15 +720,7 @@ export interface ContentTopicItem {
   color: string
 }
 
-export const MOCK_CONTENT_TOPICS_LIST: ContentTopicItem[] = [
-  { id: "t1", name: "Điểm đến & Du lịch", percent: 28, count: 90, color: "#2563eb" },
-  { id: "t2", name: "Resort & Nghỉ dưỡng", percent: 22, count: 70, color: "#06b6d4" },
-  { id: "t3", name: "Ẩm thực địa phương", percent: 18, count: 58, color: "#f59e0b" },
-  { id: "t4", name: "Kinh nghiệm du lịch", percent: 12, count: 38, color: "#8b5cf6" },
-  { id: "t5", name: "Ưu đãi & Khuyến mãi", percent: 10, count: 32, color: "#ec4899" },
-  { id: "t6", name: "Trải nghiệm & Tour", percent: 7, count: 22, color: "#6366f1" },
-  { id: "t7", name: "Khác", percent: 3, count: 10, color: "#94a3b8" },
-]
+export const MOCK_CONTENT_TOPICS_LIST: ContentTopicItem[] = []
 
 export interface FeaturedContentTableItem {
   id: string
@@ -1092,88 +739,7 @@ export interface FeaturedContentTableItem {
   status: "active" | "completed"
 }
 
-export const MOCK_FEATURED_CONTENT_TABLE: FeaturedContentTableItem[] = [
-  {
-    id: "cnt-1",
-    rank: 1,
-    title: "Khám phá Phú Quốc hè 2024",
-    thumbnail: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=120&auto=format&fit=crop&q=80",
-    formatType: "image",
-    formatLabel: "Ảnh",
-    channel: "Facebook",
-    channelIcon: "facebook",
-    publishDate: "12/06/2024",
-    views: "125.000",
-    engagement: "8.200",
-    clicks: "2.450",
-    conversions: "320",
-    status: "active",
-  },
-  {
-    id: "cnt-2",
-    rank: 2,
-    title: "Top 5 resort Đà Nẵng đáng ở",
-    thumbnail: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=120&auto=format&fit=crop&q=80",
-    formatType: "video",
-    formatLabel: "Video",
-    channel: "Video",
-    channelIcon: "video",
-    publishDate: "28/06/2024",
-    views: "98.000",
-    engagement: "6.400",
-    clicks: "1.980",
-    conversions: "280",
-    status: "active",
-  },
-  {
-    id: "cnt-3",
-    rank: 3,
-    title: "Trải nghiệm ẩm thực Việt",
-    thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=120&auto=format&fit=crop&q=80",
-    formatType: "blog",
-    formatLabel: "Bài viết",
-    channel: "Website",
-    channelIcon: "website",
-    publishDate: "15/07/2024",
-    views: "76.000",
-    engagement: "5.100",
-    clicks: "1.250",
-    conversions: "186",
-    status: "completed",
-  },
-  {
-    id: "cnt-4",
-    rank: 4,
-    title: "Ưu đãi cuối tuần",
-    thumbnail: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=120&auto=format&fit=crop&q=80",
-    formatType: "infographic",
-    formatLabel: "Infographic",
-    channel: "Instagram",
-    channelIcon: "instagram",
-    publishDate: "01/08/2024",
-    views: "54.000",
-    engagement: "3.800",
-    clicks: "980",
-    conversions: "124",
-    status: "active",
-  },
-  {
-    id: "cnt-5",
-    rank: 5,
-    title: "Checklist du lịch Nha Trang",
-    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=120&auto=format&fit=crop&q=80",
-    formatType: "reels",
-    formatLabel: "Reels",
-    channel: "TikTok",
-    channelIcon: "tiktok",
-    publishDate: "20/08/2024",
-    views: "52.000",
-    engagement: "3.600",
-    clicks: "860",
-    conversions: "98",
-    status: "active",
-  },
-]
+export const MOCK_FEATURED_CONTENT_TABLE: FeaturedContentTableItem[] = []
 
 export interface ContentHighlightSidebarItem {
   id: string
@@ -1184,48 +750,7 @@ export interface ContentHighlightSidebarItem {
   likes: string
 }
 
-export const MOCK_CONTENT_HIGHLIGHTS_SIDEBAR: ContentHighlightSidebarItem[] = [
-  {
-    id: "chl-1",
-    rank: 1,
-    title: "Khám phá Phú Quốc hè 2024",
-    thumbnail: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=120&auto=format&fit=crop&q=80",
-    views: "125K",
-    likes: "8.2K",
-  },
-  {
-    id: "chl-2",
-    rank: 2,
-    title: "Top 5 resort Đà Nẵng đáng ở",
-    thumbnail: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=120&auto=format&fit=crop&q=80",
-    views: "98K",
-    likes: "6.4K",
-  },
-  {
-    id: "chl-3",
-    rank: 3,
-    title: "Trải nghiệm ẩm thực Việt",
-    thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=120&auto=format&fit=crop&q=80",
-    views: "76K",
-    likes: "5.1K",
-  },
-  {
-    id: "chl-4",
-    rank: 4,
-    title: "Ưu đãi cuối tuần",
-    thumbnail: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=120&auto=format&fit=crop&q=80",
-    views: "54K",
-    likes: "3.8K",
-  },
-  {
-    id: "chl-5",
-    rank: 5,
-    title: "Checklist du lịch Nha Trang",
-    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=120&auto=format&fit=crop&q=80",
-    views: "52K",
-    likes: "3.6K",
-  },
-]
+export const MOCK_CONTENT_HIGHLIGHTS_SIDEBAR: ContentHighlightSidebarItem[] = []
 
 export interface ContentIdeaTipItem {
   id: string
@@ -1294,46 +819,46 @@ export const MOCK_ADS_KPIS: AdsKpiItem[] = [
   {
     id: "ads-kpi-1",
     title: "Tổng chi phí quảng cáo",
-    value: "85.000.000 đ",
-    trendPercent: "-22%",
+    value: "0 ₫",
+    trendPercent: "0%",
     trendDirection: "down",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "megaphone",
   },
   {
     id: "ads-kpi-2",
     title: "Lượt hiển thị",
-    value: "1.850.000",
-    trendPercent: "+35%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "eye",
   },
   {
     id: "ads-kpi-3",
     title: "Lượt nhấp (Click)",
-    value: "46.500",
-    trendPercent: "+28%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "cursor",
   },
   {
     id: "ads-kpi-4",
     title: "Lượt chuyển đổi",
-    value: "1.250",
-    trendPercent: "+42%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "users",
   },
   {
     id: "ads-kpi-5",
     title: "ROAS (Doanh thu/Chi phí)",
-    value: "4.8",
-    trendPercent: "+36%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "roas",
   },
 ]
@@ -1346,15 +871,7 @@ export interface AdsTimelinePoint {
   conversions: number
 }
 
-export const MOCK_ADS_TIMELINE: AdsTimelinePoint[] = [
-  { date: "01/06", cost: 35, impressions: 45, clicks: 15, conversions: 5 },
-  { date: "15/06", cost: 60, impressions: 105, clicks: 25, conversions: 12 },
-  { date: "01/07", cost: 52, impressions: 98, clicks: 35, conversions: 18 },
-  { date: "15/07", cost: 85, impressions: 145, clicks: 42, conversions: 22 },
-  { date: "01/08", cost: 78, impressions: 135, clicks: 52, conversions: 28 },
-  { date: "15/08", cost: 110, impressions: 175, clicks: 58, conversions: 35 },
-  { date: "31/08", cost: 105, impressions: 165, clicks: 62, conversions: 32 },
-]
+export const MOCK_ADS_TIMELINE: AdsTimelinePoint[] = []
 
 export interface AdsChannelDonutItem {
   name: string
@@ -1363,14 +880,7 @@ export interface AdsChannelDonutItem {
   color: string
 }
 
-export const MOCK_ADS_CHANNEL_DONUT: AdsChannelDonutItem[] = [
-  { name: "Facebook", percent: 35, amount: "29.8M", color: "#0284c7" },
-  { name: "Google Ads", percent: 28, amount: "23.8M", color: "#ef4444" },
-  { name: "Instagram", percent: 15, amount: "12.8M", color: "#f59e0b" },
-  { name: "Zalo", percent: 10, amount: "8.5M", color: "#10b981" },
-  { name: "TikTok", percent: 7, amount: "6.0M", color: "#3b82f6" },
-  { name: "Khác", percent: 5, amount: "4.0M", color: "#8b5cf6" },
-]
+export const MOCK_ADS_CHANNEL_DONUT: AdsChannelDonutItem[] = []
 
 export interface AdsCostRevenueBarItem {
   channel: string
@@ -1380,14 +890,7 @@ export interface AdsCostRevenueBarItem {
   revenueLabel: string
 }
 
-export const MOCK_ADS_COST_REVENUE_BARS: AdsCostRevenueBarItem[] = [
-  { channel: "Facebook", cost: 29.8, costLabel: "29.8M", revenue: 162.5, revenueLabel: "162.5M" },
-  { channel: "Google", cost: 23.8, costLabel: "23.8M", revenue: 114.2, revenueLabel: "114.2M" },
-  { channel: "Instagram", cost: 12.8, costLabel: "12.8M", revenue: 52.5, revenueLabel: "52.5M" },
-  { channel: "Zalo", cost: 8.5, costLabel: "8.5M", revenue: 34, revenueLabel: "34.0M" },
-  { channel: "TikTok", cost: 6, costLabel: "6.0M", revenue: 17.4, revenueLabel: "17.4M" },
-  { channel: "Khác", cost: 4, costLabel: "4.0M", revenue: 9.2, revenueLabel: "9.2M" },
-]
+export const MOCK_ADS_COST_REVENUE_BARS: AdsCostRevenueBarItem[] = []
 
 export interface AdsFunnelStageItem {
   id: string
@@ -1398,12 +901,7 @@ export interface AdsFunnelStageItem {
   widthPercent: number
 }
 
-export const MOCK_ADS_FUNNEL_STAGES: AdsFunnelStageItem[] = [
-  { id: "f1", stageName: "Hiển thị", count: "1.850.000", percentage: "100%", color: "#0284c7", widthPercent: 100 },
-  { id: "f2", stageName: "Nhấp chuột", count: "46.500", percentage: "2.5%", color: "#06b6d4", widthPercent: 72 },
-  { id: "f3", stageName: "Truy cập website", count: "28.600", percentage: "1.5%", color: "#10b981", widthPercent: 50 },
-  { id: "f4", stageName: "Đặt phòng/Đăng ký", count: "1.250", percentage: "0.07%", color: "#f59e0b", widthPercent: 28 },
-]
+export const MOCK_ADS_FUNNEL_STAGES: AdsFunnelStageItem[] = []
 
 export interface AdsCampaignRowItem {
   id: string
@@ -1421,83 +919,7 @@ export interface AdsCampaignRowItem {
   status: "active" | "paused"
 }
 
-export const MOCK_ADS_CAMPAIGNS_TABLE: AdsCampaignRowItem[] = [
-  {
-    id: "ad-camp-1",
-    order: 1,
-    campaignName: "Khám phá Phú Quốc hè 2024",
-    thumbnail: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=120&auto=format&fit=crop&q=80",
-    channel: "facebook",
-    channelName: "Facebook",
-    period: "01/06 - 31/08/2024",
-    cost: "20.000.000 đ",
-    impressions: "980.000",
-    clicks: "24.500",
-    conversions: "520",
-    roas: "5.4",
-    status: "active",
-  },
-  {
-    id: "ad-camp-2",
-    order: 2,
-    campaignName: "Early Bird Đà Nẵng",
-    thumbnail: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=120&auto=format&fit=crop&q=80",
-    channel: "google",
-    channelName: "Google Ads",
-    period: "01/07 - 30/09/2024",
-    cost: "15.000.000 đ",
-    impressions: "610.000",
-    clicks: "12.200",
-    conversions: "310",
-    roas: "4.8",
-    status: "active",
-  },
-  {
-    id: "ad-camp-3",
-    order: 3,
-    campaignName: "Trải nghiệm ẩm thực Việt",
-    thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=120&auto=format&fit=crop&q=80",
-    channel: "instagram",
-    channelName: "Instagram",
-    period: "15/07 - 15/09/2024",
-    cost: "10.000.000 đ",
-    impressions: "260.000",
-    clicks: "5.400",
-    conversions: "160",
-    roas: "4.1",
-    status: "active",
-  },
-  {
-    id: "ad-camp-4",
-    order: 4,
-    campaignName: "Ưu đãi cuối tuần",
-    thumbnail: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=120&auto=format&fit=crop&q=80",
-    channel: "zalo",
-    channelName: "Zalo",
-    period: "01/08 - 31/08/2024",
-    cost: "8.000.000 đ",
-    impressions: "180.000",
-    clicks: "3.800",
-    conversions: "120",
-    roas: "3.6",
-    status: "active",
-  },
-  {
-    id: "ad-camp-5",
-    order: 5,
-    campaignName: "Video trải nghiệm thực tế",
-    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=120&auto=format&fit=crop&q=80",
-    channel: "tiktok",
-    channelName: "TikTok",
-    period: "01/08 - 31/08/2024",
-    cost: "6.000.000 đ",
-    impressions: "120.000",
-    clicks: "2.600",
-    conversions: "80",
-    roas: "2.9",
-    status: "paused",
-  },
-]
+export const MOCK_ADS_CAMPAIGNS_TABLE: AdsCampaignRowItem[] = []
 
 export interface AdsHighlightSidebarItem {
   id: string
@@ -1507,13 +929,7 @@ export interface AdsHighlightSidebarItem {
   roas: string
 }
 
-export const MOCK_ADS_HIGHLIGHTS_SIDEBAR: AdsHighlightSidebarItem[] = [
-  { id: "ah-1", order: 1, channelName: "Facebook Ads", channel: "facebook", roas: "ROAS 5.4" },
-  { id: "ah-2", order: 2, channelName: "Google Ads", channel: "google", roas: "ROAS 4.8" },
-  { id: "ah-3", order: 3, channelName: "Instagram Ads", channel: "instagram", roas: "ROAS 4.1" },
-  { id: "ah-4", order: 4, channelName: "Zalo Ads", channel: "zalo", roas: "ROAS 3.6" },
-  { id: "ah-5", order: 5, channelName: "TikTok Ads", channel: "tiktok", roas: "ROAS 2.9" },
-]
+export const MOCK_ADS_HIGHLIGHTS_SIDEBAR: AdsHighlightSidebarItem[] = []
 
 export interface AdsOptimizeTipItem {
   id: string
@@ -1562,46 +978,46 @@ export const MOCK_EMAIL_KPIS: EmailKpiItem[] = [
   {
     id: "ekpi-1",
     title: "Tổng số email gửi",
-    value: "120.000",
-    trendPercent: "+28%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "mail",
   },
   {
     id: "ekpi-2",
     title: "Tỷ lệ mở (Open rate)",
-    value: "32.5%",
-    trendPercent: "+12%",
+    value: "0%",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "eye",
   },
   {
     id: "ekpi-3",
     title: "Tỷ lệ nhấp (CTR)",
-    value: "5.8%",
-    trendPercent: "+26%",
+    value: "0%",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "cursor",
   },
   {
     id: "ekpi-4",
     title: "Số lượt chuyển đổi",
-    value: "2.860",
-    trendPercent: "+35%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "users",
   },
   {
     id: "ekpi-5",
     title: "Doanh thu từ email",
-    value: "125.4M đ",
-    trendPercent: "+42%",
+    value: "0 ₫",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "coins",
   },
 ]
@@ -1630,15 +1046,7 @@ export interface EmailTimelinePoint {
   conversions: number
 }
 
-export const MOCK_EMAIL_TIMELINE: EmailTimelinePoint[] = [
-  { date: "01/06", sent: 12, opened: 8, clicked: 3, conversions: 1.5 },
-  { date: "15/06", sent: 24, opened: 15, clicked: 5, conversions: 2.5 },
-  { date: "01/07", sent: 29, opened: 18, clicked: 7, conversions: 3.5 },
-  { date: "15/07", sent: 37, opened: 26, clicked: 10, conversions: 5.2 },
-  { date: "01/08", sent: 43, opened: 29, clicked: 12, conversions: 6.8 },
-  { date: "15/08", sent: 47, opened: 33, clicked: 14, conversions: 8.5 },
-  { date: "31/08", sent: 51, opened: 36, clicked: 16, conversions: 10.2 },
-]
+export const MOCK_EMAIL_TIMELINE: EmailTimelinePoint[] = []
 
 export interface EmailTypeDonutItem {
   name: string
@@ -1647,14 +1055,7 @@ export interface EmailTypeDonutItem {
   color: string
 }
 
-export const MOCK_EMAIL_TYPES_DONUT: EmailTypeDonutItem[] = [
-  { name: "Email khuyến mãi", percent: 38, amount: "45.6K", color: "#10b981" },
-  { name: "Email bản tin", percent: 24, amount: "28.8K", color: "#0284c7" },
-  { name: "Email chăm sóc", percent: 18, amount: "21.6K", color: "#f59e0b" },
-  { name: "Email tái tiếp cận", percent: 12, amount: "14.4K", color: "#8b5cf6" },
-  { name: "Email tự động", percent: 6, amount: "7.2K", color: "#ef4444" },
-  { name: "Khác", percent: 2, amount: "2.4K", color: "#94a3b8" },
-]
+export const MOCK_EMAIL_TYPES_DONUT: EmailTypeDonutItem[] = []
 
 export interface EmailDeviceBarItem {
   device: string
@@ -1664,11 +1065,7 @@ export interface EmailDeviceBarItem {
   clickRateLabel: string
 }
 
-export const MOCK_EMAIL_DEVICE_BARS: EmailDeviceBarItem[] = [
-  { device: "Desktop", openRate: 28.4, openRateLabel: "28.4%", clickRate: 4.1, clickRateLabel: "4.1%" },
-  { device: "Mobile", openRate: 35.2, openRateLabel: "35.2%", clickRate: 6.8, clickRateLabel: "6.8%" },
-  { device: "Tablet", openRate: 22.1, openRateLabel: "22.1%", clickRate: 3.2, clickRateLabel: "3.2%" },
-]
+export const MOCK_EMAIL_DEVICE_BARS: EmailDeviceBarItem[] = []
 
 export interface EmailSegmentItem {
   id: string
@@ -1678,13 +1075,7 @@ export interface EmailSegmentItem {
   color: string
 }
 
-export const MOCK_EMAIL_SEGMENTS: EmailSegmentItem[] = [
-  { id: "seg-1", name: "Khách đã đặt phòng", percent: 42, count: 1201, color: "#007a48" },
-  { id: "seg-2", name: "Khách tiềm năng", percent: 28, count: 800, color: "#0284c7" },
-  { id: "seg-3", name: "Khách thân thiết", percent: 18, count: 515, color: "#f59e0b" },
-  { id: "seg-4", name: "Khách chưa hoạt động", percent: 8, count: 229, color: "#8b5cf6" },
-  { id: "seg-5", name: "Đối tác B2B", percent: 4, count: 115, color: "#3b82f6" },
-]
+export const MOCK_EMAIL_SEGMENTS: EmailSegmentItem[] = []
 
 export interface EmailCampaignRowItem {
   id: string
@@ -1701,78 +1092,7 @@ export interface EmailCampaignRowItem {
   status: "sent" | "active"
 }
 
-export const MOCK_EMAIL_CAMPAIGNS_TABLE: EmailCampaignRowItem[] = [
-  {
-    id: "ec-1",
-    order: 1,
-    campaignName: "Ưu đãi hè Phú Quốc",
-    thumbnail: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=120&auto=format&fit=crop&q=80",
-    emailType: "Khuyến mãi",
-    sentDate: "05/06/2024",
-    sentCount: "20.000",
-    openRate: "34.5%",
-    clickRate: "6.2%",
-    conversions: "520",
-    revenue: "28.600.000 đ",
-    status: "sent",
-  },
-  {
-    id: "ec-2",
-    order: 2,
-    campaignName: "Khám phá Đà Nẵng",
-    thumbnail: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=120&auto=format&fit=crop&q=80",
-    emailType: "Bản tin",
-    sentDate: "20/06/2024",
-    sentCount: "18.000",
-    openRate: "31.8%",
-    clickRate: "5.9%",
-    conversions: "410",
-    revenue: "21.400.000 đ",
-    status: "sent",
-  },
-  {
-    id: "ec-3",
-    order: 3,
-    campaignName: "Trải nghiệm ẩm thực Việt",
-    thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=120&auto=format&fit=crop&q=80",
-    emailType: "Chăm sóc",
-    sentDate: "05/07/2024",
-    sentCount: "16.000",
-    openRate: "29.6%",
-    clickRate: "5.1%",
-    conversions: "360",
-    revenue: "18.200.000 đ",
-    status: "sent",
-  },
-  {
-    id: "ec-4",
-    order: 4,
-    campaignName: "Ưu đãi cuối tuần",
-    thumbnail: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=120&auto=format&fit=crop&q=80",
-    emailType: "Tái tiếp cận",
-    sentDate: "18/07/2024",
-    sentCount: "14.000",
-    openRate: "27.4%",
-    clickRate: "4.7%",
-    conversions: "280",
-    revenue: "14.600.000 đ",
-    status: "sent",
-  },
-  {
-    id: "ec-5",
-    order: 5,
-    campaignName: "Bản tin tháng 8",
-    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=120&auto=format&fit=crop&q=80",
-    emailType: "Bản tin",
-    sentDate: "05/08/2024",
-    sentCount: "12.000",
-    openRate: "25.8%",
-    clickRate: "4.2%",
-    conversions: "210",
-    revenue: "10.800.000 đ",
-    status: "active",
-  },
-]
+export const MOCK_EMAIL_CAMPAIGNS_TABLE: EmailCampaignRowItem[] = []
 
 export interface EmailTopCampaignSidebarItem {
   id: string
@@ -1782,43 +1102,7 @@ export interface EmailTopCampaignSidebarItem {
   openRate: string
 }
 
-export const MOCK_EMAIL_TOP_CAMPAIGNS_SIDEBAR: EmailTopCampaignSidebarItem[] = [
-  {
-    id: "etc-1",
-    order: 1,
-    title: "Ưu đãi hè Phú Quốc",
-    thumbnail: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=120&auto=format&fit=crop&q=80",
-    openRate: "32.5%",
-  },
-  {
-    id: "etc-2",
-    order: 2,
-    title: "Khám phá Đà Nẵng",
-    thumbnail: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=120&auto=format&fit=crop&q=80",
-    openRate: "28.7%",
-  },
-  {
-    id: "etc-3",
-    order: 3,
-    title: "Trải nghiệm ẩm thực Việt",
-    thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=120&auto=format&fit=crop&q=80",
-    openRate: "24.1%",
-  },
-  {
-    id: "etc-4",
-    order: 4,
-    title: "Ưu đãi cuối tuần",
-    thumbnail: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=120&auto=format&fit=crop&q=80",
-    openRate: "21.3%",
-  },
-  {
-    id: "etc-5",
-    order: 5,
-    title: "Bản tin tháng 8",
-    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=120&auto=format&fit=crop&q=80",
-    openRate: "18.6%",
-  },
-]
+export const MOCK_EMAIL_TOP_CAMPAIGNS_SIDEBAR: EmailTopCampaignSidebarItem[] = []
 
 export interface EmailOptimizeTipItem {
   id: string
@@ -1867,46 +1151,46 @@ export const MOCK_SEO_KPIS: SeoKpiItem[] = [
   {
     id: "skpi-1",
     title: "Lượt truy cập tự nhiên",
-    value: "112.500",
-    trendPercent: "+38%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "search",
   },
   {
     id: "skpi-2",
     title: "Từ khóa top 1-3",
-    value: "1.248",
-    trendPercent: "+25%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "chart",
   },
   {
     id: "skpi-3",
     title: "Tổng số từ khóa",
-    value: "8.620",
-    trendPercent: "+18%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "key",
   },
   {
     id: "skpi-4",
     title: "Backlink chất lượng",
-    value: "2.430",
-    trendPercent: "+32%",
+    value: "0",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "link",
   },
   {
     id: "skpi-5",
     title: "Điểm SEO tổng thể",
-    value: "78/100",
-    trendPercent: "+12%",
+    value: "0/100",
+    trendPercent: "0%",
     trendDirection: "up",
-    trendPeriod: "so với 3 tháng trước",
+    trendPeriod: "dữ liệu thời gian thực",
     iconType: "star",
   },
 ]
@@ -1918,15 +1202,7 @@ export interface SeoTimelinePoint {
   nonBrandTraffic: number
 }
 
-export const MOCK_SEO_TIMELINE: SeoTimelinePoint[] = [
-  { date: "01/06", totalTraffic: 15, brandTraffic: 8, nonBrandTraffic: 7 },
-  { date: "15/06", totalTraffic: 48, brandTraffic: 24, nonBrandTraffic: 14 },
-  { date: "01/07", totalTraffic: 46, brandTraffic: 23, nonBrandTraffic: 17 },
-  { date: "15/07", totalTraffic: 68, brandTraffic: 38, nonBrandTraffic: 22 },
-  { date: "01/08", totalTraffic: 62, brandTraffic: 35, nonBrandTraffic: 23 },
-  { date: "15/08", totalTraffic: 78, brandTraffic: 44, nonBrandTraffic: 25 },
-  { date: "31/08", totalTraffic: 110, brandTraffic: 65, nonBrandTraffic: 32 },
-]
+export const MOCK_SEO_TIMELINE: SeoTimelinePoint[] = []
 
 export interface SeoRankDistributionItem {
   name: string
@@ -1936,13 +1212,7 @@ export interface SeoRankDistributionItem {
   color: string
 }
 
-export const MOCK_SEO_RANK_DISTRIBUTION: SeoRankDistributionItem[] = [
-  { name: "Top 1 - 3", count: 1248, countFormatted: "1.248", percent: 14.5, color: "#007a48" },
-  { name: "Top 4 - 10", count: 2310, countFormatted: "2.310", percent: 26.8, color: "#0284c7" },
-  { name: "Top 11 - 20", count: 1950, countFormatted: "1.950", percent: 22.6, color: "#f59e0b" },
-  { name: "Top 21 - 50", count: 1870, countFormatted: "1.870", percent: 21.7, color: "#8b5cf6" },
-  { name: "Top > 50", count: 1242, countFormatted: "1.242", percent: 14.4, color: "#ec4899" },
-]
+export const MOCK_SEO_RANK_DISTRIBUTION: SeoRankDistributionItem[] = []
 
 export interface SeoTopPageItem {
   id: string
@@ -1953,14 +1223,7 @@ export interface SeoTopPageItem {
   color: string
 }
 
-export const MOCK_SEO_TOP_PAGES: SeoTopPageItem[] = [
-  { id: "stp-1", order: 1, pageTitle: "Trang chủ", visits: "32.5K (28.9%)", percent: 28.9, color: "#007a48" },
-  { id: "stp-2", order: 2, pageTitle: "Tour Phú Quốc", visits: "24.8K (22.0%)", percent: 22, color: "#0284c7" },
-  { id: "stp-3", order: 3, pageTitle: "Villa Đà Nẵng", visits: "18.6K (16.5%)", percent: 16.5, color: "#f59e0b" },
-  { id: "stp-4", order: 4, pageTitle: "Homestay Đà Lạt", visits: "12.4K (11.0%)", percent: 11, color: "#8b5cf6" },
-  { id: "stp-5", order: 5, pageTitle: "Kinh nghiệm du lịch", visits: "8.9K (7.9%)", percent: 7.9, color: "#06b6d4" },
-  { id: "stp-6", order: 6, pageTitle: "Trang khác", visits: "14.3K (12.7%)", percent: 12.7, color: "#94a3b8" },
-]
+export const MOCK_SEO_TOP_PAGES: SeoTopPageItem[] = []
 
 export interface SeoTopKeywordItem {
   id: string
@@ -1971,13 +1234,7 @@ export interface SeoTopKeywordItem {
   trend: "up" | "down" | "neutral"
 }
 
-export const MOCK_SEO_TOP_RANKED_KEYWORDS: SeoTopKeywordItem[] = [
-  { id: "tk-1", order: 1, keyword: "du lịch Phú Quốc", position: 1, monthlySearches: "74.000", trend: "up" },
-  { id: "tk-2", order: 2, keyword: "villa Đà Nẵng", position: 2, monthlySearches: "49.500", trend: "up" },
-  { id: "tk-3", order: 3, keyword: "homestay Đà Lạt", position: 3, monthlySearches: "33.100", trend: "up" },
-  { id: "tk-4", order: 4, keyword: "tour trải nghiệm", position: 3, monthlySearches: "27.100", trend: "up" },
-  { id: "tk-5", order: 5, keyword: "khách sạn gần biển", position: 4, monthlySearches: "22.200", trend: "up" },
-]
+export const MOCK_SEO_TOP_RANKED_KEYWORDS: SeoTopKeywordItem[] = []
 
 export interface SeoKeywordTableRowItem {
   id: string
@@ -1990,58 +1247,7 @@ export interface SeoKeywordTableRowItem {
   trend: "up" | "down" | "neutral"
 }
 
-export const MOCK_SEO_KEYWORDS_TABLE: SeoKeywordTableRowItem[] = [
-  {
-    id: "kw-row-1",
-    order: 1,
-    keyword: "du lịch Phú Quốc",
-    currentRank: 1,
-    previousRank: 3,
-    monthlySearches: "74.000",
-    rankingUrl: "/tour/phu-quoc",
-    trend: "up",
-  },
-  {
-    id: "kw-row-2",
-    order: 2,
-    keyword: "villa Đà Nẵng",
-    currentRank: 2,
-    previousRank: 4,
-    monthlySearches: "49.500",
-    rankingUrl: "/villa-da-nang",
-    trend: "up",
-  },
-  {
-    id: "kw-row-3",
-    order: 3,
-    keyword: "homestay Đà Lạt",
-    currentRank: 3,
-    previousRank: 6,
-    monthlySearches: "33.100",
-    rankingUrl: "/homestay-da-lat",
-    trend: "up",
-  },
-  {
-    id: "kw-row-4",
-    order: 4,
-    keyword: "tour trải nghiệm",
-    currentRank: 3,
-    previousRank: 5,
-    monthlySearches: "27.100",
-    rankingUrl: "/tour-trai-nghiem",
-    trend: "up",
-  },
-  {
-    id: "kw-row-5",
-    order: 5,
-    keyword: "khách sạn gần biển",
-    currentRank: 4,
-    previousRank: 7,
-    monthlySearches: "22.200",
-    rankingUrl: "/khach-san-gan-bien",
-    trend: "up",
-  },
-]
+export const MOCK_SEO_KEYWORDS_TABLE: SeoKeywordTableRowItem[] = []
 
 export interface SeoKeyMetricSidebarItem {
   id: string
@@ -2051,13 +1257,7 @@ export interface SeoKeyMetricSidebarItem {
   trendDirection: "up" | "down"
 }
 
-export const MOCK_SEO_KEY_METRICS_SIDEBAR: SeoKeyMetricSidebarItem[] = [
-  { id: "skm-1", label: "Lượt truy cập tự nhiên", value: "112.500", trendPercent: "+38%", trendDirection: "up" },
-  { id: "skm-2", label: "Tỷ lệ thoát trang", value: "48%", trendPercent: "-12%", trendDirection: "down" },
-  { id: "skm-3", label: "Thời gian trên trang", value: "2 phút 36 giây", trendPercent: "+22%", trendDirection: "up" },
-  { id: "skm-4", label: "Số trang/phiên", value: "3.8", trendPercent: "+18%", trendDirection: "up" },
-  { id: "skm-5", label: "Tỷ lệ chuyển đổi (từ organic)", value: "4.2%", trendPercent: "+28%", trendDirection: "up" },
-]
+export const MOCK_SEO_KEY_METRICS_SIDEBAR: SeoKeyMetricSidebarItem[] = []
 
 export interface SeoGrowthKeywordItem {
   id: string
@@ -2066,13 +1266,7 @@ export interface SeoGrowthKeywordItem {
   growthPercent: string
 }
 
-export const MOCK_SEO_GROWTH_KEYWORDS_SIDEBAR: SeoGrowthKeywordItem[] = [
-  { id: "gk-1", order: 1, keyword: "du lịch Phú Quốc", growthPercent: "+120%" },
-  { id: "gk-2", order: 2, keyword: "villa Đà Nẵng", growthPercent: "+95%" },
-  { id: "gk-3", order: 3, keyword: "homestay Đà Lạt", growthPercent: "+80%" },
-  { id: "gk-4", order: 4, keyword: "tour trải nghiệm", growthPercent: "+68%" },
-  { id: "gk-5", order: 5, keyword: "khách sạn gần biển", growthPercent: "+54%" },
-]
+export const MOCK_SEO_GROWTH_KEYWORDS_SIDEBAR: SeoGrowthKeywordItem[] = []
 
 export interface SeoRelatedReportItem {
   id: string

@@ -227,9 +227,16 @@ export function CampaignsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredCampaigns.map((item) => {
-              const isSelected = selectedIds.includes(item.id)
-              return (
+            {filteredCampaigns.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-8 text-center text-xs text-slate-400">
+                  Chưa có chiến dịch marketing nào
+                </td>
+              </tr>
+            ) : (
+              filteredCampaigns.map((item) => {
+                const isSelected = selectedIds.includes(item.id)
+                return (
                 <tr
                   key={item.id}
                   className={`transition-colors group ${
@@ -326,7 +333,7 @@ export function CampaignsTable({
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
       </div>

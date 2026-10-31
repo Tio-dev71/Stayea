@@ -83,79 +83,87 @@ export function ReportsCustomersTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {customers.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-slate-50/70 transition-colors group"
-                >
-                  {/* # */}
-                  <td className="py-3 pr-2 text-center font-bold text-slate-700">
-                    {item.rank}
-                  </td>
-
-                  {/* Customer (Avatar + Name) */}
-                  <td className="py-3 px-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2.5">
-                      <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                        <Image
-                          src={item.avatar}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="32px"
-                        />
-                      </div>
-                      <span className="font-semibold text-slate-900 group-hover:text-[#007a48] transition-colors">
-                        {item.name}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Booking Count */}
-                  <td className="py-3 px-3 text-center font-semibold text-slate-800">
-                    {item.bookingCount}
-                  </td>
-
-                  {/* Total Revenue */}
-                  <td className="py-3 px-3 font-bold text-slate-900 text-right sm:text-left whitespace-nowrap">
-                    {item.totalRevenue}
-                  </td>
-
-                  {/* Last Booking Date */}
-                  <td className="py-3 px-3 text-slate-600 text-center sm:text-left whitespace-nowrap">
-                    {item.lastBookingDate}
-                  </td>
-
-                  {/* Segment Group Badge */}
-                  <td className="py-3 px-3 text-center whitespace-nowrap">
-                    <span
-                      className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${getSegmentGroupBadge(
-                        item.segmentGroup
-                      )}`}
-                    >
-                      {item.segmentGroup}
-                    </span>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="py-3 pl-2 text-center">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onViewCustomerDetail
-                          ? onViewCustomerDetail(item)
-                          : toast.info(`Xem hồ sơ khách hàng: ${item.name}`, {
-                              description: `Doanh số tích lũy: ${item.totalRevenue} (${item.bookingCount} lượt đặt)`,
-                            })
-                      }
-                      className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Thao tác"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
+              {customers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-xs text-slate-400">
+                    Chưa có dữ liệu khách hàng phát sinh
                   </td>
                 </tr>
-              ))}
+              ) : (
+                customers.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-slate-50/70 transition-colors group"
+                  >
+                    {/* # */}
+                    <td className="py-3 pr-2 text-center font-bold text-slate-700">
+                      {item.rank}
+                    </td>
+
+                    {/* Customer (Avatar + Name) */}
+                    <td className="py-3 px-3 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                          <Image
+                            src={item.avatar}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                            sizes="32px"
+                          />
+                        </div>
+                        <span className="font-semibold text-slate-900 group-hover:text-[#007a48] transition-colors">
+                          {item.name}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Booking Count */}
+                    <td className="py-3 px-3 text-center font-semibold text-slate-800">
+                      {item.bookingCount}
+                    </td>
+
+                    {/* Total Revenue */}
+                    <td className="py-3 px-3 font-bold text-slate-900 text-right sm:text-left whitespace-nowrap">
+                      {item.totalRevenue}
+                    </td>
+
+                    {/* Last Booking Date */}
+                    <td className="py-3 px-3 text-slate-600 text-center sm:text-left whitespace-nowrap">
+                      {item.lastBookingDate}
+                    </td>
+
+                    {/* Segment Group Badge */}
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${getSegmentGroupBadge(
+                          item.segmentGroup
+                        )}`}
+                      >
+                        {item.segmentGroup}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 pl-2 text-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onViewCustomerDetail
+                            ? onViewCustomerDetail(item)
+                            : toast.info(`Xem hồ sơ khách hàng: ${item.name}`, {
+                                description: `Doanh số tích lũy: ${item.totalRevenue} (${item.bookingCount} lượt đặt)`,
+                              })
+                        }
+                        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Thao tác"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

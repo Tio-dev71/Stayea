@@ -151,33 +151,39 @@ export function CampaignsRightSidebar({
         </h4>
 
         <div className="divide-y divide-slate-100 text-xs sm:text-[13px] pt-1">
-          {topBookedCampaigns.map((camp) => (
-            <div
-              key={camp.rank}
-              className="py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/60 transition-colors rounded-md px-1"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="w-4 text-center font-bold text-slate-500 text-xs shrink-0">
-                  {camp.rank}
-                </span>
-                <div className="relative w-7 h-7 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
-                  <Image
-                    src={camp.image}
-                    alt={camp.title}
-                    fill
-                    className="object-cover"
-                    sizes="28px"
-                  />
+          {topBookedCampaigns.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3 text-center">
+              Chưa có chiến dịch nào phát sinh đơn đặt.
+            </p>
+          ) : (
+            topBookedCampaigns.map((camp) => (
+              <div
+                key={camp.rank}
+                className="py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/60 transition-colors rounded-md px-1"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-4 text-center font-bold text-slate-500 text-xs shrink-0">
+                    {camp.rank}
+                  </span>
+                  <div className="relative w-7 h-7 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                    <Image
+                      src={camp.image}
+                      alt={camp.title}
+                      fill
+                      className="object-cover"
+                      sizes="28px"
+                    />
+                  </div>
+                  <span className="text-slate-800 font-semibold truncate text-xs">
+                    {camp.title}
+                  </span>
                 </div>
-                <span className="text-slate-800 font-semibold truncate text-xs">
-                  {camp.title}
+                <span className="font-bold text-slate-900 shrink-0 text-xs">
+                  {camp.bookingsFormatted}
                 </span>
               </div>
-              <span className="font-bold text-slate-900 shrink-0 text-xs">
-                {camp.bookingsFormatted}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

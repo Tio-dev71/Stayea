@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -46,6 +46,24 @@ export function ExperienceReportCharts({
     customerSegmentMode === "age"
       ? MOCK_CUSTOMER_AGE_DONUT
       : MOCK_CUSTOMER_GROUP_DONUT
+
+  const totalTourBookingsFormatted = useMemo(() => {
+    if (categoriesDonut.length === 0) return "0"
+    const sum = categoriesDonut.reduce((acc, c) => {
+      const num = Number(c.count) || 0
+      return acc + num
+    }, 0)
+    return sum > 0 ? sum.toLocaleString("vi-VN") : "0"
+  }, [categoriesDonut])
+
+  const totalParticipantsFormatted = useMemo(() => {
+    if (currentCustomerData.length === 0) return "0"
+    const sum = currentCustomerData.reduce((acc, c) => {
+      const num = parseFloat(c.countFormatted.replace(/[^0-9.]/g, "")) || 0
+      return acc + num
+    }, 0)
+    return sum > 0 ? sum.toLocaleString("vi-VN") : "0"
+  }, [currentCustomerData])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -140,64 +158,85 @@ export function ExperienceReportCharts({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 h-[210px]">
           {/* Donut chart */}
           <div className="relative w-[150px] h-[150px] shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoriesDonut}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={46}
-                  outerRadius={68}
-                  paddingAngle={2}
-                  dataKey="percent"
-                >
-                  {categoriesDonut.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(val: any, name: any) => [`${val}%`, name]}
-                  contentStyle={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: "8px",
-                    border: "1px solid #e2e8f0",
-                    fontSize: "12px",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-lg font-bold text-slate-900 leading-none">
-                1.250
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">
-                Lượt đặt tour
-              </span>
-            </div>
+            {categoriesDonut.length === 0 ? (
+              <div className="relative flex items-center justify-center w-full h-full rounded-full border-8 border-slate-100">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <span className="text-base font-bold text-slate-800 leading-none">
+                    0
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Lượt đặt tour
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoriesDonut}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={46}
+                      outerRadius={68}
+                      paddingAngle={2}
+                      dataKey="percent"
+                    >
+                      {categoriesDonut.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(val: any, name: any) => [`${val}%`, name]}
+                      contentStyle={{
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        border: "1px solid #e2e8f0",
+                        fontSize: "12px",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-lg font-bold text-slate-900 leading-none">
+                    {totalTourBookingsFormatted}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Lượt đặt tour
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Breakdown List */}
           <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-1.5 flex-1 min-w-[170px]">
-            {categoriesDonut.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-slate-600 font-medium text-[11px] truncate max-w-[120px]">
-                    {item.name}
+            {categoriesDonut.length === 0 ? (
+              <div className="text-center py-4 text-slate-400 text-xs">
+                Chưa có dữ liệu danh mục tour
+              </div>
+            ) : (
+              categoriesDonut.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-slate-600 font-medium text-[11px] truncate max-w-[120px]">
+                      {item.name}
+                    </span>
+                  </div>
+                  <span className="text-slate-500 font-semibold text-[11px] shrink-0">
+                    {item.percent}% ({item.count})
                   </span>
                 </div>
-                <span className="text-slate-500 font-semibold text-[11px] shrink-0">
-                  {item.percent}% ({item.count})
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -305,64 +344,85 @@ export function ExperienceReportCharts({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 h-[210px]">
           {/* Donut chart */}
           <div className="relative w-[150px] h-[150px] shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={currentCustomerData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={46}
-                  outerRadius={68}
-                  paddingAngle={2}
-                  dataKey="percent"
-                >
-                  {currentCustomerData.map((entry) => (
-                    <Cell key={entry.label} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(val: any, name: any) => [`${val}%`, name]}
-                  contentStyle={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: "8px",
-                    border: "1px solid #e2e8f0",
-                    fontSize: "12px",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-lg font-bold text-slate-900 leading-none">
-                2.980
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">
-                Khách tham gia
-              </span>
-            </div>
+            {currentCustomerData.length === 0 ? (
+              <div className="relative flex items-center justify-center w-full h-full rounded-full border-8 border-slate-100">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <span className="text-base font-bold text-slate-800 leading-none">
+                    0
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Khách tham gia
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={currentCustomerData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={46}
+                      outerRadius={68}
+                      paddingAngle={2}
+                      dataKey="percent"
+                    >
+                      {currentCustomerData.map((entry) => (
+                        <Cell key={entry.label} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(val: any, name: any) => [`${val}%`, name]}
+                      contentStyle={{
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        border: "1px solid #e2e8f0",
+                        fontSize: "12px",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-lg font-bold text-slate-900 leading-none">
+                    {totalParticipantsFormatted}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Khách tham gia
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Breakdown List */}
           <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-1.5 flex-1 min-w-[170px]">
-            {currentCustomerData.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-slate-600 font-medium text-[11px] truncate">
-                    {item.label}
+            {currentCustomerData.length === 0 ? (
+              <div className="text-center py-4 text-slate-400 text-xs">
+                Chưa có dữ liệu phân khúc khách
+              </div>
+            ) : (
+              currentCustomerData.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-slate-600 font-medium text-[11px] truncate">
+                      {item.label}
+                    </span>
+                  </div>
+                  <span className="text-slate-500 font-semibold text-[11px] shrink-0">
+                    {item.percent}% ({item.countFormatted})
                   </span>
                 </div>
-                <span className="text-slate-500 font-semibold text-[11px] shrink-0">
-                  {item.percent}% ({item.countFormatted})
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

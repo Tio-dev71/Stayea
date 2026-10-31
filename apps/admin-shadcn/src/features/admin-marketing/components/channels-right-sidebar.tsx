@@ -150,44 +150,50 @@ export function ChannelsRightSidebar({
         </div>
 
         <div className="space-y-2.5">
-          {highlights.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => onHighlightClick?.(item)}
-              className="flex items-center justify-between gap-2 p-1.5 -mx-1.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                {renderChannelLogo(item.iconType)}
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-slate-900 group-hover:text-[#007a48] transition-colors truncate">
-                    {item.channelName}
-                  </p>
-                  <p className="text-[11px] text-slate-500 truncate">
-                    {item.note}
-                  </p>
+          {highlights.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3 text-center">
+              Chưa có dữ liệu kênh nổi bật.
+            </p>
+          ) : (
+            highlights.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onHighlightClick?.(item)}
+                className="flex items-center justify-between gap-2 p-1.5 -mx-1.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {renderChannelLogo(item.iconType)}
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-slate-900 group-hover:text-[#007a48] transition-colors truncate">
+                      {item.channelName}
+                    </p>
+                    <p className="text-[11px] text-slate-500 truncate">
+                      {item.note}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Value Badge */}
+                <div className="shrink-0 text-right">
+                  {item.badgeType === "link" ? (
+                    <span className="text-xs font-bold text-[#1877f2] flex items-center gap-0.5 group-hover:underline">
+                      {item.badgeValue}
+                    </span>
+                  ) : item.badgeType === "percentage" ? (
+                    <span className="text-xs font-bold text-emerald-600">
+                      {item.badgeValue}
+                    </span>
+                  ) : item.badgeType === "arrow" ? (
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 transition-colors" />
+                  ) : (
+                    <span className="text-xs font-bold text-slate-900">
+                      {item.badgeValue}
+                    </span>
+                  )}
                 </div>
               </div>
-
-              {/* Right Value Badge */}
-              <div className="shrink-0 text-right">
-                {item.badgeType === "link" ? (
-                  <span className="text-xs font-bold text-[#1877f2] flex items-center gap-0.5 group-hover:underline">
-                    {item.badgeValue}
-                  </span>
-                ) : item.badgeType === "percentage" ? (
-                  <span className="text-xs font-bold text-emerald-600">
-                    {item.badgeValue}
-                  </span>
-                ) : item.badgeType === "arrow" ? (
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 transition-colors" />
-                ) : (
-                  <span className="text-xs font-bold text-slate-900">
-                    {item.badgeValue}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

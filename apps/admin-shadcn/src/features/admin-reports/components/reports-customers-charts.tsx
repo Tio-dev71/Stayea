@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   AreaChart,
   Area,
@@ -80,6 +80,15 @@ export function ReportsCustomersCharts({
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const totalStructureCountText = useMemo(() => {
+    if (structureSlices.length === 0) return "0"
+    const sum = structureSlices.reduce((acc, c) => {
+      const num = parseFloat(c.countFormatted.replace(/[^0-9.]/g, "")) || 0
+      return acc + num
+    }, 0)
+    return sum > 0 ? sum.toLocaleString("vi-VN") : "0"
+  }, [structureSlices])
 
   if (!mounted) {
     return (
@@ -209,69 +218,90 @@ export function ReportsCustomersCharts({
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center flex-1">
             {/* Donut Chart with center label */}
             <div className="sm:col-span-6 relative flex items-center justify-center h-52 sm:h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={structureSlices}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={62}
-                    outerRadius={88}
-                    paddingAngle={2.5}
-                    dataKey="percent"
-                  >
-                    {structureSlices.map((entry) => (
-                      <Cell key={`struct-slice-${entry.name}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length > 0 && payload[0]) {
-                        const data = payload[0].payload as CustomerStructureSlice
-                        return (
-                          <div className="bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs shadow-md">
-                            <span className="font-semibold">{data.name}:</span>{" "}
-                            {data.percent}% ({data.countFormatted})
-                          </div>
-                        )
-                      }
-                      return null
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              {structureSlices.length === 0 ? (
+                <div className="relative flex items-center justify-center w-36 h-36 rounded-full border-8 border-slate-100">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <span className="text-xl sm:text-[24px] font-bold text-slate-800 leading-none">
+                      0
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium mt-1">
+                      Tổng khách hàng
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={structureSlices}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={62}
+                        outerRadius={88}
+                        paddingAngle={2.5}
+                        dataKey="percent"
+                      >
+                        {structureSlices.map((entry) => (
+                          <Cell key={`struct-slice-${entry.name}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length > 0 && payload[0]) {
+                            const data = payload[0].payload as CustomerStructureSlice
+                            return (
+                              <div className="bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs shadow-md">
+                                <span className="font-semibold">{data.name}:</span>{" "}
+                                {data.percent}% ({data.countFormatted})
+                              </div>
+                            )
+                          }
+                          return null
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
 
-              {/* Center text in Donut */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-xl sm:text-[24px] font-bold text-slate-900 leading-none">
-                  8.420
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium mt-1">
-                  Tổng khách hàng
-                </span>
-              </div>
+                  {/* Center text in Donut */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-xl sm:text-[24px] font-bold text-slate-900 leading-none">
+                      {totalStructureCountText}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium mt-1">
+                      Tổng khách hàng
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Legend list on the right */}
             <div className="sm:col-span-6 space-y-3 text-xs">
-              {structureSlices.map((item) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between text-slate-700 hover:text-slate-900 transition-colors"
-                >
-                  <div className="flex items-center gap-2 min-w-0 pr-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: item.legendColor ?? item.color }}
-                    />
-                    <span className="text-[11px] sm:text-xs truncate">{item.name}</span>
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-800 shrink-0">
-                    {item.percent}%{" "}
-                    <span className="text-slate-400 font-normal">({item.countFormatted})</span>
-                  </span>
+              {structureSlices.length === 0 ? (
+                <div className="text-center py-6 text-slate-400">
+                  Chưa có dữ liệu cơ cấu khách hàng
                 </div>
-              ))}
+              ) : (
+                structureSlices.map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between text-slate-700 hover:text-slate-900 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 pr-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.legendColor ?? item.color }}
+                      />
+                      <span className="text-[11px] sm:text-xs truncate">{item.name}</span>
+                    </div>
+                    <span className="text-[11px] sm:text-xs font-semibold text-slate-800 shrink-0">
+                      {item.percent}%{" "}
+                      <span className="text-slate-400 font-normal">({item.countFormatted})</span>
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

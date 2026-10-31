@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -42,7 +43,16 @@ export function ChannelsCharts({
   revenueData = MOCK_CHANNEL_REVENUE_BAR,
 }: ChannelsChartsProps) {
   // Max revenue for proportional bar width
-  const maxRevenue = Math.max(...revenueData.map((d) => d.revenueNum))
+  const maxRevenue = revenueData.length > 0 ? Math.max(...revenueData.map((d) => d.revenueNum)) : 100
+
+  const totalReachFormatted = useMemo(() => {
+    if (donutData.length === 0) return "0"
+    const sum = donutData.reduce((acc, c) => {
+      const num = parseFloat((c.formattedReach || "").replace(/[^0-9.]/g, "")) || 0
+      return acc + num
+    }, 0)
+    return sum > 0 ? `${sum.toLocaleString("vi-VN")}K` : "0"
+  }, [donutData])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -186,57 +196,78 @@ export function ChannelsCharts({
         <div className="flex-1 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Donut Chart with center value */}
           <div className="relative w-48 h-48 sm:w-56 sm:h-56 shrink-0 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={donutData}
-                  dataKey="percent"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius="62%"
-                  outerRadius="88%"
-                  paddingAngle={1.5}
-                  isAnimationActive={false}
-                >
-                  {donutData.map((entry) => (
-                    <Cell key={entry.id} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            {donutData.length === 0 ? (
+              <div className="relative flex items-center justify-center w-36 h-36 rounded-full border-8 border-slate-100">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <span className="text-xl sm:text-2xl font-extrabold text-slate-800 leading-none">
+                    0
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-400 mt-1">
+                    Lượt tiếp cận
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={donutData}
+                      dataKey="percent"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="62%"
+                      outerRadius="88%"
+                      paddingAngle={1.5}
+                      isAnimationActive={false}
+                    >
+                      {donutData.map((entry) => (
+                        <Cell key={entry.id} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
 
-            {/* Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                258.4K
-              </span>
-              <span className="text-[11px] font-medium text-slate-500 mt-0.5">
-                Lượt tiếp cận
-              </span>
-            </div>
+                {/* Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                    {totalReachFormatted}
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-500 mt-0.5">
+                    Lượt tiếp cận
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right Legend List */}
           <div className="flex-1 w-full flex flex-col justify-center space-y-2.5">
-            {donutData.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between text-xs text-slate-700"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="font-medium truncate">{item.name}</span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0 text-slate-500">
-                  <span className="font-semibold text-slate-900">{item.percent}%</span>
-                  <span>({item.formattedReach})</span>
-                </div>
+            {donutData.length === 0 ? (
+              <div className="text-center py-6 text-slate-400 text-xs">
+                Chưa có dữ liệu lượt tiếp cận theo kênh
               </div>
-            ))}
+            ) : (
+              donutData.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between text-xs text-slate-700"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="font-medium truncate">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 text-slate-500">
+                    <span className="font-semibold text-slate-900">{item.percent}%</span>
+                    <span>({item.formattedReach})</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -60,7 +60,14 @@ export function ReportsTopToursTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {tours.map((item) => (
+              {tours.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-xs text-slate-400">
+                    Chưa có dữ liệu tour & trải nghiệm phát sinh
+                  </td>
+                </tr>
+              ) : (
+                tours.map((item) => (
                 <tr
                   key={item.id}
                   className="hover:bg-slate-50/70 transition-colors group"
@@ -120,7 +127,7 @@ export function ReportsTopToursTable({
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

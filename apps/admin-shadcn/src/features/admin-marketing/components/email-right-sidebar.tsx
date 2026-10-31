@@ -133,29 +133,35 @@ export function EmailRightSidebar({
         </div>
 
         <div className="divide-y divide-slate-50">
-          {topCampaigns.map((item) => (
-            <div
-              key={item.id}
-              className="py-2 flex items-center justify-between text-xs hover:bg-slate-50/60 px-1 rounded transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="w-4 text-slate-400 font-bold text-center text-xs">
-                  {item.order}
-                </span>
-                <img
-                  src={item.thumbnail}
-                  alt={item.title}
-                  className="w-6 h-6 rounded-md object-cover border border-slate-200"
-                />
-                <span className="font-semibold text-slate-800 line-clamp-1">
-                  {item.title}
+          {topCampaigns.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3 text-center">
+              Chưa có chiến dịch email nào.
+            </p>
+          ) : (
+            topCampaigns.map((item) => (
+              <div
+                key={item.id}
+                className="py-2 flex items-center justify-between text-xs hover:bg-slate-50/60 px-1 rounded transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-4 text-slate-400 font-bold text-center text-xs">
+                    {item.order}
+                  </span>
+                  <img
+                    src={item.thumbnail}
+                    alt={item.title}
+                    className="w-6 h-6 rounded-md object-cover border border-slate-200"
+                  />
+                  <span className="font-semibold text-slate-800 line-clamp-1">
+                    {item.title}
+                  </span>
+                </div>
+                <span className="font-bold text-slate-800 text-[11px] shrink-0 ml-2">
+                  {item.openRate}
                 </span>
               </div>
-              <span className="font-bold text-slate-800 text-[11px] shrink-0 ml-2">
-                {item.openRate}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

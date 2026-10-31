@@ -80,94 +80,102 @@ export function ReportsBookingsTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {bookings.map((item, index) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-slate-50/70 transition-colors group"
-                >
-                  {/* # */}
-                  <td className="py-3 pr-2 text-center font-bold text-slate-700">
-                    {index + 1}
-                  </td>
-
-                  {/* Code */}
-                  <td className="py-3 px-3 font-semibold text-slate-900 whitespace-nowrap">
-                    {item.code}
-                  </td>
-
-                  {/* Customer */}
-                  <td className="py-3 px-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="relative w-6 h-6 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                        <Image
-                          src={item.customerAvatar}
-                          alt={item.customerName}
-                          fill
-                          className="object-cover"
-                          sizes="24px"
-                        />
-                      </div>
-                      <span className="font-medium text-slate-900">
-                        {item.customerName}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Product */}
-                  <td className="py-3 px-3 font-medium text-slate-800 line-clamp-1 max-w-[190px] pt-4">
-                    {item.productName}
-                  </td>
-
-                  {/* Booking Date */}
-                  <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                    {item.bookingDate}
-                  </td>
-
-                  {/* Check-in Date */}
-                  <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                    {item.checkInDate}
-                  </td>
-
-                  {/* Nights */}
-                  <td className="py-3 px-2 text-center font-medium text-slate-700">
-                    {item.nights}
-                  </td>
-
-                  {/* Total Amount */}
-                  <td className="py-3 px-3 font-bold text-slate-900 text-right sm:text-left whitespace-nowrap">
-                    {item.totalAmount}
-                  </td>
-
-                  {/* Status Badge */}
-                  <td className="py-3 px-3 text-center whitespace-nowrap">
-                    <span
-                      className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${getStatusBadge(
-                        item.status
-                      )}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="py-3 pl-2 text-center">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onViewBookingDetails
-                          ? onViewBookingDetails(item)
-                          : toast.info(`Xem chi tiết đơn ${item.code}`, {
-                              description: `Khách: ${item.customerName} - ${item.productName}`,
-                            })
-                      }
-                      className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Thao tác"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
+              {bookings.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-8 text-center text-xs text-slate-400">
+                    Chưa có dữ liệu đặt phòng phát sinh
                   </td>
                 </tr>
-              ))}
+              ) : (
+                bookings.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-slate-50/70 transition-colors group"
+                  >
+                    {/* # */}
+                    <td className="py-3 pr-2 text-center font-bold text-slate-700">
+                      {index + 1}
+                    </td>
+
+                    {/* Code */}
+                    <td className="py-3 px-3 font-semibold text-slate-900 whitespace-nowrap">
+                      {item.code}
+                    </td>
+
+                    {/* Customer */}
+                    <td className="py-3 px-3 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                          <Image
+                            src={item.customerAvatar}
+                            alt={item.customerName}
+                            fill
+                            className="object-cover"
+                            sizes="24px"
+                          />
+                        </div>
+                        <span className="font-medium text-slate-900">
+                          {item.customerName}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Product */}
+                    <td className="py-3 px-3 font-medium text-slate-800 line-clamp-1 max-w-[190px] pt-4">
+                      {item.productName}
+                    </td>
+
+                    {/* Booking Date */}
+                    <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+                      {item.bookingDate}
+                    </td>
+
+                    {/* Check-in Date */}
+                    <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+                      {item.checkInDate}
+                    </td>
+
+                    {/* Nights */}
+                    <td className="py-3 px-2 text-center font-medium text-slate-700">
+                      {item.nights}
+                    </td>
+
+                    {/* Total Amount */}
+                    <td className="py-3 px-3 font-bold text-slate-900 text-right sm:text-left whitespace-nowrap">
+                      {item.totalAmount}
+                    </td>
+
+                    {/* Status Badge */}
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${getStatusBadge(
+                          item.status
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 pl-2 text-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onViewBookingDetails
+                            ? onViewBookingDetails(item)
+                            : toast.info(`Xem chi tiết đơn ${item.code}`, {
+                                description: `Khách: ${item.customerName} - ${item.productName}`,
+                              })
+                        }
+                        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Thao tác"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

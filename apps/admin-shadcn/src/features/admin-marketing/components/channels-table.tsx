@@ -90,8 +90,15 @@ export function ChannelsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700 font-normal">
-            {items.map((row) => {
-              const isRoasHigh = row.roas >= 4
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-8 text-center text-xs text-slate-400">
+                  Chưa có dữ liệu kênh marketing
+                </td>
+              </tr>
+            ) : (
+              items.map((row) => {
+                const isRoasHigh = row.roas >= 4
 
               return (
                 <tr
@@ -175,7 +182,7 @@ export function ChannelsTable({
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
       </div>

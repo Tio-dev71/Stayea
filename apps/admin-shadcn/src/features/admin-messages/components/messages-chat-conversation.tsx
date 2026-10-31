@@ -13,6 +13,7 @@ import {
   CheckCheck,
   Check,
   MapPin,
+  MessageCircle,
 } from "lucide-react"
 import type {
   ChatMessage,
@@ -20,8 +21,8 @@ import type {
 } from "@/features/admin-messages/stayea-admin-messages-mock-data"
 
 interface MessagesChatConversationProps {
-  conversation: ConversationItem
-  messages: readonly ChatMessage[]
+  conversation?: ConversationItem | null
+  messages?: readonly ChatMessage[]
   onSendMessage: (text: string) => void
   onCallPhone?: () => void
   onVideoCall?: () => void
@@ -30,11 +31,12 @@ interface MessagesChatConversationProps {
   onAttachFile?: () => void
   onAttachImage?: () => void
   onOpenEmoji?: () => void
+  onComposeClick?: () => void
 }
 
 export function MessagesChatConversation({
   conversation,
-  messages,
+  messages = [],
   onSendMessage,
   onCallPhone,
   onVideoCall,
@@ -43,6 +45,7 @@ export function MessagesChatConversation({
   onAttachFile,
   onAttachImage,
   onOpenEmoji,
+  onComposeClick,
 }: MessagesChatConversationProps) {
   const [inputText, setInputText] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -64,6 +67,31 @@ export function MessagesChatConversation({
     }
   }
 
+  if (!conversation) {
+    return (
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs flex flex-col items-center justify-center h-[760px] p-8 text-center">
+        <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-[#007a48] flex items-center justify-center mb-4 border border-emerald-100 shadow-xs">
+          <MessageCircle className="w-8 h-8 stroke-[1.8]" />
+        </div>
+        <h3 className="text-base sm:text-lg font-bold text-slate-900">
+          Chưa chọn cuộc trò chuyện
+        </h3>
+        <p className="text-xs sm:text-sm text-slate-500 max-w-sm mt-1.5 leading-relaxed">
+          Chọn một cuộc hội thoại từ danh sách bên trái hoặc tạo tin nhắn mới để trao đổi với khách hàng, đối tác hoặc chủ nhà.
+        </p>
+        {onComposeClick && (
+          <button
+            type="button"
+            onClick={onComposeClick}
+            className="mt-5 px-4 py-2 rounded-xl bg-[#007a48] hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+          >
+            + Bắt đầu cuộc trò chuyện mới
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs flex flex-col h-[760px] overflow-hidden">
       {/* 1. Chat Header */}
@@ -71,7 +99,7 @@ export function MessagesChatConversation({
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 relative shrink-0">
             <Image
-              src={conversation.avatar}
+              src={conversation.avatar || "/profile/profile-avatar.jpg"}
               alt={conversation.name}
               fill
               className="object-cover"
@@ -83,15 +111,19 @@ export function MessagesChatConversation({
               <h2 className="text-sm font-bold text-slate-900 truncate">
                 {conversation.name}
               </h2>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#e8f7ee] text-[#007a48]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#007a48]" />
-                <span>{conversation.roleBadge}</span>
-              </span>
+              {conversation.roleBadge && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#e8f7ee] text-[#007a48]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#007a48]" />
+                  <span>{conversation.roleBadge}</span>
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
-              <MapPin className="w-3 h-3 text-slate-400" />
-              <span className="truncate">{conversation.location}</span>
-            </div>
+            {conversation.location && (
+              <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
+                <MapPin className="w-3 h-3 text-slate-400" />
+                <span className="truncate">{conversation.location}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -100,7 +132,7 @@ export function MessagesChatConversation({
           <button
             type="button"
             onClick={onCallPhone}
-            aria-label="Gọi thoại"
+            aria-label="Gọi điện thoại"
             className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
           >
             <Phone className="w-4 h-4" />
@@ -116,7 +148,7 @@ export function MessagesChatConversation({
           <button
             type="button"
             onClick={onMoreOptions}
-            aria-label="Tùy chọn khác"
+            aria-label="Tùy chọn cuộc trò chuyện"
             className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -126,105 +158,113 @@ export function MessagesChatConversation({
 
       {/* 2. Messages Scroll Body */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#f8fafc]/50">
-        {messages.map((msg) => {
-          const isCustomer = msg.senderId === "customer"
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
+            <MessageCircle className="w-8 h-8 stroke-[1.5] text-slate-300 mb-2" />
+            <p className="text-xs sm:text-sm font-medium">Chưa có tin nhắn trong cuộc trò chuyện này.</p>
+            <p className="text-[11px] text-slate-400 mt-1">Gửi tin nhắn đầu tiên để bắt đầu trao đổi.</p>
+          </div>
+        ) : (
+          messages.map((msg) => {
+            const isCustomer = msg.senderId === "customer"
 
-          if (isCustomer) {
-            return (
-              <div key={msg.id} className="flex items-start gap-3 max-w-[85%] sm:max-w-[75%]">
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 relative shrink-0 mt-0.5">
-                  <Image
-                    src={msg.senderAvatar}
-                    alt={msg.senderName}
-                    fill
-                    className="object-cover"
-                    sizes="32px"
-                  />
+            if (isCustomer) {
+              return (
+                <div key={msg.id} className="flex items-start gap-3 max-w-[85%] sm:max-w-[75%]">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 relative shrink-0 mt-0.5">
+                    <Image
+                      src={msg.senderAvatar || "/profile/profile-avatar.jpg"}
+                      alt={msg.senderName}
+                      fill
+                      className="object-cover"
+                      sizes="32px"
+                    />
+                  </div>
+                  <div>
+                    <div className="bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs px-4 py-3 text-xs sm:text-sm text-slate-800 shadow-2xs leading-relaxed whitespace-pre-line">
+                      {msg.content}
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-1 ml-1 block">
+                      {msg.time}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <div className="bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs px-4 py-3 text-xs sm:text-sm text-slate-800 shadow-2xs leading-relaxed whitespace-pre-line">
+              )
+            }
+
+            // Admin message (Right aligned)
+            return (
+              <div key={msg.id} className="flex flex-col items-end max-w-[85%] sm:max-w-[75%] ml-auto">
+                {msg.content && (
+                  <div className="bg-[#e8f7ee] text-slate-900 border border-emerald-200/50 rounded-2xl rounded-tr-xs px-4 py-3 text-xs sm:text-sm shadow-2xs leading-relaxed whitespace-pre-line">
                     {msg.content}
                   </div>
-                  <span className="text-[10px] text-slate-400 mt-1 ml-1 block">
-                    {msg.time}
-                  </span>
+                )}
+
+                {/* Shared Tour Rich Card */}
+                {msg.productCard && (
+                  <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs w-full max-w-sm mt-1.5 overflow-hidden">
+                    <div className="flex gap-3">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative shrink-0 border border-slate-100">
+                        <Image
+                          src={msg.productCard.imageUrl}
+                          alt={msg.productCard.title}
+                          fill
+                          className="object-cover"
+                          sizes="112px"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                            {msg.productCard.title}
+                          </h4>
+                          <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#e0f2fe] text-[#0284c7] mt-1">
+                            {msg.productCard.category}
+                          </span>
+                          <ul className="mt-2 space-y-1">
+                            {msg.productCard.highlights.map((point) => (
+                              <li
+                                key={point}
+                                className="text-[11px] text-slate-600 flex items-start gap-1 leading-tight"
+                              >
+                                <span className="text-[#007a48] font-bold">✓</span>
+                                <span className="truncate">{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-slate-900">
+                            {msg.productCard.priceFormatted}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onViewProductDetails?.(msg.productCard?.id || "")}
+                            className="text-[11px] font-semibold text-[#007a48] hover:underline cursor-pointer"
+                          >
+                            {msg.productCard.linkText}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Message metadata / time / seen tick */}
+                <div className="flex items-center gap-1 mt-1 mr-1 text-[10px] text-slate-400">
+                  <span>{msg.time}</span>
+                  {msg.status === "seen" ? (
+                    <CheckCheck className="w-3.5 h-3.5 text-[#007a48]" />
+                  ) : (
+                    <Check className="w-3.5 h-3.5 text-slate-400" />
+                  )}
                 </div>
               </div>
             )
-          }
-
-          // Admin message (Right aligned)
-          return (
-            <div key={msg.id} className="flex flex-col items-end max-w-[85%] sm:max-w-[75%] ml-auto">
-              {msg.content && (
-                <div className="bg-[#e8f7ee] text-slate-900 border border-emerald-200/50 rounded-2xl rounded-tr-xs px-4 py-3 text-xs sm:text-sm shadow-2xs leading-relaxed whitespace-pre-line">
-                  {msg.content}
-                </div>
-              )}
-
-              {/* Shared Tour Rich Card */}
-              {msg.productCard && (
-                <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs w-full max-w-sm mt-1.5 overflow-hidden">
-                  <div className="flex gap-3">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative shrink-0 border border-slate-100">
-                      <Image
-                        src={msg.productCard.imageUrl}
-                        alt={msg.productCard.title}
-                        fill
-                        className="object-cover"
-                        sizes="112px"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col justify-between">
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                          {msg.productCard.title}
-                        </h4>
-                        <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#e0f2fe] text-[#0284c7] mt-1">
-                          {msg.productCard.category}
-                        </span>
-                        <ul className="mt-2 space-y-1">
-                          {msg.productCard.highlights.map((point) => (
-                            <li
-                              key={point}
-                              className="text-[11px] text-slate-600 flex items-start gap-1 leading-tight"
-                            >
-                              <span className="text-[#007a48] font-bold">✓</span>
-                              <span className="truncate">{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-slate-900">
-                          {msg.productCard.priceFormatted}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => onViewProductDetails?.(msg.productCard?.id || "")}
-                          className="text-[11px] font-semibold text-[#007a48] hover:underline cursor-pointer"
-                        >
-                          {msg.productCard.linkText}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Message metadata / time / seen tick */}
-              <div className="flex items-center gap-1 mt-1 mr-1 text-[10px] text-slate-400">
-                <span>{msg.time}</span>
-                {msg.status === "seen" ? (
-                  <CheckCheck className="w-3.5 h-3.5 text-[#007a48]" />
-                ) : (
-                  <Check className="w-3.5 h-3.5 text-slate-400" />
-                )}
-              </div>
-            </div>
-          )
-        })}
+          })
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -259,15 +299,21 @@ export function MessagesChatConversation({
             </button>
           </div>
 
-          {/* Text Input */}
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Nhập tin nhắn..."
-            className="flex-1 bg-slate-50 hover:bg-white focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 rounded-xl px-3.5 py-2.5 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all shadow-2xs"
-          />
+          {/* Text Input with accessible label */}
+          <div className="flex-1 relative">
+            <label htmlFor="chat-message-input" className="sr-only">
+              Nội dung tin nhắn
+            </label>
+            <input
+              id="chat-message-input"
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Nhập tin nhắn..."
+              className="w-full bg-slate-50 hover:bg-white focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 rounded-xl px-3.5 py-2.5 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all shadow-2xs"
+            />
+          </div>
 
           {/* Send Button */}
           <button

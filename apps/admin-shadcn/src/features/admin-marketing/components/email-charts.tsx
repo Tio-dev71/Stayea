@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -55,6 +56,14 @@ export function EmailCharts({
   onViewTypeDetails,
   onViewSegmentDetails,
 }: EmailChartsProps) {
+  const totalEmailsFormatted = useMemo(() => {
+    if (emailTypes.length === 0) return "0"
+    const sum = emailTypes.reduce((acc, c) => {
+      const num = parseFloat((c.amount || "").replace(/[^0-9.]/g, "")) || 0
+      return acc + num
+    }, 0)
+    return sum > 0 ? `${sum.toLocaleString("vi-VN")}K` : "0"
+  }, [emailTypes])
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* 1. HIỆU QUẢ EMAIL MARKETING THEO THỜI GIAN */}
@@ -174,62 +183,83 @@ export function EmailCharts({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 h-[210px]">
           {/* Donut chart */}
           <div className="relative w-[150px] h-[150px] shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={emailTypes}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={46}
-                  outerRadius={68}
-                  paddingAngle={2}
-                  dataKey="percent"
-                >
-                  {emailTypes.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(val: any, name: any) => [`${val}%`, name]}
-                  contentStyle={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: "8px",
-                    border: "1px solid #e2e8f0",
-                    fontSize: "12px",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-lg font-bold text-slate-900 leading-none">
-                120K
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">
-                Email gửi
-              </span>
-            </div>
+            {emailTypes.length === 0 ? (
+              <div className="relative flex items-center justify-center w-full h-full rounded-full border-8 border-slate-100">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <span className="text-base font-bold text-slate-800 leading-none">
+                    0
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Email gửi
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={emailTypes}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={46}
+                      outerRadius={68}
+                      paddingAngle={2}
+                      dataKey="percent"
+                    >
+                      {emailTypes.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(val: any, name: any) => [`${val}%`, name]}
+                      contentStyle={{
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        border: "1px solid #e2e8f0",
+                        fontSize: "12px",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-lg font-bold text-slate-900 leading-none">
+                    {totalEmailsFormatted}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Email gửi
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Breakdown List */}
           <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-1.5 flex-1 min-w-[170px]">
-            {emailTypes.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-slate-600 font-medium">{item.name}</span>
-                </div>
-                <span className="text-slate-500 font-semibold text-[11px]">
-                  {item.percent}% ({item.amount})
-                </span>
+            {emailTypes.length === 0 ? (
+              <div className="text-center py-4 text-slate-400 text-xs">
+                Chưa có dữ liệu loại email
               </div>
-            ))}
+            ) : (
+              emailTypes.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-slate-600 font-medium">{item.name}</span>
+                  </div>
+                  <span className="text-slate-500 font-semibold text-[11px]">
+                    {item.percent}% ({item.amount})
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

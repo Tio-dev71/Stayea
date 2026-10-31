@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   AreaChart,
   Area,
@@ -52,6 +52,10 @@ export function CampaignsCharts({
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const totalCampaignsCount = useMemo(() => {
+    return campaignTypes.reduce((acc, c) => acc + (c.count || 0), 0)
+  }, [campaignTypes])
 
   if (!mounted) {
     return (
@@ -188,73 +192,94 @@ export function CampaignsCharts({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center py-1 flex-1">
-            {/* Donut Chart with center 24 Chiến dịch */}
+            {/* Donut Chart with center value */}
             <div className="sm:col-span-6 relative w-full h-48 sm:h-52 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={campaignTypes}
-                    isAnimationActive={false}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={54}
-                    outerRadius={78}
-                    paddingAngle={2.5}
-                    dataKey="percentage"
-                  >
-                    {campaignTypes.map((entry) => (
-                      <Cell key={`type-slice-${entry.name}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length > 0 && payload[0]) {
-                        const data = payload[0].payload as CampaignTypeShareItem
-                        return (
-                          <div className="bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs shadow-md">
-                            <span className="font-semibold">{data.name}:</span>{" "}
-                            {data.percentage}% ({data.count})
-                          </div>
-                        )
-                      }
-                      return null
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              {campaignTypes.length === 0 ? (
+                <div className="relative flex items-center justify-center w-36 h-36 rounded-full border-8 border-slate-100">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <span className="text-2xl font-extrabold text-slate-800 leading-none">
+                      0
+                    </span>
+                    <span className="text-[11px] font-medium text-slate-400 mt-0.5">
+                      Chiến dịch
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={campaignTypes}
+                        isAnimationActive={false}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={54}
+                        outerRadius={78}
+                        paddingAngle={2.5}
+                        dataKey="percentage"
+                      >
+                        {campaignTypes.map((entry) => (
+                          <Cell key={`type-slice-${entry.name}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length > 0 && payload[0]) {
+                            const data = payload[0].payload as CampaignTypeShareItem
+                            return (
+                              <div className="bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs shadow-md">
+                                <span className="font-semibold">{data.name}:</span>{" "}
+                                {data.percentage}% ({data.count})
+                              </div>
+                            )
+                          }
+                          return null
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
 
-              {/* Tâm Donut */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                <span className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
-                  24
-                </span>
-                <span className="text-[11px] font-medium text-slate-500 mt-0.5">
-                  Chiến dịch
-                </span>
-              </div>
+                  {/* Tâm Donut */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                    <span className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
+                      {totalCampaignsCount}
+                    </span>
+                    <span className="text-[11px] font-medium text-slate-500 mt-0.5">
+                      Chiến dịch
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Chú giải bên phải */}
             <div className="sm:col-span-6 space-y-1.5 text-[11px] sm:text-xs">
-              {campaignTypes.map((item) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between gap-2 hover:bg-slate-50 px-1 py-0.5 rounded transition-colors"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-slate-700 font-medium truncate">
-                      {item.name}
+              {campaignTypes.length === 0 ? (
+                <div className="text-center py-6 text-slate-400">
+                  Chưa có dữ liệu loại chiến dịch
+                </div>
+              ) : (
+                campaignTypes.map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between gap-2 hover:bg-slate-50 px-1 py-0.5 rounded transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-slate-700 font-medium truncate">
+                        {item.name}
+                      </span>
+                    </div>
+                    <span className="font-bold text-slate-900 shrink-0">
+                      {item.percentage}% ({item.count})
                     </span>
                   </div>
-                  <span className="font-bold text-slate-900 shrink-0">
-                    {item.percentage}% ({item.count})
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

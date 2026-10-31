@@ -117,7 +117,14 @@ export function ContentTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700 font-normal">
-            {items.map((row) => (
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-8 text-center text-xs text-slate-400">
+                  Chưa có nội dung marketing nào
+                </td>
+              </tr>
+            ) : (
+              items.map((row) => (
               <tr
                 key={row.id}
                 className="hover:bg-slate-50/80 transition-colors group"
@@ -199,7 +206,7 @@ export function ContentTable({
                   </button>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

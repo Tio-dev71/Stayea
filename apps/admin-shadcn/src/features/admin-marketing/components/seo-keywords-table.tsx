@@ -49,61 +49,69 @@ export function SeoKeywordsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
-            {keywords.map((kw) => (
-              <tr
-                key={kw.id}
-                className="hover:bg-slate-50/70 transition-colors group"
-              >
-                {/* 1. Order */}
-                <td className="py-3 px-3 text-slate-400 font-semibold">
-                  {kw.order}
-                </td>
-
-                {/* 2. Keyword */}
-                <td className="py-3 px-3 font-medium text-slate-900 whitespace-nowrap">
-                  {kw.keyword}
-                </td>
-
-                {/* 3. Current Position */}
-                <td className="py-3 px-3 text-center font-bold text-slate-900">
-                  {kw.currentRank}
-                </td>
-
-                {/* 4. Previous Position */}
-                <td className="py-3 px-3 text-center text-slate-500 font-medium">
-                  {kw.previousRank}
-                </td>
-
-                {/* 5. Monthly Searches */}
-                <td className="py-3 px-3 text-center font-medium text-slate-700">
-                  {kw.monthlySearches}
-                </td>
-
-                {/* 6. Ranking URL */}
-                <td className="py-3 px-3 text-slate-500 font-normal whitespace-nowrap">
-                  {kw.rankingUrl}
-                </td>
-
-                {/* 7. Trend */}
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center text-emerald-600 font-bold">
-                    <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </span>
-                </td>
-
-                {/* 8. Action */}
-                <td className="py-3 px-3 text-center">
-                  <button
-                    type="button"
-                    onClick={() => (onActionClick || onKeywordAction)?.(kw)}
-                    className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer inline-flex items-center justify-center"
-                    aria-label={`Thao tác cho từ khóa ${kw.keyword}`}
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+            {keywords.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-8 text-center text-slate-400">
+                  Chưa có dữ liệu từ khóa SEO nào.
                 </td>
               </tr>
-            ))}
+            ) : (
+              keywords.map((kw) => (
+                <tr
+                  key={kw.id}
+                  className="hover:bg-slate-50/70 transition-colors group"
+                >
+                  {/* 1. Order */}
+                  <td className="py-3 px-3 text-slate-400 font-semibold">
+                    {kw.order}
+                  </td>
+
+                  {/* 2. Keyword */}
+                  <td className="py-3 px-3 font-medium text-slate-900 whitespace-nowrap">
+                    {kw.keyword}
+                  </td>
+
+                  {/* 3. Current Position */}
+                  <td className="py-3 px-3 text-center font-bold text-slate-900">
+                    {kw.currentRank}
+                  </td>
+
+                  {/* 4. Previous Position */}
+                  <td className="py-3 px-3 text-center text-slate-500 font-medium">
+                    {kw.previousRank}
+                  </td>
+
+                  {/* 5. Monthly Searches */}
+                  <td className="py-3 px-3 text-center font-medium text-slate-700">
+                    {kw.monthlySearches}
+                  </td>
+
+                  {/* 6. Ranking URL */}
+                  <td className="py-3 px-3 text-slate-500 font-normal whitespace-nowrap">
+                    {kw.rankingUrl}
+                  </td>
+
+                  {/* 7. Trend */}
+                  <td className="py-3 px-3 text-center">
+                    <span className="inline-flex items-center text-emerald-600 font-bold">
+                      <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </span>
+                  </td>
+
+                  {/* 8. Action */}
+                  <td className="py-3 px-3 text-center">
+                    <button
+                      type="button"
+                      onClick={() => (onActionClick || onKeywordAction)?.(kw)}
+                      className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer inline-flex items-center justify-center"
+                      aria-label={`Thao tác cho từ khóa ${kw.keyword}`}
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

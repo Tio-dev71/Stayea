@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { Search, SlidersHorizontal } from "lucide-react"
+import { Search, SlidersHorizontal, MessageSquare } from "lucide-react"
 import type {
   ConversationItem,
   ConversationTabType,
@@ -10,13 +10,15 @@ import { CONVERSATION_TABS } from "@/features/admin-messages/stayea-admin-messag
 
 interface MessagesChatListProps {
   conversations: readonly ConversationItem[]
-  activeConversationId: string
+  activeConversationId?: string | null
   onSelectConversation: (id: string) => void
   activeTab: ConversationTabType
   onSelectTab: (tab: ConversationTabType) => void
   searchQuery: string
   onSearchChange: (query: string) => void
   onToggleFilter?: () => void
+  tabs?: readonly { id: ConversationTabType; label: string; count: number }[]
+  onComposeClick?: () => void
 }
 
 export function MessagesChatList({
@@ -28,17 +30,26 @@ export function MessagesChatList({
   searchQuery,
   onSearchChange,
   onToggleFilter,
+  tabs = CONVERSATION_TABS,
+  onComposeClick,
 }: MessagesChatListProps) {
   return (
     <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs flex flex-col h-[760px] overflow-hidden">
       {/* 1. Header Tabs */}
       <div className="p-3 border-b border-slate-100 space-y-2.5">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {CONVERSATION_TABS.map((tab) => {
+        <div
+          role="tablist"
+          aria-label="Phân loại cuộc trò chuyện"
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none"
+        >
+          {tabs.map((tab) => {
             const isActive = activeTab === tab.id
             return (
               <button
                 key={tab.id}
+                id={`tab-${tab.id}`}
+                role="tab"
+                aria-selected={isActive}
                 type="button"
                 onClick={() => onSelectTab(tab.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
@@ -63,8 +74,12 @@ export function MessagesChatList({
         {/* Search & Filter Bar */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
+            <label htmlFor="messages-search-input" className="sr-only">
+              Tìm kiếm tin nhắn
+            </label>
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="messages-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -86,8 +101,27 @@ export function MessagesChatList({
       {/* 2. Conversations Scroll List */}
       <div className="flex-1 overflow-y-auto divide-y divide-slate-100/80">
         {conversations.length === 0 ? (
-          <div className="py-12 text-center text-xs text-slate-400">
-            Không tìm thấy hội thoại phù hợp
+          <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#007a48] flex items-center justify-center mb-3 border border-emerald-100">
+              <MessageSquare className="w-6 h-6 stroke-[1.8]" />
+            </div>
+            <h4 className="text-sm font-bold text-slate-800">
+              {searchQuery ? "Không tìm thấy kết quả" : "Chưa có cuộc trò chuyện nào"}
+            </h4>
+            <p className="text-xs text-slate-400 mt-1 max-w-[220px] leading-relaxed">
+              {searchQuery
+                ? `Không có cuộc hội thoại nào khớp với từ khóa "${searchQuery}".`
+                : "Hộp thư đến của bạn hiện đang trống. Bắt đầu liên hệ với khách hàng bằng cách gửi tin nhắn mới."}
+            </p>
+            {onComposeClick && !searchQuery && (
+              <button
+                type="button"
+                onClick={onComposeClick}
+                className="mt-4 px-3.5 py-1.5 rounded-xl bg-[#007a48] hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                + Soạn tin nhắn mới
+              </button>
+            )}
           </div>
         ) : (
           conversations.map((item) => {
@@ -112,7 +146,7 @@ export function MessagesChatList({
                 <div className="relative shrink-0">
                   <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 shadow-2xs relative">
                     <Image
-                      src={item.avatar}
+                      src={item.avatar || "/profile/profile-avatar.jpg"}
                       alt={item.name}
                       fill
                       className="object-cover"

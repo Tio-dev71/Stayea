@@ -14,9 +14,8 @@ import type {
 } from "./stayea-admin-messages-mock-data"
 import {
   MOCK_CONVERSATIONS,
-  MOCK_TRAN_MINH_ANH_CHAT,
-  MOCK_CUSTOMER_NOTES,
   MOCK_BOOKING_HISTORY,
+  MOCK_CUSTOMER_NOTES,
   MOCK_MESSAGE_QUICK_ACTIONS,
 } from "./stayea-admin-messages-mock-data"
 import { MessagesChatList } from "./components/messages-chat-list"
@@ -38,14 +37,14 @@ export function StayeaAdminMessagesPage({
   const [conversations, setConversations] = useState<ConversationItem[]>([
     ...MOCK_CONVERSATIONS,
   ])
-  const [activeConversationId, setActiveConversationId] = useState("conv-1")
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(
+    MOCK_CONVERSATIONS[0]?.id || null
+  )
   const [activeTab, setActiveTab] = useState<ConversationTabType>("all")
   const [searchQuery, setSearchQuery] = useState("")
 
   // Chat messages state for active conversation
-  const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>({
-    "conv-1": [...MOCK_TRAN_MINH_ANH_CHAT],
-  })
+  const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>({})
 
   // Notes state
   const [notes, setNotes] = useState<CustomerNoteItem[]>([
@@ -58,23 +57,38 @@ export function StayeaAdminMessagesPage({
 
   // Current active conversation
   const activeConversation = useMemo(() => {
-    return (
-      conversations.find((c) => c.id === activeConversationId) ||
-      conversations[0] || {
-        id: "conv-1",
-        type: "customer" as const,
-        name: "Trần Minh Anh",
-        avatar: "/about/team-1.jpg",
-        lastMessage: "Xin chào, mình muốn hỏi tour 4 đảo...",
-        lastTime: "10:24",
-        phone: "+84 912 345 678",
-        email: "minhanh.tran@gmail.com",
-        location: "Hà Nội, Việt Nam",
-        joinDate: "15/07/2024",
-        roleBadge: "Khách hàng",
-      }
-    )
+    if (!activeConversationId) {
+      return conversations.length > 0 ? conversations[0] : null
+    }
+    return conversations.find((c) => c.id === activeConversationId) || (conversations.length > 0 ? conversations[0] : null)
   }, [conversations, activeConversationId])
+
+  // Dynamic Tabs with live computed counts
+  const dynamicTabs = useMemo(() => {
+    return [
+      { id: "all" as const, label: "Tất cả", count: conversations.length },
+      {
+        id: "customer" as const,
+        label: "Khách hàng",
+        count: conversations.filter((c) => c.type === "customer").length,
+      },
+      {
+        id: "partner" as const,
+        label: "Đối tác",
+        count: conversations.filter((c) => c.type === "partner").length,
+      },
+      {
+        id: "host" as const,
+        label: "Chủ nhà",
+        count: conversations.filter((c) => c.type === "host").length,
+      },
+      {
+        id: "system" as const,
+        label: "Tin hệ thống",
+        count: conversations.filter((c) => c.type === "system").length,
+      },
+    ]
+  }, [conversations])
 
   // Filtered conversations list
   const filteredConversations = useMemo(() => {
@@ -99,6 +113,8 @@ export function StayeaAdminMessagesPage({
 
   // Handlers
   const handleSendMessage = (text: string) => {
+    if (!activeConversation) return
+
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       senderId: "admin",
@@ -132,7 +148,30 @@ export function StayeaAdminMessagesPage({
     )
   }
 
-  const handleComposeNewMessage = (contactId: string, messageText: string) => {
+  const handleComposeNewMessage = (
+    contactId: string,
+    messageText: string,
+    newContact?: { name: string; phone: string; email: string }
+  ) => {
+    if (newContact) {
+      const createdConv: ConversationItem = {
+        id: contactId,
+        type: "customer",
+        name: newContact.name,
+        avatar: "/profile/profile-avatar.jpg",
+        lastMessage: messageText,
+        lastTime: "Vừa xong",
+        unreadCount: 0,
+        isOnline: true,
+        phone: newContact.phone,
+        email: newContact.email,
+        location: "Việt Nam",
+        joinDate: "Hôm nay",
+        roleBadge: "Khách hàng",
+      }
+      setConversations((prev) => [createdConv, ...prev])
+    }
+
     setActiveConversationId(contactId)
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -164,6 +203,11 @@ export function StayeaAdminMessagesPage({
   }
 
   const handleQuickAction = (actionId: string) => {
+    if (!activeConversation) {
+      toast.info("Vui lòng chọn một cuộc trò chuyện trước khi thao tác.")
+      return
+    }
+
     switch (actionId) {
       case "create_booking":
         toast.info("Tạo đơn đặt chỗ", {
@@ -171,13 +215,12 @@ export function StayeaAdminMessagesPage({
         })
         break
       case "send_offer": {
-        // Send a voucher/promotion card into current chat
         const promoMsg: ChatMessage = {
           id: `msg-promo-${Date.now()}`,
           senderId: "admin",
           senderName: "Nguyễn Minh",
           senderAvatar: "/profile/profile-avatar.jpg",
-          content: `Dạ gửi anh ${activeConversation.name} mã ưu đãi đặc biệt giảm 15% (Mã: STAYEAPQ15) áp dụng cho tour và trải nghiệm tại Phú Quốc cuối tuần này ạ! 🎁`,
+          content: `Dạ gửi ${activeConversation.name} mã ưu đãi đặc biệt giảm 15% (Mã: STAYEAPQ15) áp dụng cho trải nghiệm tại Phú Quốc! 🎁`,
           time: "Vừa xong",
           status: "sent",
         }
@@ -198,7 +241,7 @@ export function StayeaAdminMessagesPage({
         break
       case "add_group":
         toast.info("Thêm vào nhóm", {
-          description: `Đã phân loại ${activeConversation.name} vào nhóm "Khách VIP Tour Đảo".`,
+          description: `Đã phân loại ${activeConversation.name} vào nhóm "Khách VIP".`,
         })
         break
       case "block_user":
@@ -276,14 +319,14 @@ export function StayeaAdminMessagesPage({
 
             {/* 3-Column Inbox Grid Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
-              {/* Column 1: Conversations List (3.2 cols on xl, 4 cols on lg) */}
+              {/* Column 1: Conversations List */}
               <div className="lg:col-span-4 xl:col-span-3">
                 <MessagesChatList
                   conversations={filteredConversations}
-                  activeConversationId={activeConversation.id}
+                  activeConversationId={activeConversation?.id}
+                  tabs={dynamicTabs}
                   onSelectConversation={(id) => {
                     setActiveConversationId(id)
-                    // Mark as read
                     setConversations((prev) =>
                       prev.map((c) => (c.id === id ? { ...c, unreadCount: 0 } : c))
                     )
@@ -297,31 +340,36 @@ export function StayeaAdminMessagesPage({
                       description: "Lọc theo trạng thái trực tuyến hoặc tin chưa đọc.",
                     })
                   }
+                  onComposeClick={() => setIsComposeOpen(true)}
                 />
               </div>
 
-              {/* Column 2: Active Conversation Thread (5.8 cols on xl, 5 cols on lg) */}
+              {/* Column 2: Active Conversation Thread */}
               <div className="lg:col-span-5 xl:col-span-6">
                 <MessagesChatConversation
                   conversation={activeConversation}
                   messages={
-                    messagesMap[activeConversation.id] || [
-                      {
-                        id: "initial-msg",
-                        senderId: "customer",
-                        senderName: activeConversation.name,
-                        senderAvatar: activeConversation.avatar,
-                        content: activeConversation.lastMessage,
-                        time: activeConversation.lastTime,
-                        status: "seen",
-                      },
-                    ]
+                    activeConversation
+                      ? messagesMap[activeConversation.id] || [
+                          {
+                            id: `initial-msg-${activeConversation.id}`,
+                            senderId: "customer",
+                            senderName: activeConversation.name,
+                            senderAvatar: activeConversation.avatar,
+                            content: activeConversation.lastMessage,
+                            time: activeConversation.lastTime,
+                            status: "seen",
+                          },
+                        ]
+                      : []
                   }
                   onSendMessage={handleSendMessage}
                   onCallPhone={() =>
+                    activeConversation &&
                     toast.info(`Đang kết nối cuộc gọi đến ${activeConversation.phone}...`)
                   }
                   onVideoCall={() =>
+                    activeConversation &&
                     toast.info(`Đang khởi tạo cuộc gọi video với ${activeConversation.name}...`)
                   }
                   onMoreOptions={() =>
@@ -343,10 +391,11 @@ export function StayeaAdminMessagesPage({
                   onOpenEmoji={() =>
                     toast.info("Mở bảng biểu tượng cảm xúc")
                   }
+                  onComposeClick={() => setIsComposeOpen(true)}
                 />
               </div>
 
-              {/* Column 3: Customer Profile & Context (3 cols on xl, 3 cols on lg) */}
+              {/* Column 3: Customer Profile & Context */}
               <div className="lg:col-span-3 xl:col-span-3">
                 <MessagesCustomerProfile
                   conversation={activeConversation}
@@ -357,7 +406,13 @@ export function StayeaAdminMessagesPage({
                     window.location.hash = "admin-bookings"
                     onNavigateTab?.("dat-phong")
                   }}
-                  onAddNote={() => setIsAddNoteOpen(true)}
+                  onAddNote={() => {
+                    if (!activeConversation) {
+                      toast.info("Vui lòng chọn cuộc trò chuyện trước khi thêm ghi chú.")
+                      return
+                    }
+                    setIsAddNoteOpen(true)
+                  }}
                   onQuickAction={handleQuickAction}
                   onMoreProfileOptions={() =>
                     toast.info("Tùy chọn hồ sơ", {
@@ -385,7 +440,7 @@ export function StayeaAdminMessagesPage({
       {/* Add Note Modal */}
       <AddNoteModal
         isOpen={isAddNoteOpen}
-        customerName={activeConversation.name}
+        customerName={activeConversation?.name || "Khách hàng"}
         onClose={() => setIsAddNoteOpen(false)}
         onSaveNote={handleAddNote}
       />

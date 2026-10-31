@@ -144,46 +144,52 @@ export function ContentRightSidebar({
         </div>
 
         <div className="space-y-2.5">
-          {highlights.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => onHighlightClick?.(item)}
-              className="flex items-center gap-2.5 p-1 -mx-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-            >
-              {/* Rank */}
-              <span className="w-4 text-center text-xs font-bold text-slate-500 shrink-0 flex items-center justify-center">
-                {item.rank === 3 ? (
-                  <span className="text-amber-500">3★</span>
-                ) : (
-                  item.rank
-                )}
-              </span>
+          {highlights.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3 text-center">
+              Chưa có nội dung nổi bật nào.
+            </p>
+          ) : (
+            highlights.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onHighlightClick?.(item)}
+                className="flex items-center gap-2.5 p-1 -mx-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+              >
+                {/* Rank */}
+                <span className="w-4 text-center text-xs font-bold text-slate-500 shrink-0 flex items-center justify-center">
+                  {item.rank === 3 ? (
+                    <span className="text-amber-500">3★</span>
+                  ) : (
+                    item.rank
+                  )}
+                </span>
 
-              {/* Thumbnail */}
-              <img
-                src={item.thumbnail}
-                alt={item.title}
-                className="w-9 h-9 rounded-lg object-cover shrink-0 border border-slate-200/80"
-              />
+                {/* Thumbnail */}
+                <img
+                  src={item.thumbnail}
+                  alt={item.title}
+                  className="w-9 h-9 rounded-lg object-cover shrink-0 border border-slate-200/80"
+                />
 
-              {/* Title & Stats */}
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-900 group-hover:text-[#007a48] transition-colors truncate">
-                  {item.title}
-                </p>
-                <div className="flex items-center gap-3 mt-0.5 text-[11px] text-slate-500">
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-3 h-3 text-slate-400" />
-                    <span>{item.views}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-rose-500">
-                    <Heart className="w-3 h-3 fill-rose-500" />
-                    <span>{item.likes}</span>
+                {/* Title & Stats */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-slate-900 group-hover:text-[#007a48] transition-colors truncate">
+                    {item.title}
+                  </p>
+                  <div className="flex items-center gap-3 mt-0.5 text-[11px] text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-3 h-3 text-slate-400" />
+                      <span>{item.views}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-rose-500">
+                      <Heart className="w-3 h-3 fill-rose-500" />
+                      <span>{item.likes}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

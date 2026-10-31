@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   AreaChart,
   Area,
@@ -80,6 +80,15 @@ export function ReportsBookingsCharts({
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const totalBookingsText = useMemo(() => {
+    if (statusSlices.length === 0) return "0"
+    const sum = statusSlices.reduce((acc, c) => {
+      const num = parseFloat(c.countFormatted.replace(/[^0-9.]/g, "")) || 0
+      return acc + num
+    }, 0)
+    return sum > 0 ? sum.toLocaleString("vi-VN") : "0"
+  }, [statusSlices])
 
   if (!mounted) {
     return (
@@ -216,69 +225,90 @@ export function ReportsBookingsCharts({
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center flex-1">
             {/* Donut Chart with center label */}
             <div className="sm:col-span-6 relative flex items-center justify-center h-52 sm:h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusSlices}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={62}
-                    outerRadius={88}
-                    paddingAngle={2.5}
-                    dataKey="percent"
-                  >
-                    {statusSlices.map((entry) => (
-                      <Cell key={`status-slice-${entry.status}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length > 0 && payload[0]) {
-                        const data = payload[0].payload as BookingStatusSlice
-                        return (
-                          <div className="bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs shadow-md">
-                            <span className="font-semibold">{data.status}:</span>{" "}
-                            {data.percent}% ({data.countFormatted})
-                          </div>
-                        )
-                      }
-                      return null
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              {statusSlices.length === 0 ? (
+                <div className="relative flex items-center justify-center w-36 h-36 rounded-full border-8 border-slate-100">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <span className="text-xl sm:text-[24px] font-bold text-slate-800 leading-none">
+                      0
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium mt-1">
+                      Tổng đặt phòng
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusSlices}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={62}
+                        outerRadius={88}
+                        paddingAngle={2.5}
+                        dataKey="percent"
+                      >
+                        {statusSlices.map((entry) => (
+                          <Cell key={`status-slice-${entry.status}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length > 0 && payload[0]) {
+                            const data = payload[0].payload as BookingStatusSlice
+                            return (
+                              <div className="bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs shadow-md">
+                                <span className="font-semibold">{data.status}:</span>{" "}
+                                {data.percent}% ({data.countFormatted})
+                              </div>
+                            )
+                          }
+                          return null
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
 
-              {/* Center text in Donut */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-xl sm:text-[24px] font-bold text-slate-900 leading-none">
-                  1.248
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium mt-1">
-                  Tổng đặt phòng
-                </span>
-              </div>
+                  {/* Center text in Donut */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-xl sm:text-[24px] font-bold text-slate-900 leading-none">
+                      {totalBookingsText}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium mt-1">
+                      Tổng đặt phòng
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Legend list on the right */}
             <div className="sm:col-span-6 space-y-3 text-xs">
-              {statusSlices.map((item) => (
-                <div
-                  key={item.status}
-                  className="flex items-center justify-between text-slate-700 hover:text-slate-900 transition-colors"
-                >
-                  <div className="flex items-center gap-2 min-w-0 pr-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-[11px] sm:text-xs truncate">{item.status}</span>
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-800 shrink-0">
-                    {item.percent}%{" "}
-                    <span className="text-slate-400 font-normal">({item.countFormatted})</span>
-                  </span>
+              {statusSlices.length === 0 ? (
+                <div className="text-center py-6 text-slate-400">
+                  Chưa có dữ liệu cơ cấu đặt phòng
                 </div>
-              ))}
+              ) : (
+                statusSlices.map((item) => (
+                  <div
+                    key={item.status}
+                    className="flex items-center justify-between text-slate-700 hover:text-slate-900 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 pr-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-[11px] sm:text-xs truncate">{item.status}</span>
+                    </div>
+                    <span className="text-[11px] sm:text-xs font-semibold text-slate-800 shrink-0">
+                      {item.percent}%{" "}
+                      <span className="text-slate-400 font-normal">({item.countFormatted})</span>
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

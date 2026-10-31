@@ -81,31 +81,37 @@ export function SeoRightSidebar({
         </h2>
 
         <div className="divide-y divide-slate-50">
-          {keyMetrics.map((item) => (
-            <div
-              key={item.id}
-              className="py-2.5 flex items-center justify-between text-xs hover:bg-slate-50/60 px-1 rounded transition-colors"
-            >
-              <span className="text-slate-600 font-medium">{item.label}</span>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900">{item.value}</span>
-                <span
-                  className={`inline-flex items-center gap-0.5 text-[11px] font-bold ${
-                    item.trendDirection === "up"
-                      ? "text-emerald-600"
-                      : "text-rose-500"
-                  }`}
-                >
-                  {item.trendDirection === "up" ? (
-                    <ArrowUp className="w-3 h-3 stroke-[2.5]" />
-                  ) : (
-                    <ArrowDown className="w-3 h-3 stroke-[2.5]" />
-                  )}
-                  {item.trendPercent}
-                </span>
+          {keyMetrics.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3 text-center">
+              Chưa có dữ liệu chỉ số SEO.
+            </p>
+          ) : (
+            keyMetrics.map((item) => (
+              <div
+                key={item.id}
+                className="py-2.5 flex items-center justify-between text-xs hover:bg-slate-50/60 px-1 rounded transition-colors"
+              >
+                <span className="text-slate-600 font-medium">{item.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-900">{item.value}</span>
+                  <span
+                    className={`inline-flex items-center gap-0.5 text-[11px] font-bold ${
+                      item.trendDirection === "up"
+                        ? "text-emerald-600"
+                        : "text-rose-500"
+                    }`}
+                  >
+                    {item.trendDirection === "up" ? (
+                      <ArrowUp className="w-3 h-3 stroke-[2.5]" />
+                    ) : (
+                      <ArrowDown className="w-3 h-3 stroke-[2.5]" />
+                    )}
+                    {item.trendPercent}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -126,25 +132,31 @@ export function SeoRightSidebar({
         </div>
 
         <div className="divide-y divide-slate-50">
-          {growthKeywords.map((item) => (
-            <div
-              key={item.id}
-              className="py-2.5 flex items-center justify-between text-xs hover:bg-slate-50/60 px-1 rounded transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="w-3 text-slate-400 font-bold text-xs text-center">
-                  {item.order}
-                </span>
-                <span className="font-medium text-slate-800">
-                  {item.keyword}
+          {growthKeywords.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3 text-center">
+              Chưa có từ khóa tăng trưởng.
+            </p>
+          ) : (
+            growthKeywords.map((item) => (
+              <div
+                key={item.id}
+                className="py-2.5 flex items-center justify-between text-xs hover:bg-slate-50/60 px-1 rounded transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-3 text-slate-400 font-bold text-xs text-center">
+                    {item.order}
+                  </span>
+                  <span className="font-medium text-slate-800">
+                    {item.keyword}
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-0.5 text-emerald-600 font-bold text-[11px]">
+                  <ArrowUp className="w-3 h-3 stroke-[2.5]" />
+                  {item.growthPercent}
                 </span>
               </div>
-              <span className="inline-flex items-center gap-0.5 text-emerald-600 font-bold text-[11px]">
-                <ArrowUp className="w-3 h-3 stroke-[2.5]" />
-                {item.growthPercent}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

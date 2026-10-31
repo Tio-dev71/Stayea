@@ -12,12 +12,10 @@ import {
   Globe,
   Eye,
   CheckCircle2,
-  Clock,
   CheckCheck,
   XCircle,
 } from "lucide-react"
 import type { BookingRecord } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
-import { BOOKINGS_DATA } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
 
 interface BookingsDataTableProps {
   bookings?: readonly BookingRecord[]
@@ -166,7 +164,7 @@ function renderChannelBadge(channel: BookingRecord["channel"], channelType: Book
 }
 
 export function BookingsDataTable({
-  bookings = BOOKINGS_DATA,
+  bookings = [],
   onSortChange,
   onStatusUpdate,
   onViewDetail,
@@ -394,18 +392,6 @@ export function BookingsDataTable({
                           >
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                             <span>Xác nhận đặt phòng</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null)
-                              onStatusUpdate?.(b.id, "active")
-                            }}
-                            className="w-full px-3 py-2 text-sky-700 hover:bg-sky-50 flex items-center gap-2 transition-colors font-medium"
-                          >
-                            <Clock className="w-3.5 h-3.5 text-sky-600" />
-                            <span>Khách nhận phòng</span>
                           </button>
 
                           <button

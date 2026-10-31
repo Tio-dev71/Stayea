@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import {
   AlertTriangle,
   ArrowRight,
@@ -201,86 +202,92 @@ export function PartnerPortalPage({
   const handleAcceptOrder = async (orderId: string) => {
     if (!currentProfile) return
     try {
-      await stayeaApi.partnerRespondOrder(
+      const saved = await stayeaApi.partnerRespondOrder(
         orderId,
-        "accept",
-        undefined,
-        currentProfile.id
+        "accept"
       )
+      if (!saved) {
+        toast.error("Không thể xác nhận đơn hàng.")
+        return
+      }
+      setAllOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "partner_accepted", partnerNotes: "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ." } : o))
     } catch {
-      // optimistic
+      toast.error("Không thể xác nhận đơn hàng.")
     }
-    setAllOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: "partner_accepted",
-              partnerNotes: "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ.",
-            }
-          : o
-      )
-    )
   }
 
   // Quick Action: Reject Order
   const handleRejectOrder = async (orderId: string, reason: string) => {
     if (!currentProfile) return
     try {
-      await stayeaApi.partnerRespondOrder(
+      const saved = await stayeaApi.partnerRespondOrder(
         orderId,
         "reject",
-        reason,
-        currentProfile.id
+        reason
       )
+      if (!saved) {
+        toast.error("Không thể từ chối đơn hàng.")
+        return
+      }
+      setAllOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "partner_rejected", rejectionReason: reason } : o))
     } catch {
-      // optimistic
+      toast.error("Không thể từ chối đơn hàng.")
     }
-    setAllOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: "partner_rejected",
-              rejectionReason: reason,
-            }
-          : o
-      )
-    )
   }
 
   // Quick Action: Add Service
-  const handleAddService = (
+  const handleAddService = async (
     newServiceData: Omit<PartnerServiceData, "id" | "partnerId">
   ) => {
     if (!currentProfile) return
-    const newService: PartnerServiceData = {
+    const created = await stayeaApi.createPartnerService({
       ...newServiceData,
-      id: `svc_${Date.now()}`,
-      partnerId: currentProfile.id,
+      price: Number(newServiceData.price),
+      originalPrice: newServiceData.originalPrice ? Number(newServiceData.originalPrice) : undefined,
+    })
+    if (!created) {
+      toast.error("Không thể tạo dịch vụ. Vui lòng thử lại.")
+      return
     }
-    setAllServices((prev) => [newService, ...prev])
+    setAllServices((prev) => [{ ...newServiceData, ...created, partnerId: created.partnerId || currentProfile.id }, ...prev])
   }
 
   // Toggle Service Status
-  const handleToggleServiceStatus = (serviceId: string) => {
+  const handleToggleServiceStatus = async (serviceId: string) => {
+    const service = allServices.find((item) => item.id === serviceId)
+    if (!service) return
+    const status = service.status === "active" ? "inactive" : "active"
+    if (!(await stayeaApi.updatePartnerService(serviceId, { status }))) {
+      toast.error("Không thể cập nhật trạng thái dịch vụ.")
+      return
+    }
     setAllServices((prev) =>
       prev.map((s) =>
         s.id === serviceId
-          ? { ...s, status: s.status === "active" ? "inactive" : "active" }
+          ? { ...s, status }
           : s
       )
     )
   }
 
   // Delete Service
-  const handleDeleteService = (serviceId: string) => {
+  const handleDeleteService = async (serviceId: string) => {
+    if (!(await stayeaApi.deletePartnerService(serviceId))) {
+      toast.error("Không thể xóa dịch vụ.")
+      return
+    }
     setAllServices((prev) => prev.filter((s) => s.id !== serviceId))
   }
 
   // Update Profile
-  const handleUpdateProfile = (updated: Partial<PartnerProfileData>) => {
-    setCurrentProfile((prev) => (prev ? { ...prev, ...updated } : null))
+  const handleUpdateProfile = async (updated: Partial<PartnerProfileData>): Promise<boolean> => {
+    const saved = await stayeaApi.updatePartnerProfile(updated as Record<string, unknown>)
+    if (!saved) {
+      toast.error("Không thể lưu thông tin đối tác.")
+      return false
+    }
+    setCurrentProfile((prev) => (prev ? { ...prev, ...updated, ...saved } : null))
+    return true
   }
 
   // Handle Partner Created
@@ -556,7 +563,7 @@ export function PartnerPortalPage({
             {activeTab === "settings" && (
               <PartnerPayoutSettings
                 profile={currentProfile}
-                onUpdateProfile={handleUpdateProfile}
+          onUpdateProfile={handleUpdateProfile}
               />
             )}
           </>

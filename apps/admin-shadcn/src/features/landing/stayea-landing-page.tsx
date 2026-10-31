@@ -42,12 +42,6 @@ import { StayeaFlightBookingPage } from "./components/stayea-flight-booking-page
 import { StayeaSettingsPage } from "./components/stayea-settings-page"
 import { ServiceDetailPage } from "./components/service-detail-page"
 import type { ServiceType } from "./components/service-detail-page"
-import {
-  STAY_ACCOMMODATION_LISTINGS,
-  EXPERIENCE_LISTINGS,
-  PACKAGE_LISTINGS,
-  TRANSPORT_ITEMS,
-} from "./data/stayea-mock-data"
 import { StayeaAdminDashboardPage } from "@/features/admin-dashboard"
 import { StayeaAdminBookingsPage } from "@/features/admin-bookings"
 import { StayeaAdminPropertiesPage } from "@/features/admin-properties"
@@ -85,24 +79,6 @@ export type StayeaPageType =
 export interface StayeaLandingPageProps {
   readonly initialPage?: StayeaPageType
   readonly isAdminPortal?: boolean
-}
-
-function resolveServiceCatalogItem(type: ServiceType, id?: string | null) {
-  if (!id) return null
-  const cleanId = id.trim().toLowerCase()
-  if (type === "stay") {
-    return STAY_ACCOMMODATION_LISTINGS.find((item) => item.id.toLowerCase() === cleanId) || null
-  }
-  if (type === "experience") {
-    return EXPERIENCE_LISTINGS.find((item) => item.id.toLowerCase() === cleanId) || null
-  }
-  if (type === "package") {
-    return PACKAGE_LISTINGS.find((item) => item.id.toLowerCase() === cleanId) || null
-  }
-  if (type === "transport") {
-    return TRANSPORT_ITEMS.find((item) => item.id.toLowerCase() === cleanId) || null
-  }
-  return null
 }
 
 export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingPageProps = {}) {
@@ -146,27 +122,23 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
   const [selectedServiceItem, setSelectedServiceItem] = React.useState<{
     type: ServiceType
     item: any
-  } | null>(() => {
-    if (typeof window === "undefined") return null
-    try {
-      const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
-      const pathSegment = pathname.split("/")[0]
-      if (pathSegment === "service-detail" || pathSegment === "chi-tiet") {
-        const params = new URLSearchParams(window.location.search)
-        const type = (params.get("type") as ServiceType) || "stay"
-        const id = params.get("id")
-        if (id) {
-          const resolved = resolveServiceCatalogItem(type, id)
-          if (resolved) {
-            return { type, item: resolved }
-          }
-        }
-      }
-    } catch {
-      // ignore
-    }
-    return null
-  })
+  } | null>(null)
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || selectedServiceItem) return
+    const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
+    const pathSegment = pathname.split("/")[0]
+    if (pathSegment !== "service-detail" && pathSegment !== "chi-tiet") return
+    const params = new URLSearchParams(window.location.search)
+    const type = params.get("type") as ServiceType | null
+    const id = params.get("id")
+    if (!id || !type || !["stay", "experience", "package", "transport"].includes(type)) return
+    let isMounted = true
+    stayeaApi.getCatalogItem(type, id).then((catalogItem) => {
+      if (isMounted && catalogItem) setSelectedServiceItem({ type, item: catalogItem })
+    })
+    return () => { isMounted = false }
+  }, [selectedServiceItem])
 
   const [pageState, setPageState] = React.useState<PageType>(() => {
     if (isDetectedAdmin) {
@@ -750,11 +722,10 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       ) {
         const itemType = (params.get("type") as ServiceType) || "stay"
         const itemId = params.get("id")
-        if (itemId) {
-          const resolved = resolveServiceCatalogItem(itemType, itemId)
-          if (resolved) {
-            setSelectedServiceItem({ type: itemType, item: resolved })
-          }
+        if (itemId && ["stay", "experience", "package", "transport"].includes(itemType)) {
+          void stayeaApi.getCatalogItem(itemType, itemId).then((catalogItem) => {
+            if (catalogItem) setSelectedServiceItem({ type: itemType, item: catalogItem })
+          })
         }
         setCurrentPage("service-detail")
         setActiveItem("Lưu trú")

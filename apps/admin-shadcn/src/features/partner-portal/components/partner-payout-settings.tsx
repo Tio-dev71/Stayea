@@ -12,7 +12,7 @@ import type { PartnerProfileData } from "../types"
 
 interface PartnerPayoutSettingsProps {
   profile: PartnerProfileData
-  onUpdateProfile: (updated: Partial<PartnerProfileData>) => void
+  onUpdateProfile: (updated: Partial<PartnerProfileData>) => Promise<boolean>
 }
 
 export function PartnerPayoutSettings({
@@ -30,9 +30,9 @@ export function PartnerPayoutSettings({
 
   const [savedSuccess, setSavedSuccess] = useState(false)
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    onUpdateProfile({
+    const saved = await onUpdateProfile({
       businessName,
       contactName,
       phone,
@@ -42,6 +42,7 @@ export function PartnerPayoutSettings({
       bankAccount,
       bankAccountHolder,
     })
+    if (!saved) return
     setSavedSuccess(true)
     setTimeout(() => setSavedSuccess(false), 3000)
   }

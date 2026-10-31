@@ -52,15 +52,15 @@ export function MyReviewsPage({ onNavigate }: MyReviewsPageProps) {
         if (Array.isArray(raw) && raw.length > 0) {
           const mapped: UserReviewItem[] = raw.map((r: any) => ({
             id: r.id,
-            title: r.serviceName || r.title || "Dịch vụ đã trải nghiệm",
+            title: r.serviceName || r.title || "",
             category: (r.itemType || "stay") as ReviewCategory,
             categoryTagLabel: r.itemType === "experience" ? "Trải nghiệm" : r.itemType === "transport" ? "Di chuyển" : "Khách sạn",
             categoryTagVariant: "sky",
-            date: r.createdAt ? new Date(r.createdAt).toLocaleDateString("vi-VN") : "Gần đây",
-            location: r.location || "Phú Quốc",
-            rating: Number(r.rating) || 5,
+            date: r.createdAt ? new Date(r.createdAt).toLocaleDateString("vi-VN") : "",
+            location: r.location || "",
+            rating: Number(r.rating) || 0,
             comment: r.content || r.comment || "",
-            imageUrl: r.images?.[0] || "/auth/auth-villa-bg.jpg",
+            imageUrl: r.images?.[0] || "",
             targetRoute: "stay",
           }))
           setReviewsList(mapped)

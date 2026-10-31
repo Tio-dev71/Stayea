@@ -20,15 +20,15 @@ export function CreateCustomerModal({
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [role, setRole] = useState("USER")
-  const [password, setPassword] = useState("12345678")
+  const [password, setPassword] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !email.trim()) {
-      toast.error("Vui lòng nhập họ tên và email.")
+    if (!name.trim() || !email.trim() || password.trim().length < 6) {
+      toast.error("Vui lòng nhập họ tên, email và mật khẩu tối thiểu 6 ký tự.")
       return
     }
 
@@ -38,7 +38,7 @@ export function CreateCustomerModal({
         name: name.trim(),
         email: email.trim(),
         role: role.toUpperCase(),
-        password: password.trim() || "12345678",
+        password: password.trim(),
       })
 
       if (res && res.id) {
@@ -164,8 +164,11 @@ export function CreateCustomerModal({
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
+                  required
+                  minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Tối thiểu 6 ký tự"
                   className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
                 />
               </div>

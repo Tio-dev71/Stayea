@@ -101,7 +101,7 @@ export const stayeaFavoritesTable = pgTable(
     location: text("location"),
     imageUrl: text("image_url").notNull(),
     price: numeric("price", { precision: 12, scale: 2 }).notNull(),
-    rating: numeric("rating", { precision: 3, scale: 2 }).default("5.00"),
+    rating: numeric("rating", { precision: 3, scale: 2 }).default("0.00"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

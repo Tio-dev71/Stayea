@@ -143,7 +143,7 @@ export class StayeaAiAgentService {
     this.routerKey =
       this.configService.get<string>("AI_ROUTER_KEY") ||
       process.env.AI_ROUTER_KEY ||
-      "sk-tiodev-chatbot-secret"
+      ""
     this.modelName =
       this.configService.get<string>("AI_ROUTER_MODEL") ||
       process.env.AI_ROUTER_MODEL ||
@@ -193,7 +193,8 @@ ${servicesSummary || "Hiện chưa có dịch vụ nào trực tuyến."}
 
 LƯU Ý KHI GỌI HÀM:
 - Khi khách hỏi tìm dịch vụ, bạn có thể tra cứu trực tiếp từ danh mục trên hoặc gọi 'search_services'.
-- Khi khách đồng ý đặt và cung cấp họ tên + SĐT + ngày, hãy gọi hàm 'create_booking_draft' với serviceId tương ứng.
+- Chỉ tạo đơn cho dịch vụ đối tác có trong danh mục dịch vụ và có partnerId thật. Danh sách lưu trú nền tảng hiện chỉ để tham khảo, chưa hỗ trợ tạo đơn qua Partner Hub.
+- Khi khách đồng ý đặt dịch vụ đối tác và cung cấp họ tên + SĐT + ngày, hãy gọi hàm 'create_booking_draft' với serviceId tương ứng.
 - Tuyệt đối không tự bịa ID dịch vụ mà phải dùng chính xác ID trong danh mục trên!`
 
     // Prepare message payload
@@ -260,7 +261,6 @@ LƯU Ý KHI GỌI HÀM:
 
             const mappedAcc = accList.map((a: any) => ({
               id: a.id,
-              partnerId: "prt_stayea_host",
               title: a.title,
               type: "homestay",
               price: Number(a.pricePerNight),
@@ -283,27 +283,19 @@ LƯU Ý KHI GỌI HÀM:
             })
           } else if (fnName === "create_booking_draft") {
             const matchedService = activeServices.find((s) => s.id === fnArgs.serviceId)
-            const matchedAcc = !matchedService
-              ? (platformAccommodations as any[]).find((a) => a.id === fnArgs.serviceId)
-              : null
+            if (!matchedService) {
+              const toolOutput = JSON.stringify({ success: false, message: "Không tìm thấy dịch vụ đang hoạt động để tạo đơn." })
+              outboundMessages.push({ role: "assistant", content: message.content || "" })
+              outboundMessages.push({ role: "tool", content: toolOutput, tool_call_id: toolCall.id, name: fnName })
+              continue
+            }
 
-            const unitPrice = matchedService
-              ? Number(matchedService.price)
-              : matchedAcc
-              ? Number(matchedAcc.pricePerNight)
-              : 1000000
+            const unitPrice = Number(matchedService.price)
             const qty = fnArgs.quantity || 1
             const totalAmount = unitPrice * qty
-            const serviceTitle =
-              matchedService?.title ||
-              matchedAcc?.title ||
-              fnArgs.serviceTitle ||
-              "Dịch vụ STAYEA"
-            const serviceType =
-              matchedService?.serviceType || (matchedAcc ? "homestay" : "homestay")
-            const partnerId =
-              matchedService?.partnerId ||
-              (matchedAcc ? "prt_stayea_host" : fnArgs.partnerId || "prt_demo")
+            const serviceTitle = matchedService.title
+            const serviceType = matchedService.serviceType
+            const partnerId = matchedService.partnerId
 
             const order = await this.partnerService.createDraftOrder({
               partnerId,
@@ -338,13 +330,12 @@ LƯU Ý KHI GỌI HÀM:
               }
             }
 
-            const toolOutput = JSON.stringify({
+            const toolOutput = JSON.stringify(order ? {
               success: true,
-              orderCode: order?.orderCode || "STY-ORD-PENDING",
-              status: "pending_admin",
-              message:
-                "Đơn đặt dịch vụ đã được tạo thành công và chuyển vào Hàng chờ xét duyệt của Admin STAYEA.",
-            })
+              orderCode: order.orderCode,
+              status: order.status,
+              message: "Đơn đặt dịch vụ đã được tạo thành công và chuyển vào hàng chờ xét duyệt.",
+            } : { success: false, message: "Không thể tạo đơn đặt dịch vụ. Vui lòng thử lại." })
 
             outboundMessages.push({
               role: "assistant",
@@ -385,18 +376,25 @@ LƯU Ý KHI GỌI HÀM:
           if (parsed.action === "create_booking_draft" && parsed.params) {
             const p = parsed.params
             const matchedService = activeServices.find((s) => s.id === p.serviceId)
-            const unitPrice = matchedService ? Number(matchedService.price) : 1000000
+            if (!matchedService) {
+              return {
+                reply: "Mình chưa tìm thấy dịch vụ đang hoạt động để tạo đơn. Hãy chọn một dịch vụ có sẵn trong danh sách.",
+                bookingCreated: null,
+                suggestedActions: ["Xem dịch vụ đang hoạt động", "Liên hệ hỗ trợ"],
+              }
+            }
+            const unitPrice = Number(matchedService.price)
             const qty = p.quantity || 1
             const totalAmount = unitPrice * qty
 
             const order = await this.partnerService.createDraftOrder({
-              partnerId: matchedService?.partnerId || p.partnerId || "prt_demo",
+              partnerId: matchedService.partnerId,
               serviceId: p.serviceId,
               customerName: p.customerName,
               customerPhone: p.customerPhone,
               customerEmail: p.customerEmail,
-              serviceTitle: matchedService?.title || p.serviceTitle || "Dịch vụ STAYEA",
-              serviceType: (matchedService?.serviceType as any) || "homestay",
+              serviceTitle: matchedService.title,
+              serviceType: matchedService.serviceType as any,
               startDate: p.startDate,
               endDate: p.endDate,
               quantity: qty,
@@ -472,7 +470,7 @@ LƯU Ý KHI GỌI HÀM:
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.routerKey}`,
+        ...(this.routerKey ? { Authorization: `Bearer ${this.routerKey}` } : {}),
       },
       body: JSON.stringify(payload),
     })
@@ -554,9 +552,7 @@ LƯU Ý KHI GỌI HÀM:
   async checkHealth() {
     try {
       const res = await fetch(`${this.routerUrl}/models`, {
-        headers: {
-          Authorization: `Bearer ${this.routerKey}`,
-        },
+        headers: this.routerKey ? { Authorization: `Bearer ${this.routerKey}` } : {},
       })
       const isOnline = res.ok
       return {

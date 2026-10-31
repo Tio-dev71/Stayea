@@ -9,7 +9,7 @@ import { TransportFilterSidebar } from "./transport-filter-sidebar"
 import type { TransportFilterState } from "./transport-filter-sidebar"
 import { TransportCard } from "./transport-card"
 import { TransportAdvisoryBanners } from "./transport-advisory-banners"
-import { TRANSPORT_ITEMS } from "@/features/landing/data/stayea-mock-data"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import type { TransportItem } from "@/features/landing/data/stayea-mock-data"
 
 const INITIAL_FILTERS: TransportFilterState = {
@@ -32,6 +32,43 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
     onNavigate?.("service-detail", undefined, { type: "transport", item })
   }, [onNavigate])
   const [activeTab, setActiveTab] = React.useState<string>(initialTab || "all")
+  const [transportItems, setTransportItems] = React.useState<readonly TransportItem[]>([])
+
+  React.useEffect(() => {
+    let isMounted = true
+    stayeaApi.getCatalogServices({ type: "transport" }).then((services) => {
+      if (!isMounted) return
+      setTransportItems(services.map((service: any) => {
+        const title = String(service.title || "")
+        const attrs = service.attributes || {}
+        const typeId: TransportItem["serviceTypeId"] = /airport|sân bay|đưa đón/i.test(title)
+          ? "airport-transfer"
+          : attrs.hasDriver ? "private-driver" : /xe máy|motorbike/i.test(title)
+            ? "motorbike-rental" : "car-rental"
+        const price = Number(service.price || 0)
+        const images = Array.isArray(service.images) ? service.images : []
+        const features = Array.isArray(attrs.amenities) ? attrs.amenities : []
+        return {
+          id: service.id,
+          title,
+          serviceType: attrs.vehicleType || (typeId === "airport-transfer" ? "Đưa đón sân bay" : "Dịch vụ di chuyển"),
+          serviceTypeId: typeId,
+          location: service.location || "",
+          description: service.description || "",
+          rating: Number(service.rating || 0),
+          reviewsCount: Number(service.reviewCount || 0),
+          price,
+          priceDisplay: `${price.toLocaleString("vi-VN")} đ`,
+          priceUnit: service.unit || "ngày",
+          features: features.map((feature: any) => ({ icon: "check", label: typeof feature === "string" ? feature : feature.label || feature.name || "" })),
+          imageUrl: images[0] || "",
+        }
+      }))
+    }).catch(() => {
+      if (isMounted) setTransportItems([])
+    })
+    return () => { isMounted = false }
+  }, [])
 
   React.useEffect(() => {
     if (initialTab) {
@@ -64,7 +101,7 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
 
   // Filter & sort logic
   const filteredItems = React.useMemo(() => {
-    const matched = TRANSPORT_ITEMS.filter((item) => {
+    const matched = transportItems.filter((item) => {
       // 1. Tab filter
       if (activeTab !== "all" && item.serviceTypeId !== activeTab) {
         return false
@@ -114,7 +151,7 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
       // default: keep curated design order from reference design
       return 0
     })
-  }, [activeTab, filters, sortBy])
+  }, [activeTab, filters, sortBy, transportItems])
 
   return (
     <div className="w-full bg-[#f8fafc] min-h-screen pb-20">
@@ -145,7 +182,7 @@ export function TransportListingPage({ onNavigate, initialTab }: TransportListin
             filters={filters}
             onFiltersChange={setFilters}
             onResetFilters={handleResetFilters}
-            items={TRANSPORT_ITEMS}
+            items={transportItems}
           />
 
           {/* Right Main Listing Content */}

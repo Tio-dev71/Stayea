@@ -23,7 +23,7 @@ export const stayeaAccommodationsTable = pgTable(
     category: text("category").notNull(), // villa, resort, apartment, hotel, beachfront
     pricePerNight: numeric("price_per_night", { precision: 12, scale: 2 }).notNull(),
     originalPrice: numeric("original_price", { precision: 12, scale: 2 }),
-    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("5.00"),
+    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("0.00"),
     reviewCount: integer("review_count").notNull().default(0),
     imageUrl: text("image_url").notNull(),
     gallery: jsonb("gallery").$type<string[]>().notNull().default([]),
@@ -67,7 +67,7 @@ export const stayeaExperiencesTable = pgTable(
     location: text("location").notNull(),
     category: text("category").notNull(), // tour, island, snorkeling, diving, cruise, food, spa
     duration: text("duration").notNull(),
-    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("5.00"),
+    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("0.00"),
     reviewCount: integer("review_count").notNull().default(0),
     price: numeric("price", { precision: 12, scale: 2 }).notNull(),
     originalPrice: numeric("original_price", { precision: 12, scale: 2 }),
@@ -107,7 +107,7 @@ export const stayeaPackagesTable = pgTable(
     slug: text("slug").notNull().unique(),
     destination: text("destination").notNull(),
     duration: text("duration").notNull(),
-    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("5.00"),
+    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("0.00"),
     reviewCount: integer("review_count").notNull().default(0),
     price: numeric("price", { precision: 12, scale: 2 }).notNull(),
     originalPrice: numeric("original_price", { precision: 12, scale: 2 }),

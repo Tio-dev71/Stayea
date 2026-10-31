@@ -54,7 +54,7 @@ export function StayeaAdminPropertiesPage({
           else if (cat === "resort") propType = "Resort"
           else if (cat === "hotel" || cat === "khách sạn") propType = "Khách sạn"
 
-          const priceNum = Number(item.pricePerNight) || 4500000
+          const priceNum = Number(item.pricePerNight) || 0
           const formattedPrice = new Intl.NumberFormat("vi-VN", {
             style: "currency",
             currency: "VND",
@@ -64,17 +64,16 @@ export function StayeaAdminPropertiesPage({
 
           return {
             id: item.id || `prop-real-${idx}`,
-            name: item.title || "Villa Phú Quốc",
-            badge: "verified" as const,
+            name: item.title || "",
             propertyType: propType,
-            location: item.address || "Dương Tơ, Phú Quốc",
-            roomsCount: item.bedrooms || 3,
+            location: item.location || item.address || "",
+            roomsCount: item.bedrooms ?? 0,
             priceFrom: formattedPrice,
             status: isPaused ? ("paused" as const) : ("active" as const),
             statusLabel: isPaused ? "Tạm dừng" : "Đang hoạt động",
             views: "0",
             bookingsCount: 0,
-            imageUrl: item.heroImage || "/stay/tropical-garden.jpg",
+            imageUrl: item.imageUrl || item.heroImage || "",
           }
         })
 
@@ -367,25 +366,24 @@ export function StayeaAdminPropertiesPage({
           setIsCreateModalOpen(false)
           const newPropItem: PropertyItem = {
             id: newAccom.id || `prop-${Date.now()}`,
-            name: newAccom.title || "Villa mới",
-            badge: "verified",
+            name: newAccom.title || "",
             propertyType:
               newAccom.category === "apartment"
                 ? "Căn hộ"
                 : newAccom.category === "homestay"
                 ? "Homestay"
                 : "Biệt thự",
-            location: newAccom.address || "Phú Quốc",
-            roomsCount: newAccom.bedrooms || 3,
+            location: newAccom.location || newAccom.address || "",
+            roomsCount: newAccom.bedrooms ?? 0,
             priceFrom: new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
-            }).format(Number(newAccom.pricePerNight) || 4000000),
+            }).format(Number(newAccom.pricePerNight) || 0),
             status: "active",
             statusLabel: "Đang hoạt động",
-            views: "1.0K",
+            views: "0",
             bookingsCount: 0,
-            imageUrl: newAccom.heroImage || "/stay/tropical-garden.jpg",
+            imageUrl: newAccom.imageUrl || newAccom.heroImage || "",
           }
           setPropertiesList((prev) => [newPropItem, ...prev])
         }}

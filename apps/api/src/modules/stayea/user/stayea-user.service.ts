@@ -203,7 +203,7 @@ export class StayeaUserService {
         location: dto.location,
         imageUrl: dto.imageUrl,
         price: dto.price.toString(),
-        rating: dto.rating ? dto.rating.toString() : "5.00",
+        rating: dto.rating !== undefined ? dto.rating.toString() : "0.00",
       })
       .returning()
 

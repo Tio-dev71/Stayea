@@ -17,20 +17,20 @@ export function CreatePropertyModal({
   onSubmitSuccess,
 }: CreatePropertyModalProps) {
   const [title, setTitle] = useState("")
-  const [category, setCategory] = useState("villa")
-  const [address, setAddress] = useState("Bãi Trường, Dương Tơ, Phú Quốc")
-  const [pricePerNight, setPricePerNight] = useState("4500000")
-  const [bedrooms, setBedrooms] = useState("3")
-  const [maxGuests, setMaxGuests] = useState("6")
-  const [heroImage, setHeroImage] = useState("/stay/tropical-garden.jpg")
+  const [category, setCategory] = useState("")
+  const [address, setAddress] = useState("")
+  const [pricePerNight, setPricePerNight] = useState("")
+  const [bedrooms, setBedrooms] = useState("")
+  const [maxGuests, setMaxGuests] = useState("")
+  const [heroImage, setHeroImage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) {
-      toast.error("Vui lòng nhập tên bất động sản.")
+    if (!title.trim() || !category || !address.trim() || !Number(pricePerNight) || !Number(bedrooms) || !Number(maxGuests)) {
+      toast.error("Vui lòng nhập tên, loại hình, địa chỉ, giá, số phòng ngủ và sức chứa hợp lệ.")
       return
     }
 
@@ -39,12 +39,12 @@ export function CreatePropertyModal({
       const res = await stayeaApi.createAccommodation({
         title: title.trim(),
         category,
-        address: address.trim(),
-        pricePerNight: Number(pricePerNight) || 3000000,
-        bedrooms: Number(bedrooms) || 2,
-        maxGuests: Number(maxGuests) || 4,
-        heroImage: heroImage.trim() || "/stay/tropical-garden.jpg",
-        amenities: ["Bể bơi vô cực", "View biển", "Bếp cao cấp", "Wifi tốc độ cao"],
+        location: address.trim(),
+        pricePerNight: Number(pricePerNight),
+        bedrooms: Number(bedrooms),
+        maxGuests: Number(maxGuests),
+        imageUrl: heroImage.trim() || undefined,
+        amenities: [],
       })
 
       if (res && res.id) {
@@ -114,6 +114,7 @@ export function CreatePropertyModal({
                 Phân loại loại hình
               </label>
               <select
+                required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
@@ -131,6 +132,8 @@ export function CreatePropertyModal({
               </label>
               <input
                 type="number"
+                min="1"
+                required
                 value={pricePerNight}
                 onChange={(e) => setPricePerNight(e.target.value)}
                 placeholder="VD: 4500000"
@@ -148,6 +151,7 @@ export function CreatePropertyModal({
               <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
+                required
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="VD: Bãi Trường, Dương Tơ, Phú Quốc"

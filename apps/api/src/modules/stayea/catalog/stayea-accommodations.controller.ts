@@ -11,6 +11,7 @@ import {
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 
 import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
+import { Roles } from "@/shared-kernel/infrastructure/decorators/roles.decorator"
 import { UseEnvelope } from "@/shared-kernel/infrastructure/decorators/use-envelope.decorator"
 
 import { AccommodationsQueryDto } from "@/modules/stayea/catalog/dtos/catalog-query.dto"
@@ -41,14 +42,14 @@ export class StayeaAccommodationsController {
   }
 
   @Post()
-  @Public() // Allow admin form submission from client
+  @Roles("ADMIN")
   @ApiOperation({ summary: "Create new accommodation listing" })
   async create(@Body() dto: CreateAccommodationDto) {
     return this.catalogService.createAccommodation(dto)
   }
 
   @Patch(":id")
-  @Public()
+  @Roles("ADMIN")
   @ApiOperation({ summary: "Update existing accommodation" })
   async update(
     @Param("id") id: string,
@@ -58,7 +59,7 @@ export class StayeaAccommodationsController {
   }
 
   @Delete(":id")
-  @Public()
+  @Roles("ADMIN")
   @ApiOperation({ summary: "Delete accommodation" })
   async remove(@Param("id") id: string) {
     return this.catalogService.deleteAccommodation(id)

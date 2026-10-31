@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
+import { toast } from "sonner"
 import {
   Plus,
   X,
@@ -37,8 +38,9 @@ export type DealModalTab =
 interface CreateDealModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (deal: DealItem) => void
+  onSubmit: (deal: DealItem) => Promise<boolean>
   initialTab?: DealModalTab
+  initialDeal?: DealItem | null
 }
 
 export function CreateDealModal({
@@ -46,6 +48,7 @@ export function CreateDealModal({
   onClose,
   onSubmit,
   initialTab = "basic",
+  initialDeal = null,
 }: CreateDealModalProps) {
   const [activeTab, setActiveTab] = useState<DealModalTab>(initialTab)
 
@@ -61,8 +64,15 @@ export function CreateDealModal({
   const [shortDescription, setShortDescription] = useState("")
   const [discountType, setDiscountType] = useState<"percent" | "fixed" | "same-price">("percent")
   const [discountValue, setDiscountValue] = useState("")
-  const [startDate, setStartDate] = useState("01/06/2024")
-  const [endDate, setEndDate] = useState("31/08/2024")
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date()
+    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`
+  })
+  const [endDate, setEndDate] = useState(() => {
+    const date = new Date()
+    date.setDate(date.getDate() + 30)
+    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`
+  })
   const [status, setStatus] = useState<"Đang hoạt động" | "Tạm dừng" | "Chưa kích hoạt" | "Hết hạn">("Đang hoạt động")
 
   const [detailedDescription, setDetailedDescription] = useState("")
@@ -72,6 +82,33 @@ export function CreateDealModal({
   const [category, setCategory] = useState("Tất cả")
   const [isFeatured, setIsFeatured] = useState(true)
   const [sortOrder, setSortOrder] = useState<number>(0)
+
+  useEffect(() => {
+    if (!isOpen) return
+    if (!initialDeal) {
+      setName("")
+      setDealType("")
+      setShortDescription("")
+      setDiscountType("percent")
+      setDiscountValue("")
+      setCoverImage(null)
+      setCategory("Tất cả")
+      setIsFeatured(false)
+      return
+    }
+    setName(initialDeal.name)
+    setDealType(initialDeal.type)
+    setShortDescription(initialDeal.subtitle)
+    setDiscountType(initialDeal.value.endsWith("%") ? "percent" : "fixed")
+    setDiscountValue(initialDeal.value.replace(/[^\d.]/g, ""))
+    setStartDate(initialDeal.startDate)
+    setEndDate(initialDeal.endDate)
+    setStatus(initialDeal.status === "paused" ? "Tạm dừng" : initialDeal.status === "upcoming" ? "Chưa kích hoạt" : initialDeal.status === "expired" ? "Hết hạn" : "Đang hoạt động")
+    setCoverImage(initialDeal.image || null)
+    setCategory(initialDeal.category)
+    setIsFeatured(initialDeal.featured)
+    setSortOrder(initialDeal.sortOrder)
+  }, [isOpen, initialDeal])
 
   const formBodyRef = useRef<HTMLFormElement>(null)
 
@@ -91,8 +128,25 @@ export function CreateDealModal({
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name.trim() || !dealType || !Number(discountValue) || !startDate.trim() || !endDate.trim()) {
+      toast.error("Vui lòng nhập tên, loại ưu đãi, giá trị và thời gian áp dụng.")
+      return
+    }
+    const parseDate = (value: string) => {
+      const match = value.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+      if (!match) return null
+      const [, day, month, year] = match
+      const date = new Date(Number(year), Number(month) - 1, Number(day))
+      return date.getDate() === Number(day) && date.getMonth() === Number(month) - 1 ? date : null
+    }
+    const parsedStart = parseDate(startDate)
+    const parsedEnd = parseDate(endDate)
+    if (!parsedStart || !parsedEnd || parsedEnd <= parsedStart) {
+      toast.error("Ngày áp dụng cần theo định dạng dd/mm/yyyy và ngày kết thúc phải sau ngày bắt đầu.")
+      return
+    }
 
     const dealStatusMap: Record<string, DealStatus> = {
       "Đang hoạt động": "active",
@@ -102,24 +156,23 @@ export function CreateDealModal({
     }
 
     const newDeal: DealItem = {
-      id: `deal-${Date.now()}`,
-      name: name.trim() || "Chương trình ưu đãi mới",
-      subtitle: shortDescription.trim() || "Ưu đãi trải nghiệm & tour",
-      code: `PROMO${Math.floor(1000 + Math.random() * 9000)}`,
-      type: dealType || "Giảm giá trực tiếp",
-      value: discountType === "percent" ? `${discountValue || 20}%` : `${discountValue || 200_000} đ`,
-      startDate: startDate || "01/06/2024",
-      endDate: endDate || "31/08/2024",
+      id: "",
+      name: name.trim(),
+      subtitle: shortDescription.trim(),
+      code: initialDeal?.code || `STY${Date.now().toString().slice(-8)}`,
+      type: dealType,
+      value: discountType === "percent" ? `${discountValue}%` : `${discountValue} đ`,
+      startDate,
+      endDate,
       usedCount: 0,
       status: dealStatusMap[status] || "active",
-      image: coverImage || "/experience/cano-4-islands.jpg",
+      image: coverImage || "",
       category: category || "Tất cả",
       featured: isFeatured,
       sortOrder: Number(sortOrder) || 0,
     }
 
-    onSubmit(newDeal)
-    onClose()
+    if (await onSubmit(newDeal)) onClose()
   }
 
   return (

@@ -39,11 +39,11 @@ export const partnerProfilesTable = pgTable(
       enum: ["pending", "approved", "rejected", "suspended"],
     })
       .notNull()
-      .default("approved"),
+      .default("pending"),
     commissionRate: numeric("commission_rate", { precision: 5, scale: 2 })
       .notNull()
       .default("10.00"),
-    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("5.00"),
+    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("0.00"),
     totalOrders: integer("total_orders").notNull().default(0),
     metadata: jsonb("metadata")
       .$type<Record<string, unknown>>()

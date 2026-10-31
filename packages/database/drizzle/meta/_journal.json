@@ -36,6 +36,13 @@
       "when": 1792473009125,
       "tag": "0004_lively_pet_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793435586869,
+      "tag": "0005_groovy_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

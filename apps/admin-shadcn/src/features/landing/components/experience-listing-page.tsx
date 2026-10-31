@@ -8,9 +8,6 @@ import { ExperienceSidebar } from "./experience-sidebar"
 import type { ExperienceFilterState } from "./experience-sidebar"
 import { ExperienceCard } from "./experience-card"
 import { stayeaApi } from "@/lib/stayea-api-service"
-import {
-  EXPERIENCE_LISTINGS,
-} from "@/features/landing/data/stayea-mock-data"
 import type { ExperienceListingItem } from "@/features/landing/data/stayea-mock-data"
 
 const INITIAL_FILTERS: ExperienceFilterState = {
@@ -32,7 +29,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
     ...INITIAL_FILTERS,
     category: initialCategory || "all",
   }))
-  const [experiences, setExperiences] = React.useState<readonly ExperienceListingItem[]>(EXPERIENCE_LISTINGS)
+  const [experiences, setExperiences] = React.useState<readonly ExperienceListingItem[]>([])
 
   React.useEffect(() => {
     let isMounted = true
@@ -49,7 +46,7 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
           title: db.title,
           tag: db.badge || "Trải nghiệm",
           categoryId: db.category === "tour" ? "tours" : db.category,
-          rating: Number(db.rating || 5.0),
+          rating: Number(db.rating || 0),
           reviewsCount: `${db.reviewCount || 0} đánh giá`,
           description: db.description || "",
           duration: db.duration || "Nửa ngày",
@@ -57,11 +54,13 @@ export function ExperienceListingPage({ onNavigate, initialCategory }: Experienc
           highlightIcon: "palmtree",
           price: p,
           formattedPrice: `${p.toLocaleString("vi-VN")}đ/khách`,
-          imageUrl: db.imageUrl,
+          imageUrl: db.imageUrl || "",
         }
       })
       setExperiences(mapped)
-    }).catch(() => {})
+    }).catch(() => {
+      if (isMounted) setExperiences([])
+    })
     return () => {
       isMounted = false
     }

@@ -7,7 +7,7 @@ import {
   stayeaFlightsTable,
   stayeaPromotionsTable,
 } from "@workspace/database"
-import { and, eq, gte, ilike, lte, or } from "drizzle-orm"
+import { and, desc, eq, gte, ilike, lte, or } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
@@ -20,6 +20,10 @@ import type {
   FlightsQueryDto,
   ValidatePromoDto,
 } from "@/modules/stayea/catalog/dtos/catalog-query.dto"
+import type {
+  CreatePromotionDto,
+  UpdatePromotionDto,
+} from "@/modules/stayea/catalog/dtos/promotion.dto"
 
 @Injectable()
 export class StayeaCatalogService {
@@ -117,28 +121,19 @@ export class StayeaCatalogService {
         id,
         title: dto.title,
         slug,
-        location: dto.location || "Phú Quốc, Việt Nam",
-        category: dto.category || "villa",
-        pricePerNight: dto.pricePerNight ? dto.pricePerNight.toString() : "2000000.00",
+        location: dto.location,
+        category: dto.category,
+        pricePerNight: dto.pricePerNight.toString(),
         originalPrice: dto.originalPrice ? dto.originalPrice.toString() : null,
-        imageUrl:
-          dto.imageUrl ||
-          "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
-        gallery: dto.gallery || [
-          "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
-          "https://images.unsplash.com/photo-1566073771259-6a8506099945",
-        ],
-        bedrooms: dto.bedrooms ?? 2,
-        bathrooms: dto.bathrooms ?? 2,
-        maxGuests: dto.maxGuests ?? 4,
-        amenities: dto.amenities || [
-          { icon: "wifi", label: "Wifi tốc độ cao" },
-          { icon: "pool", label: "Hồ bơi riêng" },
-          { icon: "kitchen", label: "Bếp gia đình" },
-        ],
+        imageUrl: dto.imageUrl || "",
+        gallery: dto.gallery || [],
+        bedrooms: dto.bedrooms ?? 0,
+        bathrooms: dto.bathrooms ?? 0,
+        maxGuests: dto.maxGuests ?? 0,
+        amenities: dto.amenities || [],
         badge: dto.badge || null,
-        isFeatured: dto.isFeatured ?? true,
-        hostName: dto.hostName || "STAYEA Official Host",
+        isFeatured: dto.isFeatured ?? false,
+        hostName: dto.hostName || null,
         description: dto.description || "",
       })
       .returning()
@@ -411,6 +406,64 @@ export class StayeaCatalogService {
       .select()
       .from(stayeaPromotionsTable)
       .where(and(...conditions))
+  }
+
+  async findAdminPromotions() {
+    return this.db
+      .select()
+      .from(stayeaPromotionsTable)
+      .orderBy(desc(stayeaPromotionsTable.createdAt))
+  }
+
+  async createPromotion(dto: CreatePromotionDto) {
+    const code = dto.code.trim().toUpperCase()
+    const [created] = await this.db
+      .insert(stayeaPromotionsTable)
+      .values({
+        id: `promo_${randomUUID().replaceAll("-", "").slice(0, 12)}`,
+        code,
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        discountType: dto.discountType,
+        discountValue: dto.discountValue.toString(),
+        maxDiscount: dto.maxDiscount?.toString() ?? null,
+        minSpend: dto.minSpend?.toString() ?? "0",
+        category: dto.category || "all",
+        badge: dto.badge || null,
+        imageUrl: dto.imageUrl || null,
+        terms: dto.terms || [],
+        startDate: dto.startDate ? new Date(dto.startDate) : null,
+        endDate: dto.endDate ? new Date(dto.endDate) : null,
+        usageLimit: dto.usageLimit ?? null,
+        isActive: dto.isActive ?? true,
+      })
+      .returning()
+    return created
+  }
+
+  async updatePromotion(id: string, dto: UpdatePromotionDto) {
+    const [updated] = await this.db
+      .update(stayeaPromotionsTable)
+      .set({
+        ...(dto.title !== undefined ? { title: dto.title.trim() } : {}),
+        ...(dto.description !== undefined ? { description: dto.description.trim() } : {}),
+        ...(dto.discountType !== undefined ? { discountType: dto.discountType } : {}),
+        ...(dto.discountValue !== undefined ? { discountValue: dto.discountValue.toString() } : {}),
+        ...(dto.maxDiscount !== undefined ? { maxDiscount: dto.maxDiscount.toString() } : {}),
+        ...(dto.minSpend !== undefined ? { minSpend: dto.minSpend.toString() } : {}),
+        ...(dto.category !== undefined ? { category: dto.category } : {}),
+        ...(dto.badge !== undefined ? { badge: dto.badge } : {}),
+        ...(dto.imageUrl !== undefined ? { imageUrl: dto.imageUrl } : {}),
+        ...(dto.terms !== undefined ? { terms: dto.terms } : {}),
+        ...(dto.startDate !== undefined ? { startDate: new Date(dto.startDate) } : {}),
+        ...(dto.endDate !== undefined ? { endDate: new Date(dto.endDate) } : {}),
+        ...(dto.usageLimit !== undefined ? { usageLimit: dto.usageLimit } : {}),
+        ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+      })
+      .where(eq(stayeaPromotionsTable.id, id))
+      .returning()
+    if (!updated) throw new NotFoundException("Không tìm thấy chương trình ưu đãi")
+    return updated
   }
 
   async validatePromoCode(dto: ValidatePromoDto) {

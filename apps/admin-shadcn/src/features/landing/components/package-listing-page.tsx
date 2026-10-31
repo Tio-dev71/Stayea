@@ -13,7 +13,6 @@ import { PackageCard } from "./package-card"
 import { PackageCustomBanner } from "./package-custom-banner"
 import { stayeaApi } from "@/lib/stayea-api-service"
 import {
-  PACKAGE_LISTINGS,
   PACKAGE_FILTER_DURATIONS,
   PACKAGE_FILTER_PRICES,
   PACKAGE_FILTER_TYPES,
@@ -32,7 +31,7 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
     onNavigate?.("service-detail", undefined, { type: "package", item })
   }, [onNavigate])
   const [selectedAudience, setSelectedAudience] = React.useState<string>(initialAudience || "all")
-  const [packages, setPackages] = React.useState<readonly PackageListingItem[]>(PACKAGE_LISTINGS)
+  const [packages, setPackages] = React.useState<readonly PackageListingItem[]>([])
 
   React.useEffect(() => {
     let isMounted = true
@@ -54,15 +53,17 @@ export function PackageListingPage({ onNavigate, initialAudience }: PackageListi
           duration: db.duration || "3 ngày 2 đêm",
           highlight: Array.isArray(db.includedServices) && db.includedServices[0] ? db.includedServices[0] : "Trọn gói nghỉ dưỡng",
           highlightIcon: "building" as const,
-          rating: Number(db.rating || 5.0),
+          rating: Number(db.rating || 0),
           reviewsCount: `${db.reviewCount || 0} đánh giá`,
           price: p,
           formattedPrice: `${p.toLocaleString("vi-VN")}đ/khách`,
-          imageUrl: db.imageUrl,
+          imageUrl: db.imageUrl || "",
         }
       })
       setPackages(mapped)
-    }).catch(() => {})
+    }).catch(() => {
+      if (isMounted) setPackages([])
+    })
     return () => {
       isMounted = false
     }

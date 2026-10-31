@@ -3,6 +3,7 @@
 import { useState, useId } from "react"
 import { toast } from "sonner"
 import { stayeaApi } from "@/lib/stayea-api-service"
+import type { BookingResult } from "@/lib/stayea-api-service"
 import {
   X,
   Plus,
@@ -16,7 +17,7 @@ import {
 interface CreateBookingModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmitSuccess?: (bookingData: BookingFormData) => void
+  onSubmitSuccess?: (booking: BookingResult) => void
 }
 
 export interface BookingFormData {
@@ -82,28 +83,6 @@ export function CreateBookingModal({
 
   if (!isOpen) return null
 
-  // Fast demo prefill helper
-  const handleSelectExistingCustomer = () => {
-    setFullName("Sarah Johnson")
-    setNationality("Mỹ")
-    setPhoneNumber("+84 912 345 678")
-    setEmail("sarah.johnson@example.com")
-    setProperty("Sunset Villa Phú Quốc")
-    setPropertyType("Biệt thự")
-    setRoomName("Villa 3 phòng ngủ hướng biển")
-    setCheckInDate("2025-04-25")
-    setCheckOutDate("2025-04-28")
-    setNightsCount(3)
-    setGuestsCount(4)
-    setRoomsCount(1)
-    setPricePerNight("2.500.000 đ")
-    setTotalAmount("7.500.000 đ")
-    setPaymentMethod("Chuyển khoản")
-    setPaymentStatus("Chưa thanh toán")
-    setBookingSource("Website")
-    setSpecialRequests("Cần nhận phòng sớm lúc 12:00 nếu phòng trống, đón sân bay lúc 11:15")
-  }
-
   const handleDateChange = (newCheckIn: string, newCheckOut: string) => {
     setCheckInDate(newCheckIn)
     setCheckOutDate(newCheckOut)
@@ -150,55 +129,46 @@ export function CreateBookingModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!fullName.trim() || !email.trim() || !phoneNumber.trim() || !property.trim() || !checkInDate || !checkOutDate) {
+      toast.error("Vui lòng nhập đủ thông tin khách, dịch vụ và ngày lưu trú.")
+      return
+    }
     setIsSubmitting(true)
 
-    const numAmount = Number.parseInt(totalAmount.replaceAll(/\D/g, ""), 10) || 3500000
+    const numAmount = Number.parseInt(totalAmount.replaceAll(/\D/g, ""), 10) || 0
 
     try {
       const res = await stayeaApi.createBooking({
         bookingType: "stay",
-        title: property || "Sunset Villa Phú Quốc",
-        destination: "Phú Quốc, Kiên Giang",
-        startDate: checkInDate || new Date().toISOString().split("T")[0] || "",
-        endDate: checkOutDate || new Date(Date.now() + 86400000 * (nightsCount || 2)).toISOString().split("T")[0] || "",
+        title: property,
+        destination: property,
+        startDate: checkInDate,
+        endDate: checkOutDate,
         guestCount: guestsCount,
         totalAmount: numAmount,
         paymentMethod: paymentMethod || "Chuyển khoản",
         details: {
           stayId: property,
           roomType: roomName,
-          nightCount: nightsCount || 2,
+          nightCount: nightsCount,
           contactInfo: {
-            fullName: fullName || "Khách hàng",
-            email: email || "khach@stayea.com",
-            phone: phoneNumber || "0987654321",
+            fullName,
+            email,
+            phone: phoneNumber,
             note: specialRequests,
           },
         },
       })
-
-      const newBookingRecord: any = {
-        id: res.id || `b-${Date.now()}`,
-        code: res.bookingCode || `ST${Date.now().toString().slice(-6)}`,
-        guestName: fullName || "Khách Hàng",
-        guestAvatar: "/about/team-2.jpg",
-        guestFlag: nationality.includes("Mỹ") ? "🇺🇸" : "🇻🇳",
-        propertyName: property || "Sunset Villa Phú Quốc",
-        checkIn: checkInDate || "Hôm nay",
-        checkOut: checkOutDate || "Sau 2 ngày",
-        guestsCount: guestsCount || 2,
-        bookingStatus: "Chờ xác nhận",
-        paymentStatus: paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chờ thanh toán",
-        totalAmount: totalAmount || "3.500.000 đ",
-        channel: (bookingSource as any) || "Website",
-        channelType: "website",
+      if (!res.success) {
+        toast.error(res.message || "Không thể lưu đơn đặt phòng.")
+        return
       }
 
       toast.success("Tạo đặt phòng thành công!", {
-        description: `Mã đơn ${newBookingRecord.code} đã được lưu vào hệ thống database.`,
+        description: `Mã đơn ${res.bookingCode} đã được lưu vào hệ thống.`,
       })
 
-      onSubmitSuccess?.(newBookingRecord)
+      onSubmitSuccess?.(res)
     } catch {
       toast.error("Không thể lưu đơn đặt phòng, vui lòng thử lại")
     } finally {
@@ -248,13 +218,6 @@ export function CreateBookingModal({
               <h3 className="text-xs sm:text-sm font-bold text-slate-900">
                 Thông tin khách hàng
               </h3>
-              <button
-                type="button"
-                onClick={handleSelectExistingCustomer}
-                className="text-xs font-semibold text-[#1b7a4e] hover:text-emerald-800 hover:underline transition-colors"
-              >
-                Chọn khách hàng có sẵn
-              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">

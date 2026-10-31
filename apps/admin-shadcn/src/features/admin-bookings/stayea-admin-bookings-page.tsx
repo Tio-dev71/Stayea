@@ -47,7 +47,7 @@ export function StayeaAdminBookingsPage({
     try {
       const realItems = await stayeaApi.getAllBookingsForAdmin()
       if (Array.isArray(realItems) && realItems.length > 0) {
-        const mapped: BookingRecord[] = realItems.map((item: any, idx: number) => {
+        const mapped: BookingRecord[] = realItems.map((item: any) => {
           let bookingStatus: BookingRecord["bookingStatus"] = "Chờ xác nhận"
           const st = (item.status || "").toLowerCase()
           if (st === "confirmed" || st === "đã xác nhận") bookingStatus = "Đã xác nhận"
@@ -61,15 +61,15 @@ export function StayeaAdminBookingsPage({
           else if (pst === "partially_paid" || pst === "cọc 50%") paymentStatus = "Cọc 50%"
           else if (pst === "refunded") paymentStatus = "Hoàn tiền"
 
-          const totalNum = Number(item.totalAmount) || 8500000
+          const totalNum = Number(item.totalAmount) || 0
           const formattedTotal = new Intl.NumberFormat("vi-VN", {
             style: "currency",
             currency: "VND",
           }).format(totalNum)
 
           return {
-            id: item.id || `booking-real-${idx}`,
-            code: item.bookingCode || `STAY-${1000 + idx}`,
+            id: item.id,
+            code: item.bookingCode || item.id || "",
             guestName:
               item.details?.contactInfo?.fullName ||
               item.contactName ||
@@ -77,7 +77,7 @@ export function StayeaAdminBookingsPage({
               "Khách hàng STAYEA",
             guestAvatar: "/about/team-1.jpg",
             guestFlag: "🇻🇳",
-            propertyName: item.title || item.metadata?.propertyName || "Dịch vụ STAYEA",
+            propertyName: item.title || item.metadata?.propertyName || "",
             checkIn:
               item.startDate || item.checkInDate
                 ? new Date(item.startDate || item.checkInDate).toLocaleDateString("vi-VN")
@@ -200,7 +200,8 @@ export function StayeaAdminBookingsPage({
     else if (newStatus === "cancelled") viStatus = "Đã hủy"
 
     try {
-      await stayeaApi.updateBookingStatus(id, newStatus)
+      const saved = await stayeaApi.updateBookingStatus(id, newStatus)
+      if (!saved) throw new Error("Cập nhật trạng thái không thành công")
       setBookingsList((prev) =>
         prev.map((b) => (b.id === id ? { ...b, bookingStatus: viStatus } : b))
       )
@@ -208,13 +209,7 @@ export function StayeaAdminBookingsPage({
         description: `Đơn đặt phòng đã được chuyển sang "${viStatus}".`,
       })
     } catch {
-      // Still update UI for client responsiveness
-      setBookingsList((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, bookingStatus: viStatus } : b))
-      )
-      toast.success("Đã ghi nhận thay đổi trạng thái!", {
-        description: `Trạng thái: ${viStatus}.`,
-      })
+      toast.error("Không thể cập nhật trạng thái đơn đặt phòng.")
     }
   }
 
@@ -382,29 +377,9 @@ export function StayeaAdminBookingsPage({
       <CreateBookingModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmitSuccess={(data) => {
+        onSubmitSuccess={(booking) => {
           setIsCreateModalOpen(false)
-          // Add new booking to top of list
-          const newBooking: BookingRecord = {
-            id: `booking-${Date.now()}`,
-            code: `STAY-${Math.floor(1000 + Math.random() * 9000)}`,
-            guestName: data.fullName || "Khách hàng mới",
-            guestAvatar: "/about/team-1.jpg",
-            guestFlag: "🇻🇳",
-            propertyName: data.property || "Villa Phú Quốc",
-            checkIn: data.checkInDate || "29/10/2026",
-            checkOut: data.checkOutDate || "01/11/2026",
-            guestsCount: data.guestsCount || 2,
-            bookingStatus: "Chờ xác nhận",
-            paymentStatus: "Chờ thanh toán",
-            totalAmount: data.totalAmount || "12.000.000 ₫",
-            channel: "Website",
-            channelType: "website",
-          }
-          setBookingsList((prev) => [newBooking, ...prev])
-          toast.success("Tạo đặt phòng thành công!", {
-            description: `Đơn đặt chỗ cho ${data.fullName || "Khách hàng"} tại ${data.property || "Phú Quốc"} (${data.totalAmount}) đã được ghi nhận vào hệ thống.`,
-          })
+          if (booking.success) void fetchBookings()
         }}
       />
 

@@ -218,15 +218,7 @@ class StayeaApiService {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return await res.json()
     } catch {
-      // Fallback to local data
-      const q = (params?.search || "").toLowerCase()
-      const filtered = PHU_QUOC_DESTINATIONS.filter((d) =>
-        d.name.toLowerCase().includes(q) || d.region.toLowerCase().includes(q)
-      )
-      return {
-        items: [],
-        count: filtered.length,
-      }
+      return { items: [], count: 0 }
     }
   }
 
@@ -278,6 +270,26 @@ class StayeaApiService {
       return await res.json()
     } catch {
       return { items: [], count: 0 }
+    }
+  }
+
+  async getCatalogItem(type: "stay" | "experience" | "package" | "transport", id: string): Promise<any | null> {
+    try {
+      if (type === "transport") {
+        const services = await this.getCatalogServices({ type: "transport" })
+        const service = services.find((entry: any) => entry.id === id)
+        if (!service) return null
+        const images = Array.isArray(service.images) ? service.images : []
+        return { ...service, price: Number(service.price || 0), imageUrl: images[0] || "", gallery: images, rating: Number(service.rating || 0), reviewsCount: Number(service.reviewCount || 0) }
+      }
+      const collection = type === "stay" ? "accommodations" : type === "experience" ? "experiences" : "packages"
+      const res = await fetch(`${this.baseUrl}/${collection}/${encodeURIComponent(id)}`)
+      if (!res.ok) return null
+      const json = await res.json()
+      const item = json.data || json
+      return { ...item, price: Number(item.price ?? item.pricePerNight ?? 0), rating: Number(item.rating || 0), reviewsCount: Number(item.reviewCount || 0) }
+    } catch {
+      return null
     }
   }
 
@@ -902,7 +914,7 @@ class StayeaApiService {
         body: JSON.stringify({
           name: dto.name,
           email: dto.email,
-          password: dto.password || "Stayea@2026",
+          password: dto.password,
           role: dto.role || "USER",
         }),
       })
@@ -1069,9 +1081,8 @@ class StayeaApiService {
   async getPartnerOrders(params?: { partnerId?: string; status?: string }): Promise<any[]> {
     try {
       const searchParams = new URLSearchParams()
-      if (params?.partnerId) searchParams.set("partnerId", params.partnerId)
       if (params?.status) searchParams.set("status", params.status)
-      const res = await fetch(`/api/stayea/partner/public/orders?${searchParams.toString()}`, {
+      const res = await fetch(`/api/stayea/partner/orders?${searchParams.toString()}`, {
         headers: this.getAuthHeader(),
       })
       if (res.ok) {
@@ -1088,14 +1099,67 @@ class StayeaApiService {
   /**
    * Partner Hub: Respond to order
    */
-  async partnerRespondOrder(orderId: string, action: "accept" | "reject", reason?: string, partnerId?: string): Promise<boolean> {
+  async partnerRespondOrder(orderId: string, action: "accept" | "reject", reason?: string): Promise<boolean> {
     try {
-      const searchParams = new URLSearchParams()
-      if (partnerId) searchParams.set("partnerId", partnerId)
-      const res = await fetch(`/api/stayea/partner/public/orders/${orderId}/respond?${searchParams.toString()}`, {
+      const res = await fetch(`/api/stayea/partner/orders/${orderId}/respond`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
         body: JSON.stringify({ action, note: reason }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  async createPartnerService(payload: Record<string, unknown>): Promise<any | null> {
+    try {
+      const res = await fetch(`/api/stayea/partner/services`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.data || json
+    } catch {
+      return null
+    }
+  }
+
+  async updatePartnerProfile(payload: Record<string, unknown>): Promise<any | null> {
+    try {
+      const res = await fetch(`/api/stayea/partner/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.data || json
+    } catch {
+      return null
+    }
+  }
+
+  async updatePartnerService(id: string, payload: Record<string, unknown>): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/partner/services/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  async deletePartnerService(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/partner/services/${id}`, {
+        method: "DELETE",
+        headers: this.getAuthHeader(),
       })
       return res.ok
     } catch {
@@ -1155,15 +1219,47 @@ class StayeaApiService {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return await res.json()
     } catch {
-      // Mock validation fallback
-      if (code.toUpperCase().includes("STAYEA") || code.toUpperCase().includes("GOLD")) {
-        return {
-          valid: true,
-          discountAmount: Math.round((subtotal || 5_000_000) * 0.1),
-          message: "Áp dụng voucher giảm giá 10% thành công!",
-        }
-      }
-      return { valid: false, message: "Mã ưu đãi không hợp lệ hoặc đã hết lượt dùng" }
+      return { isValid: false, message: "Không thể kiểm tra mã ưu đãi lúc này." }
+    }
+  }
+
+  async getAdminPromotions(): Promise<any[]> {
+    try {
+      const res = await fetch(`${this.baseUrl}/deals/admin`, { headers: this.getAuthHeader() })
+      if (!res.ok) return []
+      const json = await res.json()
+      const data = json.data || json
+      return Array.isArray(data) ? data : data.items || []
+    } catch {
+      return []
+    }
+  }
+
+  async createAdminPromotion(payload: Record<string, unknown>): Promise<any | null> {
+    try {
+      const res = await fetch(`${this.baseUrl}/deals/admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.data || json
+    } catch {
+      return null
+    }
+  }
+
+  async updateAdminPromotion(id: string, payload: Record<string, unknown>): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.baseUrl}/deals/admin/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      return res.ok
+    } catch {
+      return false
     }
   }
 

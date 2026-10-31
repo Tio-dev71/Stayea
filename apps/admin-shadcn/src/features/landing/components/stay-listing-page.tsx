@@ -9,7 +9,6 @@ import type { StayFilterState } from "./stay-filter-sidebar"
 import { StayCard } from "./stay-card"
 import { StayPromoBanner } from "./stay-promo-banner"
 import { stayeaApi } from "@/lib/stayea-api-service"
-import { STAY_ACCOMMODATION_LISTINGS } from "@/features/landing/data/stayea-mock-data"
 import type { StayAccommodationItem } from "@/features/landing/data/stayea-mock-data"
 
 const INITIAL_FILTERS: StayFilterState = {
@@ -43,7 +42,7 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
   }, [initialCategory])
 
   const [activeCategoryTab, setActiveCategoryTab] = React.useState<string>(normalizedInit)
-  const [accommodations, setAccommodations] = React.useState<readonly StayAccommodationItem[]>(STAY_ACCOMMODATION_LISTINGS)
+  const [accommodations, setAccommodations] = React.useState<readonly StayAccommodationItem[]>([])
 
   React.useEffect(() => {
     let isMounted = true
@@ -92,11 +91,11 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
           title: db.title,
           type,
           location: db.location,
-          rating: Number(db.rating || 5.0),
+          rating: Number(db.rating || 0),
           reviewsCount: Number(db.reviewCount || 0),
           pricePerNight: priceNum,
           formattedPrice: `${priceNum.toLocaleString("vi-VN")} đ`,
-          imageUrl: db.imageUrl,
+          imageUrl: db.imageUrl || "",
           badge: db.badge ? { text: db.badge, variant: badgeVariant } : undefined,
           categoryId,
           area,
@@ -109,7 +108,9 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
         }
       })
       setAccommodations(mapped)
-    }).catch(() => {})
+    }).catch(() => {
+      if (isMounted) setAccommodations([])
+    })
     return () => {
       isMounted = false
     }

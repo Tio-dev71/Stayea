@@ -61,7 +61,7 @@ export function FavoritesPage({ onNavigate }: FavoritesPageProps) {
         if (Array.isArray(raw) && raw.length > 0) {
           const mapped: FavoriteItem[] = raw.map((f: any) => ({
             id: f.id || f.itemId,
-            title: f.title || "Địa điểm yêu thích",
+            title: f.title || "",
             category: (f.itemType || "stay") as FavoriteItemCategory,
             categoryLabel:
               f.itemType === "experience"
@@ -75,15 +75,15 @@ export function FavoritesPage({ onNavigate }: FavoritesPageProps) {
                 : f.itemType === "transport"
                   ? "amber"
                   : "purple",
-            rating: Number(f.rating) || 5.0,
+            rating: Number(f.rating) || 0,
             reviewsCount: `${f.reviewsCount || 0} đánh giá`,
-            dateOrDuration: f.dateOrDuration || "Linh hoạt",
-            location: f.location || "Phú Quốc",
-            extraDetail: f.extraDetail || "Chi tiết dịch vụ",
+            dateOrDuration: f.dateOrDuration || "",
+            location: f.location || "",
+            extraDetail: f.extraDetail || "",
             extraDetailIcon: "bed",
             price: Number(f.price || 0),
             priceUnit: f.priceUnit || "",
-            imageUrl: f.imageUrl || "/profile/bai-sao.jpg",
+            imageUrl: f.imageUrl || "",
             targetRoute: f.itemType || "stay",
           }))
           setFavoriteList(mapped)

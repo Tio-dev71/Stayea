@@ -6,9 +6,6 @@ import { Plus } from "lucide-react"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
-import {
-  MOCK_DEALS,
-} from "./stayea-admin-deals-mock-data"
 import type { DealItem } from "./stayea-admin-deals-mock-data"
 import { DealsKpiCards } from "./components/deals-kpi-cards"
 import { DealsFilterBar } from "./components/deals-filter-bar"
@@ -16,6 +13,43 @@ import { DealsDataTable } from "./components/deals-data-table"
 import { DealsRightSidebar } from "./components/deals-right-sidebar"
 import { CreateDealModal } from "./components/create-deal-modal"
 import type { DealModalTab } from "./components/create-deal-modal"
+import { stayeaApi } from "@/lib/stayea-api-service"
+
+function mapPromotion(promotion: any): DealItem {
+  const start = promotion.startDate ? new Date(promotion.startDate) : null
+  const end = promotion.endDate ? new Date(promotion.endDate) : null
+  const now = new Date()
+  const status: DealItem["status"] = end && end < now
+    ? "expired"
+    : start && start > now
+      ? "upcoming"
+      : promotion.isActive ? "active" : "paused"
+  const displayDate = (date: Date | null) => date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("vi-VN") : ""
+  const discountValue = Number(promotion.discountValue || 0)
+  return {
+    id: promotion.id,
+    name: promotion.title,
+    subtitle: promotion.description || "",
+    code: promotion.code,
+    type: promotion.discountType === "percentage" ? "Mã giảm giá" : "Giảm giá trực tiếp",
+    value: promotion.discountType === "percentage" ? `${discountValue}%` : `${discountValue.toLocaleString("vi-VN")} đ`,
+    startDate: displayDate(start),
+    endDate: displayDate(end),
+    usedCount: Number(promotion.usedCount || 0),
+    status,
+    image: promotion.imageUrl || "",
+    category: promotion.category || "all",
+    featured: Boolean(promotion.badge),
+    sortOrder: 0,
+  }
+}
+
+function parsePromotionDate(value: string) {
+  const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+  if (!match) return undefined
+  const [, day, month, year] = match
+  return new Date(Number(year), Number(month) - 1, Number(day)).toISOString()
+}
 
 interface StayeaAdminDealsPageProps {
   onNavigateLanding?: () => void
@@ -32,11 +66,20 @@ export function StayeaAdminDealsPage({
 }: StayeaAdminDealsPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
-  const [deals, setDeals] = useState<DealItem[]>(MOCK_DEALS)
+  const [deals, setDeals] = useState<DealItem[]>([])
+  const [editingDeal, setEditingDeal] = useState<DealItem | null>(null)
 
   useEffect(() => {
     setIsCreateModalOpen(initialModalOpen)
   }, [initialModalOpen])
+
+  useEffect(() => {
+    let isMounted = true
+    stayeaApi.getAdminPromotions().then((items) => {
+      if (isMounted) setDeals(items.map(mapPromotion))
+    })
+    return () => { isMounted = false }
+  }, [])
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState("")
@@ -77,7 +120,7 @@ export function StayeaAdminDealsPage({
     {
       id: "conversion",
       title: "Tỷ lệ sử dụng",
-      value: deals.length > 0 ? "100%" : "0%",
+      value: "—",
       change: "0%",
       trend: "up" as const,
       subtext: "trên tổng số booking",
@@ -108,11 +151,36 @@ export function StayeaAdminDealsPage({
     })
   }, [deals, searchQuery, selectedStatusTab])
 
-  const handleCreateDeal = (newDeal: DealItem) => {
-    setDeals((prev) => [newDeal, ...prev])
-    toast.success("Tạo chương trình khuyến mãi thành công!", {
-      description: `${newDeal.name} (${newDeal.code}) đã được kích hoạt.`,
-    })
+  const handleCreateDeal = async (newDeal: DealItem): Promise<boolean> => {
+    const payload = {
+      code: newDeal.code,
+      title: newDeal.name,
+      description: newDeal.subtitle,
+      discountType: newDeal.value.endsWith("%") ? "percentage" : "fixed",
+      discountValue: Number(newDeal.value.replace(/[^\d.]/g, "")),
+      category: newDeal.category === "Tất cả" ? "all" : newDeal.category,
+      badge: newDeal.featured ? "Nổi bật" : undefined,
+      imageUrl: undefined,
+      startDate: parsePromotionDate(newDeal.startDate),
+      endDate: parsePromotionDate(newDeal.endDate),
+      isActive: newDeal.status === "active" || newDeal.status === "upcoming",
+    }
+    const saved = editingDeal
+      ? await stayeaApi.updateAdminPromotion(editingDeal.id, payload)
+      : await stayeaApi.createAdminPromotion(payload)
+    if (!saved) {
+      toast.error("Không thể lưu chương trình ưu đãi. Vui lòng kiểm tra dữ liệu và thử lại.")
+      return false
+    }
+    if (typeof saved === "object") {
+      setDeals((prev) => [mapPromotion(saved), ...prev.filter((deal) => deal.id !== saved.id)])
+    } else {
+      const items = await stayeaApi.getAdminPromotions()
+      setDeals(items.map(mapPromotion))
+    }
+    setEditingDeal(null)
+    toast.success(editingDeal ? "Đã cập nhật chương trình ưu đãi." : "Đã tạo chương trình ưu đãi.")
+    return true
   }
 
   const handleAction = (deal: DealItem, action: "view" | "edit" | "delete") => {
@@ -121,12 +189,17 @@ export function StayeaAdminDealsPage({
         description: `Mã: ${deal.code} • Loại: ${deal.type} • Giá trị: ${deal.value}`,
       })
     } else if (action === "edit") {
-      toast.info(`Chỉnh sửa: ${deal.name}`, {
-        description: "Mở biểu mẫu chỉnh sửa chương trình khuyến mãi.",
-      })
+      setEditingDeal(deal)
+      setIsCreateModalOpen(true)
     } else if (action === "delete") {
-      setDeals((prev) => prev.filter((d) => d.id !== deal.id))
-      toast.error(`Đã xóa chương trình: "${deal.name}"`)
+      void stayeaApi.updateAdminPromotion(deal.id, { isActive: false }).then((saved) => {
+        if (!saved) {
+          toast.error("Không thể tạm dừng chương trình ưu đãi.")
+          return
+        }
+        setDeals((prev) => prev.map((item) => item.id === deal.id ? { ...item, status: "paused" } : item))
+        toast.success(`Đã tạm dừng chương trình: ${deal.name}`)
+      })
     }
   }
 
@@ -243,9 +316,13 @@ export function StayeaAdminDealsPage({
       {/* Modal tạo khuyến mãi */}
       <CreateDealModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false)
+          setEditingDeal(null)
+        }}
         onSubmit={handleCreateDeal}
         initialTab={initialTab}
+        initialDeal={editingDeal}
       />
     </div>
   )

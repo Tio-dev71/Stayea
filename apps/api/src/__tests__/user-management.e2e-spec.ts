@@ -286,11 +286,9 @@ describe('userManagement E2E Tests', () => {
     })
 
     it('unauthenticated requests to all user management endpoints return 401', async () => {
-      const [r1, r2, r3] = await Promise.all([
-        createRequest(app).get('/api/users'),
-        createRequest(app).post('/api/users'),
-        createRequest(app).put(`/api/users/${regularUserId}/role`),
-      ])
+      const r1 = await createRequest(app).get('/api/users')
+      const r2 = await createRequest(app).post('/api/users')
+      const r3 = await createRequest(app).put(`/api/users/${regularUserId}/role`)
       expect(r1.status).toBe(401)
       expect(r2.status).toBe(401)
       expect(r3.status).toBe(401)

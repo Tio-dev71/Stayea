@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -89,9 +90,9 @@ export class StayeaPartnerService {
         bankName: dto.bankName,
         bankAccount: dto.bankAccount,
         bankAccountHolder: dto.bankAccountHolder,
-        status: "approved", // Auto-approve for seamless onboarding demo or pending
+        status: "pending",
         commissionRate: "10.00",
-        rating: "5.00",
+        rating: "0.00",
         totalOrders: 0,
         metadata: {},
       })
@@ -202,7 +203,7 @@ export class StayeaPartnerService {
         bankAccountHolder: dto.bankAccountHolder,
         status: dto.status || "approved",
         commissionRate: (dto.commissionRate || 10).toFixed(2),
-        rating: "5.00",
+        rating: "0.00",
         totalOrders: 0,
         metadata: {},
       })
@@ -229,7 +230,16 @@ export class StayeaPartnerService {
     location?: string
     partnerId?: string
   }) {
-    let conditions = [eq(partnerServicesTable.status, "active")]
+    const approvedPartners = await this.db
+      .select({ id: partnerProfilesTable.id })
+      .from(partnerProfilesTable)
+      .where(eq(partnerProfilesTable.status, "approved"))
+    const approvedPartnerIds = approvedPartners.map((partner) => partner.id)
+    if (approvedPartnerIds.length === 0) return []
+    const conditions = [
+      eq(partnerServicesTable.status, "active"),
+      inArray(partnerServicesTable.partnerId, approvedPartnerIds),
+    ]
 
     if (query?.partnerId) {
       conditions.push(eq(partnerServicesTable.partnerId, query.partnerId))
@@ -255,6 +265,10 @@ export class StayeaPartnerService {
   }
 
   async createService(partnerId: string, dto: CreatePartnerServiceDto) {
+    const profile = await this.getProfileById(partnerId)
+    if (profile.status !== "approved") {
+      throw new ForbiddenException("Hồ sơ đối tác cần được duyệt trước khi đăng dịch vụ")
+    }
     const serviceId = generateUid("svc")
 
     const [service] = await this.db

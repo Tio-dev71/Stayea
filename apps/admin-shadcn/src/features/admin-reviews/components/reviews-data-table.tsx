@@ -313,7 +313,12 @@ export function ReviewsDataTable({
 
             {/* Per Page Select */}
             <div className="relative">
+              <label htmlFor="reviews-per-page-select" className="sr-only">
+                Số dòng trên mỗi trang
+              </label>
               <select
+                id="reviews-per-page-select"
+                aria-label="Số dòng trên mỗi trang"
                 value={itemsPerPage}
                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
                 className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 pr-7 text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
@@ -322,7 +327,7 @@ export function ReviewsDataTable({
                 <option value={20}>20 / trang</option>
                 <option value={50}>50 / trang</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
             </div>
           </div>
         </div>

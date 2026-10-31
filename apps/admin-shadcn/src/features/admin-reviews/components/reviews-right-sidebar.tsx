@@ -160,8 +160,18 @@ export function ReviewsRightSidebar({
         {/* Donut Chart with Legend */}
         <div className="flex items-center justify-between gap-3 py-1">
           {/* Donut Canvas */}
-          <div className="relative w-32 h-32 sm:w-36 sm:h-36 shrink-0 flex items-center justify-center">
-            {mounted ? (
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 flex items-center justify-center">
+            {total === 0 || distribution.length === 0 ? (
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-slate-100"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+            ) : mounted ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Tooltip
@@ -186,8 +196,8 @@ export function ReviewsRightSidebar({
                     nameKey="label"
                     cx="50%"
                     cy="50%"
-                    innerRadius={42}
-                    outerRadius={58}
+                    innerRadius={30}
+                    outerRadius={42}
                     paddingAngle={2}
                     stroke="#ffffff"
                     strokeWidth={2}
@@ -217,28 +227,34 @@ export function ReviewsRightSidebar({
 
           {/* Legend Items List on Right */}
           <div className="flex-1 w-full space-y-1.5 text-xs pl-1">
-            {distribution.map((item) => (
-              <div
-                key={item.stars}
-                className="flex items-center justify-between gap-1.5 text-[11px]"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-slate-700 font-medium truncate">
-                    {item.label}
+            {total === 0 || distribution.length === 0 ? (
+              <div className="text-slate-400 text-xs py-4 text-center">
+                Chưa có dữ liệu đánh giá
+              </div>
+            ) : (
+              distribution.map((item) => (
+                <div
+                  key={item.stars}
+                  className="flex items-center justify-between gap-1.5 text-[11px]"
+                >
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-slate-700 font-medium whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  </div>
+                  <span className="text-slate-900 font-bold shrink-0 text-right">
+                    {item.percentage}%{" "}
+                    <span className="text-slate-400 font-normal">
+                      ({item.count})
+                    </span>
                   </span>
                 </div>
-                <span className="text-slate-900 font-bold shrink-0">
-                  {item.percentage}%{" "}
-                  <span className="text-slate-400 font-normal">
-                    ({item.count})
-                  </span>
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -249,39 +265,48 @@ export function ReviewsRightSidebar({
           <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
             Đánh giá theo loại hình
           </h2>
-          <button
-            type="button"
-            onClick={onViewCategoryDetails}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
-          >
-            <span>Xem chi tiết</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {categories.length > 0 && (
+            <button
+              type="button"
+              onClick={onViewCategoryDetails}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
+            >
+              <span>Xem chi tiết</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="space-y-2">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              className="flex items-center justify-between gap-2 text-xs py-0.5"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
-                  {getCategoryIcon(cat.icon)}
+        {categories.length === 0 ? (
+          <div className="py-6 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
+            <Compass className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+            <span>Chưa có dữ liệu đánh giá theo loại hình.</span>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {categories.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex items-center justify-between gap-2 text-xs py-0.5"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
+                    {getCategoryIcon(cat.icon)}
+                  </div>
+                  <span className="font-medium text-slate-700 truncate text-[11px] sm:text-xs">
+                    {cat.name}
+                  </span>
                 </div>
-                <span className="font-medium text-slate-700 truncate text-[11px] sm:text-xs">
-                  {cat.name}
+                <span className="font-bold text-slate-900 shrink-0 text-xs">
+                  {cat.percentage}%{" "}
+                  <span className="text-slate-400 font-normal">
+                    ({cat.count})
+                  </span>
                 </span>
               </div>
-              <span className="font-bold text-slate-900 shrink-0 text-xs">
-                {cat.percentage}%{" "}
-                <span className="text-slate-400 font-normal">
-                  ({cat.count})
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 4. Địa điểm được đánh giá nhiều */}
@@ -290,53 +315,62 @@ export function ReviewsRightSidebar({
           <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
             Địa điểm được đánh giá nhiều
           </h2>
-          <button
-            type="button"
-            onClick={onViewLocationDetails}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
-          >
-            <span>Xem chi tiết</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {locations.length > 0 && (
+            <button
+              type="button"
+              onClick={onViewLocationDetails}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
+            >
+              <span>Xem chi tiết</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="space-y-2.5">
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              className="flex items-center justify-between gap-2.5 text-xs sm:text-sm"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                {loc.rank === 1 ? (
-                  <div className="w-5 h-5 flex items-center justify-center text-amber-500 shrink-0">
-                    <Medal className="w-4 h-4 fill-amber-400 text-amber-600" />
-                  </div>
-                ) : (
-                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
-                    {loc.rank}
-                  </span>
-                )}
+        {locations.length === 0 ? (
+          <div className="py-6 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
+            <Landmark className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+            <span>Chưa có dữ liệu đánh giá theo địa điểm.</span>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {locations.map((loc) => (
+              <div
+                key={loc.id}
+                className="flex items-center justify-between gap-2.5 text-xs sm:text-sm"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {loc.rank === 1 ? (
+                    <div className="w-5 h-5 flex items-center justify-center text-amber-500 shrink-0">
+                      <Medal className="w-4 h-4 fill-amber-400 text-amber-600" />
+                    </div>
+                  ) : (
+                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
+                      {loc.rank}
+                    </span>
+                  )}
 
-                <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden shrink-0 border border-slate-200">
-                  <Image
-                    src={loc.imageUrl}
-                    alt={loc.city}
-                    fill
-                    className="object-cover"
-                  />
+                  <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                    <Image
+                      src={loc.imageUrl}
+                      alt={loc.city}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <span className="font-medium text-slate-800 truncate text-xs">
+                    {loc.city}
+                  </span>
                 </div>
 
-                <span className="font-medium text-slate-800 truncate text-xs">
-                  {loc.city}
+                <span className="font-bold text-slate-900 shrink-0 text-xs">
+                  {loc.reviewCountFormatted}
                 </span>
               </div>
-
-              <span className="font-bold text-slate-900 shrink-0 text-xs">
-                {loc.reviewCountFormatted}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 5. Thao tác nhanh */}

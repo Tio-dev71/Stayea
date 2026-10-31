@@ -26,12 +26,14 @@ import {
 interface RevenueChartsProps {
   timelineData?: RevenueTimelinePoint[]
   categoryData?: RevenueCategorySlice[]
+  totalRevenueFormatted?: string
   onViewCategoryDetails?: () => void
 }
 
 export function RevenueCharts({
   timelineData = MOCK_REVENUE_TIMELINE,
   categoryData = MOCK_REVENUE_CATEGORIES,
+  totalRevenueFormatted = "0 ₫",
   onViewCategoryDetails,
 }: RevenueChartsProps) {
   const [mounted, setMounted] = useState(false)
@@ -65,7 +67,12 @@ export function RevenueCharts({
 
         {/* Dual Area Chart Canvas */}
         <div className="w-full h-56 sm:h-64 pt-1">
-          {mounted ? (
+          {timelineData.length === 0 ? (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-xl text-xs text-slate-400 gap-2">
+              <span className="font-medium">Chưa có dữ liệu biến động doanh thu trong kỳ.</span>
+              <span className="text-[11px] text-slate-400">Dữ liệu sẽ tự động hiển thị khi phát sinh đơn đặt phòng mới.</span>
+            </div>
+          ) : mounted ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={timelineData}
@@ -172,21 +179,33 @@ export function RevenueCharts({
           <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
             Doanh thu theo loại hình
           </h2>
-          <button
-            type="button"
-            onClick={onViewCategoryDetails}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
-          >
-            <span>Xem chi tiết</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {categoryData.length > 0 && (
+            <button
+              type="button"
+              onClick={onViewCategoryDetails}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
+            >
+              <span>Xem chi tiết</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Content: Donut on Left + Legend List on Right */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-1 flex-1">
           {/* Donut Chart with Center Text */}
           <div className="relative w-36 h-36 sm:w-40 sm:h-40 shrink-0 flex items-center justify-center">
-            {mounted ? (
+            {categoryData.length === 0 ? (
+              <svg className="w-32 h-32 -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-slate-100"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+            ) : mounted ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Tooltip
@@ -231,8 +250,8 @@ export function RevenueCharts({
 
             {/* Center Text Badge */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-base sm:text-lg font-black text-slate-900 leading-none">
-                425.3M
+              <span className="text-sm sm:text-base font-black text-slate-900 leading-none text-center px-1">
+                {totalRevenueFormatted}
               </span>
               <span className="text-[10px] text-slate-400 font-medium mt-0.5">
                 Tổng doanh thu
@@ -242,28 +261,34 @@ export function RevenueCharts({
 
           {/* Legend Items List on Right */}
           <div className="flex-1 w-full space-y-1 text-xs pl-0.5">
-            {categoryData.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-1.5 text-[11px]"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-slate-700 font-medium truncate">
-                    {item.name}
+            {categoryData.length === 0 ? (
+              <div className="py-6 text-center text-slate-400 text-xs">
+                Chưa có dữ liệu doanh thu theo loại hình.
+              </div>
+            ) : (
+              categoryData.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-1.5 text-[11px]"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-slate-700 font-medium truncate">
+                      {item.name}
+                    </span>
+                  </div>
+                  <span className="text-slate-900 font-bold shrink-0">
+                    {item.percentage}%{" "}
+                    <span className="text-slate-400 font-normal">
+                      ({item.valueFormatted})
+                    </span>
                   </span>
                 </div>
-                <span className="text-slate-900 font-bold shrink-0">
-                  {item.percentage}%{" "}
-                  <span className="text-slate-400 font-normal">
-                    ({item.valueFormatted})
-                  </span>
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

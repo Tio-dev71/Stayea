@@ -76,19 +76,29 @@ export function ReviewsFilterBar({
       <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
         {/* Search input */}
         <div className="relative flex-1 min-w-[170px] sm:min-w-[210px]">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <label htmlFor="reviews-search-input" className="sr-only">
+            Tìm kiếm đánh giá, tên tour, khách hàng
+          </label>
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
           <input
+            id="reviews-search-input"
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Tìm kiếm đánh giá, tên tour, khách hàng..."
+            aria-label="Tìm kiếm đánh giá, tên tour, khách hàng"
             className="w-full bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-xs sm:text-[13px] text-slate-800 placeholder:text-slate-400 rounded-xl pl-9 pr-3 py-2 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all shadow-2xs"
           />
         </div>
 
         {/* Dropdown 1: Tất cả loại hình */}
         <div className="relative">
+          <label htmlFor="reviews-category-select" className="sr-only">
+            Lọc theo loại hình tour
+          </label>
           <select
+            id="reviews-category-select"
+            aria-label="Lọc theo loại hình tour"
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 pr-7 text-xs sm:text-[13px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -99,12 +109,17 @@ export function ReviewsFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* Dropdown 2: Tất cả địa điểm */}
         <div className="relative">
+          <label htmlFor="reviews-location-select" className="sr-only">
+            Lọc theo địa điểm tour
+          </label>
           <select
+            id="reviews-location-select"
+            aria-label="Lọc theo địa điểm tour"
             value={selectedLocation}
             onChange={(e) => onLocationChange(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 pr-7 text-xs sm:text-[13px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -115,12 +130,17 @@ export function ReviewsFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* Dropdown 3: Tất cả đánh giá */}
         <div className="relative">
+          <label htmlFor="reviews-rating-select" className="sr-only">
+            Lọc theo số sao đánh giá
+          </label>
           <select
+            id="reviews-rating-select"
+            aria-label="Lọc theo số sao đánh giá"
             value={selectedRating}
             onChange={(e) => onRatingChange(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 pr-7 text-xs sm:text-[13px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -131,12 +151,17 @@ export function ReviewsFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* Dropdown 4: Thời gian: 30 ngày */}
         <div className="relative">
+          <label htmlFor="reviews-time-select" className="sr-only">
+            Lọc theo thời gian đánh giá
+          </label>
           <select
+            id="reviews-time-select"
+            aria-label="Lọc theo thời gian đánh giá"
             value={selectedTimeRange}
             onChange={(e) => onTimeRangeChange(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 pr-7 text-xs sm:text-[13px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -147,7 +172,7 @@ export function ReviewsFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
       </div>
 

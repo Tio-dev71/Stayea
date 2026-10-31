@@ -8,12 +8,15 @@ import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import {
   MOCK_REVIEWS_LIST,
-  MOCK_RATING_DISTRIBUTION,
-  MOCK_CATEGORY_REVIEWS,
-  MOCK_LOCATION_REVIEWS,
   MOCK_REVIEW_QUICK_ACTIONS,
 } from "./stayea-admin-reviews-mock-data"
-import type { ReviewItem } from "./stayea-admin-reviews-mock-data"
+import type {
+  ReviewItem,
+  ReviewKpiItem,
+  RatingDistributionSlice,
+  CategoryReviewCountItem,
+  LocationReviewCountItem,
+} from "./stayea-admin-reviews-mock-data"
 import { ReviewsKpiCards } from "./components/reviews-kpi-cards"
 import { ReviewsFilterBar } from "./components/reviews-filter-bar"
 import type { StarTabType } from "./components/reviews-star-tabs"
@@ -105,6 +108,162 @@ export function StayeaAdminReviewsPage({
     selectedCategory,
     selectedSort,
   ])
+
+  // Dynamic star counts for tabs
+  const starCounts = useMemo(() => {
+    const counts = { all: reviewsList.length, star5: 0, star4: 0, star3: 0, star2: 0, star1: 0 }
+    reviewsList.forEach((r) => {
+      const star = Math.max(1, Math.min(5, Math.round(r.rating || 5)))
+      if (star === 5) counts.star5 += 1
+      else if (star === 4) counts.star4 += 1
+      else if (star === 3) counts.star3 += 1
+      else if (star === 2) counts.star2 += 1
+      else if (star === 1) counts.star1 += 1
+    })
+    return counts
+  }, [reviewsList])
+
+  // Dynamic rating distribution from reviews
+  const dynamicDistribution: RatingDistributionSlice[] = useMemo(() => {
+    if (reviewsList.length === 0) return []
+    const total = reviewsList.length
+    return [
+      { stars: 5, label: "5 sao", count: starCounts.star5, percentage: Math.round((starCounts.star5 / total) * 100), color: "#007a48" },
+      { stars: 4, label: "4 sao", count: starCounts.star4, percentage: Math.round((starCounts.star4 / total) * 100), color: "#10b981" },
+      { stars: 3, label: "3 sao", count: starCounts.star3, percentage: Math.round((starCounts.star3 / total) * 100), color: "#f59e0b" },
+      { stars: 2, label: "2 sao", count: starCounts.star2, percentage: Math.round((starCounts.star2 / total) * 100), color: "#0284c7" },
+      { stars: 1, label: "1 sao", count: starCounts.star1, percentage: Math.round((starCounts.star1 / total) * 100), color: "#ef4444" },
+    ]
+  }, [reviewsList, starCounts])
+
+  // Dynamic categories from reviews
+  const dynamicCategories: CategoryReviewCountItem[] = useMemo(() => {
+    if (reviewsList.length === 0) return []
+    const counts: Record<string, number> = {}
+    reviewsList.forEach((r) => {
+      const cat = r.category || "Trải nghiệm"
+      counts[cat] = (counts[cat] || 0) + 1
+    })
+    const total = reviewsList.length
+    return Object.entries(counts).map(([name, count], idx) => ({
+      id: `cat-${idx}`,
+      name,
+      icon: "island",
+      count,
+      percentage: Math.round((count / total) * 100),
+    }))
+  }, [reviewsList])
+
+  // Dynamic locations from reviews
+  const dynamicLocations: LocationReviewCountItem[] = useMemo(() => {
+    if (reviewsList.length === 0) return []
+    const counts: Record<string, number> = {}
+    reviewsList.forEach((r) => {
+      const loc = r.tourLocation || "Phú Quốc"
+      counts[loc] = (counts[loc] || 0) + 1
+    })
+    return Object.entries(counts).map(([city, count], idx) => ({
+      id: `loc-${idx}`,
+      rank: idx + 1,
+      city,
+      reviewCountFormatted: `${count} đánh giá`,
+      imageUrl: "/phu-quoc/hero-phu-quoc.jpg",
+    }))
+  }, [reviewsList])
+
+  // Dynamic KPI Cards
+  const dynamicKpis: ReviewKpiItem[] = useMemo(() => {
+    const total = reviewsList.length
+    if (total === 0) {
+      return [
+        {
+          id: "avg-rating",
+          title: "Đánh giá trung bình",
+          value: "0.0/5",
+          trendPercent: "0%",
+          trendLabel: "chưa có đánh giá",
+          isPositive: true,
+          icon: "star",
+          colorTheme: "yellow",
+        },
+        {
+          id: "total-reviews",
+          title: "Tổng số đánh giá",
+          value: "0",
+          trendPercent: "0%",
+          trendLabel: "dữ liệu thực tế",
+          isPositive: true,
+          icon: "total",
+          colorTheme: "blue",
+        },
+        {
+          id: "positive-rate",
+          title: "Đánh giá tích cực",
+          value: "0%",
+          trendPercent: "0%",
+          trendLabel: "chưa có dữ liệu",
+          isPositive: true,
+          icon: "positive",
+          colorTheme: "green",
+        },
+        {
+          id: "new-reviews",
+          title: "Đánh giá mới",
+          value: "0",
+          trendPercent: "0%",
+          trendLabel: "tuần này",
+          isPositive: true,
+          icon: "new",
+          colorTheme: "purple",
+        },
+      ]
+    }
+    const avg = (reviewsList.reduce((acc, r) => acc + (r.rating || 5), 0) / total).toFixed(1)
+    const positive = reviewsList.filter((r) => r.rating >= 4).length
+    const positiveRate = Math.round((positive / total) * 100)
+    return [
+      {
+        id: "avg-rating",
+        title: "Đánh giá trung bình",
+        value: `${avg}/5`,
+        trendPercent: "100%",
+        trendLabel: "tổng hợp thực tế",
+        isPositive: true,
+        icon: "star",
+        colorTheme: "yellow",
+      },
+      {
+        id: "total-reviews",
+        title: "Tổng số đánh giá",
+        value: String(total),
+        trendPercent: "100%",
+        trendLabel: "dữ liệu thực tế",
+        isPositive: true,
+        icon: "total",
+        colorTheme: "blue",
+      },
+      {
+        id: "positive-rate",
+        title: "Đánh giá tích cực",
+        value: `${positiveRate}%`,
+        trendPercent: `${positiveRate}%`,
+        trendLabel: "4 - 5 sao",
+        isPositive: true,
+        icon: "positive",
+        colorTheme: "green",
+      },
+      {
+        id: "new-reviews",
+        title: "Đánh giá mới",
+        value: String(reviewsList.length),
+        trendPercent: "0%",
+        trendLabel: "tuần này",
+        isPositive: true,
+        icon: "new",
+        colorTheme: "purple",
+      },
+    ]
+  }, [reviewsList])
 
   // Handlers
   const handleExport = (options: {
@@ -269,7 +428,7 @@ export function StayeaAdminReviewsPage({
               {/* Left Column (col-span-9 on xl, col-span-8 on lg) */}
               <div className="xl:col-span-9 space-y-4 sm:space-y-5">
                 {/* 4 KPI Cards */}
-                <ReviewsKpiCards />
+                <ReviewsKpiCards stats={dynamicKpis} />
 
                 {/* Filter Bar */}
                 <ReviewsFilterBar
@@ -296,6 +455,7 @@ export function StayeaAdminReviewsPage({
                   onSelectTab={setActiveStarTab}
                   selectedSort={selectedSort}
                   onSortChange={setSelectedSort}
+                  counts={starCounts}
                 />
 
                 {/* Reviews Data Table with Pagination & Bulk selection */}
@@ -309,23 +469,29 @@ export function StayeaAdminReviewsPage({
               <div className="xl:col-span-3">
                 <ReviewsRightSidebar
                   totalReviews={filteredReviews.length}
-                  distribution={MOCK_RATING_DISTRIBUTION}
-                  categories={MOCK_CATEGORY_REVIEWS}
-                  locations={MOCK_LOCATION_REVIEWS}
+                  distribution={dynamicDistribution}
+                  categories={dynamicCategories}
+                  locations={dynamicLocations}
                   quickActions={MOCK_REVIEW_QUICK_ACTIONS}
                   onViewDistributionDetails={() =>
                     toast.info("Báo cáo phân bổ đánh giá", {
-                      description: "Tỷ lệ khách hàng hài lòng (4 - 5 sao) đạt 89% toàn hệ thống.",
+                      description: dynamicDistribution.length > 0
+                        ? "Tỷ lệ đánh giá dựa trên dữ liệu thực tế hệ thống."
+                        : "Chưa có dữ liệu đánh giá nào được ghi nhận.",
                     })
                   }
                   onViewCategoryDetails={() =>
                     toast.info("Chi tiết theo loại hình", {
-                      description: "Tour biển đảo và tham quan chiếm trên 50% tổng lượng đánh giá 5 sao.",
+                      description: dynamicCategories.length > 0
+                        ? `${dynamicCategories[0]?.name} đang dẫn đầu đánh giá.`
+                        : "Chưa có dữ liệu theo loại hình.",
                     })
                   }
                   onViewLocationDetails={() =>
                     toast.info("Chi tiết theo địa điểm", {
-                      description: "Phú Quốc hiện đang dẫn đầu với 562 lượt đánh giá trải nghiệm thực tế.",
+                      description: dynamicLocations.length > 0
+                        ? `${dynamicLocations[0]?.city} đang dẫn đầu đánh giá.`
+                        : "Chưa có dữ liệu theo địa điểm.",
                     })
                   }
                   onQuickAction={handleQuickAction}

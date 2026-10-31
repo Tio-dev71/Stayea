@@ -114,39 +114,48 @@ export function RevenueRightSidebar({
           <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
             Phương thức thanh toán
           </h2>
-          <button
-            type="button"
-            onClick={onViewPaymentDetails}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
-          >
-            <span>Xem chi tiết</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {paymentMethods.length > 0 && (
+            <button
+              type="button"
+              onClick={onViewPaymentDetails}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
+            >
+              <span>Xem chi tiết</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="space-y-2.5">
-          {paymentMethods.map((method) => (
-            <div
-              key={method.id}
-              className="flex items-center justify-between gap-3 text-xs sm:text-sm py-1"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-                  {getPaymentIcon(method.icon)}
+        {paymentMethods.length === 0 ? (
+          <div className="py-6 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
+            <Wallet className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+            <span>Chưa có giao dịch phát sinh qua cổng thanh toán.</span>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {paymentMethods.map((method) => (
+              <div
+                key={method.id}
+                className="flex items-center justify-between gap-3 text-xs sm:text-sm py-1"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                    {getPaymentIcon(method.icon)}
+                  </div>
+                  <span className="font-medium text-slate-700 truncate">
+                    {method.name}
+                  </span>
                 </div>
-                <span className="font-medium text-slate-700 truncate">
-                  {method.name}
+                <span className="font-bold text-slate-900 shrink-0 text-xs">
+                  {method.percentage}%{" "}
+                  <span className="text-slate-400 font-normal">
+                    ({method.amountFormatted})
+                  </span>
                 </span>
               </div>
-              <span className="font-bold text-slate-900 shrink-0 text-xs">
-                {method.percentage}%{" "}
-                <span className="text-slate-400 font-normal">
-                  ({method.amountFormatted})
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 3. Doanh thu theo địa điểm */}
@@ -155,58 +164,67 @@ export function RevenueRightSidebar({
           <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
             Doanh thu theo địa điểm
           </h2>
-          <button
-            type="button"
-            onClick={onViewLocationDetails}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
-          >
-            <span>Xem chi tiết</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {locations.length > 0 && (
+            <button
+              type="button"
+              onClick={onViewLocationDetails}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#007a48] hover:text-emerald-800 hover:underline transition-colors cursor-pointer"
+            >
+              <span>Xem chi tiết</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="space-y-3">
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              className="flex items-center justify-between gap-3 text-xs sm:text-sm"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                {/* Rank Badge */}
-                {loc.rank === 1 ? (
-                  <div className="w-5 h-5 flex items-center justify-center text-amber-500 shrink-0">
-                    <Medal className="w-4 h-4 fill-amber-400 text-amber-600" />
-                  </div>
-                ) : (
-                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
-                    {loc.rank}
-                  </span>
-                )}
+        {locations.length === 0 ? (
+          <div className="py-6 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
+            <Banknote className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+            <span>Chưa có dữ liệu doanh thu theo địa phương.</span>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {locations.map((loc) => (
+              <div
+                key={loc.id}
+                className="flex items-center justify-between gap-3 text-xs sm:text-sm"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {/* Rank Badge */}
+                  {loc.rank === 1 ? (
+                    <div className="w-5 h-5 flex items-center justify-center text-amber-500 shrink-0">
+                      <Medal className="w-4 h-4 fill-amber-400 text-amber-600" />
+                    </div>
+                  ) : (
+                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
+                      {loc.rank}
+                    </span>
+                  )}
 
-                {/* Round City Thumbnail */}
-                <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-slate-200">
-                  <Image
-                    src={loc.imageUrl}
-                    alt={loc.city}
-                    fill
-                    className="object-cover"
-                  />
+                  {/* Round City Thumbnail */}
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                    <Image
+                      src={loc.imageUrl}
+                      alt={loc.city}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <span className="font-medium text-slate-800 truncate">
+                    {loc.city}
+                  </span>
                 </div>
 
-                <span className="font-medium text-slate-800 truncate">
-                  {loc.city}
+                <span className="font-bold text-slate-900 shrink-0 text-xs">
+                  {loc.revenueFormatted}{" "}
+                  <span className="text-slate-400 font-normal">
+                    ({loc.percentage}%)
+                  </span>
                 </span>
               </div>
-
-              <span className="font-bold text-slate-900 shrink-0 text-xs">
-                {loc.revenueFormatted}{" "}
-                <span className="text-slate-400 font-normal">
-                  ({loc.percentage}%)
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 4. Thao tác nhanh */}

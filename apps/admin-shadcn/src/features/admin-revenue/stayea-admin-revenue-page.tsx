@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Download } from "lucide-react"
 import { toast } from "sonner"
 import { stayeaApi } from "@/lib/stayea-api-service"
@@ -9,12 +9,15 @@ import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import {
   MOCK_REVENUE_TIMELINE,
-  MOCK_REVENUE_CATEGORIES,
-  MOCK_PAYMENT_METHODS,
-  MOCK_LOCATION_REVENUES,
   MOCK_QUICK_ACTIONS,
 } from "./stayea-admin-revenue-mock-data"
-import type { RevenueOrderItem, RevenueKpiItem } from "./stayea-admin-revenue-mock-data"
+import type {
+  RevenueOrderItem,
+  RevenueKpiItem,
+  RevenueCategorySlice,
+  PaymentMethodItem,
+  LocationRevenueItem,
+} from "./stayea-admin-revenue-mock-data"
 import { RevenueKpiCards } from "./components/revenue-kpi-cards"
 import { RevenueFilterBar } from "./components/revenue-filter-bar"
 import { RevenueCharts } from "./components/revenue-charts"
@@ -224,6 +227,70 @@ export function StayeaAdminRevenuePage({
     fetchRevenueData()
   }, [])
 
+  // Dynamic categories from real orders
+  const dynamicCategoryData: RevenueCategorySlice[] = useMemo(() => {
+    if (ordersList.length === 0) return []
+    const counts: Record<string, number> = {}
+    let total = 0
+    ordersList.forEach((order) => {
+      const cat = order.category || "Dịch vụ"
+      const val = order.totalAmount || 0
+      counts[cat] = (counts[cat] || 0) + val
+      total += val
+    })
+    const palette = ["#007a48", "#10b981", "#f59e0b", "#0284c7", "#8b5cf6", "#64748b"]
+    return Object.entries(counts).map(([name, val], idx) => ({
+      id: `cat-${idx}`,
+      name,
+      percentage: total > 0 ? Math.round((val / total) * 100) : 0,
+      valueFormatted: new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val),
+      color: palette[idx % palette.length]!,
+    }))
+  }, [ordersList])
+
+  // Dynamic payment methods from real orders
+  const dynamicPaymentMethods: PaymentMethodItem[] = useMemo(() => {
+    if (ordersList.length === 0) return []
+    const counts: Record<string, number> = {}
+    let total = 0
+    ordersList.forEach((order) => {
+      const method = "Chuyển khoản ngân hàng"
+      const val = order.totalAmount || 0
+      counts[method] = (counts[method] || 0) + val
+      total += val
+    })
+    return Object.entries(counts).map(([name, val], idx) => ({
+      id: `pm-${idx}`,
+      name,
+      percentage: total > 0 ? Math.round((val / total) * 100) : 0,
+      amountFormatted: new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val),
+      icon: "transfer",
+    }))
+  }, [ordersList])
+
+  // Dynamic locations from real orders
+  const dynamicLocations: LocationRevenueItem[] = useMemo(() => {
+    if (ordersList.length === 0) return []
+    const counts: Record<string, number> = {}
+    let total = 0
+    ordersList.forEach((order) => {
+      const loc = "Phú Quốc"
+      const val = order.totalAmount || 0
+      counts[loc] = (counts[loc] || 0) + val
+      total += val
+    })
+    return Object.entries(counts).map(([city, val], idx) => ({
+      id: `loc-${idx}`,
+      rank: idx + 1,
+      city,
+      revenueFormatted: new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val),
+      percentage: total > 0 ? Math.round((val / total) * 100) : 0,
+      imageUrl: "/phu-quoc/hero-phu-quoc.jpg",
+    }))
+  }, [ordersList])
+
+  const totalRevenueFormatted = revenueKpis.find((k) => k.id === "total-revenue")?.value || "0 ₫"
+
   const handleExport = (options: {
     format: "xlsx" | "pdf" | "csv"
     timeframe: string
@@ -355,11 +422,14 @@ export function StayeaAdminRevenuePage({
 
               {/* Dual Charts (Revenue over time + Revenue by category) */}
               <RevenueCharts
-                timelineData={MOCK_REVENUE_TIMELINE}
-                categoryData={MOCK_REVENUE_CATEGORIES}
+                timelineData={ordersList.length > 0 ? MOCK_REVENUE_TIMELINE : []}
+                categoryData={dynamicCategoryData}
+                totalRevenueFormatted={totalRevenueFormatted}
                 onViewCategoryDetails={() => {
                   toast.info("Chi tiết doanh thu theo loại hình", {
-                    description: "Tour biển đảo hiện đang dẫn đầu với 38% tổng doanh số.",
+                    description: dynamicCategoryData.length > 0
+                      ? `${dynamicCategoryData[0]?.name} hiện đang dẫn đầu với ${dynamicCategoryData[0]?.percentage}% tổng doanh số.`
+                      : "Chưa có dữ liệu giao dịch phát sinh.",
                   })
                 }}
               />
@@ -377,17 +447,21 @@ export function StayeaAdminRevenuePage({
             {/* Right Column (Right Sidebar): Promo Banner + Payment Methods + Locations + Quick Actions */}
             <div className="xl:col-span-3">
               <RevenueRightSidebar
-                paymentMethods={MOCK_PAYMENT_METHODS}
-                locations={MOCK_LOCATION_REVENUES}
+                paymentMethods={dynamicPaymentMethods}
+                locations={dynamicLocations}
                 quickActions={MOCK_QUICK_ACTIONS}
                 onViewPaymentDetails={() => {
                   toast.info("Chi tiết phương thức thanh toán", {
-                    description: "Ví Stayea chiếm tỷ trọng cao nhất 42% nhờ ưu đãi điểm thưởng.",
+                    description: dynamicPaymentMethods.length > 0
+                      ? `${dynamicPaymentMethods[0]?.name} chiếm tỷ trọng cao nhất ${dynamicPaymentMethods[0]?.percentage}%.`
+                      : "Chưa có giao dịch phát sinh qua cổng thanh toán.",
                   })
                 }}
                 onViewLocationDetails={() => {
                   toast.info("Chi tiết doanh thu theo địa phương", {
-                    description: "Phú Quốc đang đứng đầu với 162.5M doanh thu (38%).",
+                    description: dynamicLocations.length > 0
+                      ? `${dynamicLocations[0]?.city} đang đứng đầu doanh thu.`
+                      : "Chưa có dữ liệu doanh thu theo địa phương.",
                   })
                 }}
                 onQuickAction={handleQuickAction}

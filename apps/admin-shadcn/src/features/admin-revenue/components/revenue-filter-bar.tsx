@@ -70,17 +70,20 @@ export function RevenueFilterBar({
         <div className="relative">
           <button
             type="button"
+            aria-haspopup="listbox"
+            aria-expanded={isDatePickerOpen}
+            aria-label="Chọn khoảng thời gian báo cáo"
             onClick={() => setIsDatePickerOpen((prev) => !prev)}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs sm:text-sm font-medium text-slate-700 shadow-2xs transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs sm:text-sm font-medium text-slate-700 shadow-2xs transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
           >
-            <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
+            <Calendar className="w-4 h-4 text-slate-400 shrink-0" aria-hidden="true" />
             <span className="font-semibold text-slate-800">{dateRange}</span>
-            <ChevronsUpDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+            <ChevronsUpDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" aria-hidden="true" />
           </button>
 
           {/* Quick Date Range Dropdown */}
           {isDatePickerOpen && (
-            <div className="absolute left-0 top-full mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-30 text-xs">
+            <div className="absolute left-0 top-full mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-30 text-xs" role="listbox">
               <div className="p-1.5 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">
                 Chọn khoảng thời gian
               </div>
@@ -94,6 +97,8 @@ export function RevenueFilterBar({
                 <button
                   key={opt}
                   type="button"
+                  role="option"
+                  aria-selected={dateRange === opt}
                   onClick={() => {
                     onDateRangeChange?.(opt)
                     setIsDatePickerOpen(false)
@@ -113,7 +118,12 @@ export function RevenueFilterBar({
 
         {/* Dropdown 1: Tất cả loại hình */}
         <div className="relative">
+          <label htmlFor="revenue-category-select" className="sr-only">
+            Lọc theo loại hình dịch vụ
+          </label>
           <select
+            id="revenue-category-select"
+            aria-label="Lọc theo loại hình dịch vụ"
             value={selectedCategory}
             onChange={(e) => onCategoryChange?.(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -124,12 +134,17 @@ export function RevenueFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* Dropdown 2: Tất cả địa điểm */}
         <div className="relative">
+          <label htmlFor="revenue-location-select" className="sr-only">
+            Lọc theo địa điểm
+          </label>
           <select
+            id="revenue-location-select"
+            aria-label="Lọc theo địa điểm"
             value={selectedLocation}
             onChange={(e) => onLocationChange?.(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -140,12 +155,17 @@ export function RevenueFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* Dropdown 3: Tất cả đối tác */}
         <div className="relative">
+          <label htmlFor="revenue-partner-select" className="sr-only">
+            Lọc theo đối tác
+          </label>
           <select
+            id="revenue-partner-select"
+            aria-label="Lọc theo đối tác"
             value={selectedPartner}
             onChange={(e) => onPartnerChange?.(e.target.value)}
             className="appearance-none bg-white hover:bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-2xs transition-colors"
@@ -156,7 +176,7 @@ export function RevenueFilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         </div>
       </div>
 

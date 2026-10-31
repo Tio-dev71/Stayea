@@ -1104,6 +1104,45 @@ class StayeaApiService {
   }
 
   /**
+   * Partner Hub: Get partner profile for currently logged-in user
+   */
+  async getPartnerProfile(): Promise<any | null> {
+    try {
+      const res = await fetch(`/api/stayea/partner/profile`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Catalog: Get services across partners
+   */
+  async getCatalogServices(params?: { type?: string; search?: string; location?: string }): Promise<any[]> {
+    try {
+      const searchParams = new URLSearchParams()
+      if (params?.type) searchParams.set("type", params.type)
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.location) searchParams.set("location", params.location)
+      const res = await fetch(`/api/stayea/partner/catalog/services?${searchParams.toString()}`)
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
    * Validate a promotional coupon code
    */
   async validatePromo(code: string, subtotal?: number, category?: string) {

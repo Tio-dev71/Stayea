@@ -4,62 +4,7 @@ import type {
   PartnerServiceData,
 } from "./types"
 
-export const DEMO_PARTNER_PROFILES: PartnerProfileData[] = [
-  {
-    id: "ptn_sunshine_01",
-    userId: "usr_ptn_sunshine",
-    businessName: "Phú Quốc Sunshine Homestays & Villas",
-    businessType: "homestay",
-    contactName: "Nguyễn Văn Phát",
-    phone: "0918 234 567",
-    email: "partner.homestay@stayea.com",
-    address: "Đường Trần Hưng Đạo, Dương Đông, Phú Quốc",
-    city: "Phú Quốc",
-    bankName: "Vietcombank Chi nhánh Phú Quốc",
-    bankAccount: "0071009876543",
-    bankAccountHolder: "NGUYEN VAN PHAT",
-    status: "approved",
-    commissionRate: "10.00",
-    rating: "4.95",
-    totalOrders: 0,
-  },
-  {
-    id: "ptn_carrent_02",
-    userId: "usr_ptn_carrent",
-    businessName: "Đội Xe Tự Lái & Đưa Đón Phú Quốc Express",
-    businessType: "transport",
-    contactName: "Trần Minh Hoàng",
-    phone: "0909 888 999",
-    email: "partner.transport@stayea.com",
-    address: "Khu Phố 7, Phường An Thới, Phú Quốc",
-    city: "Phú Quốc",
-    bankName: "Techcombank Phú Quốc",
-    bankAccount: "19034567891011",
-    bankAccountHolder: "TRAN MINH HOANG",
-    status: "approved",
-    commissionRate: "12.00",
-    rating: "4.90",
-    totalOrders: 0,
-  },
-  {
-    id: "ptn_tour_03",
-    userId: "usr_ptn_tour",
-    businessName: "Đảo Ngọc Coral & Speedboat Tours",
-    businessType: "tour",
-    contactName: "Lê Cẩm Tú",
-    phone: "0933 112 233",
-    email: "partner.tour@stayea.com",
-    address: "Cảng Quốc Tế An Thới, Phú Quốc",
-    city: "Phú Quốc",
-    bankName: "MBBank",
-    bankAccount: "88880933112233",
-    bankAccountHolder: "LE CAM TU",
-    status: "approved",
-    commissionRate: "15.00",
-    rating: "5.00",
-    totalOrders: 0,
-  },
-]
+export const DEMO_PARTNER_PROFILES: PartnerProfileData[] = []
 
 export const DEMO_PARTNER_SERVICES: PartnerServiceData[] = []
 

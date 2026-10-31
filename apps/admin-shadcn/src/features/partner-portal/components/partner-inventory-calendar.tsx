@@ -31,23 +31,19 @@ export function PartnerInventoryCalendar({
   )
   const [selectedMonth] = useState("Tháng 11 / 2026")
 
-  // Generate 30 days for demo calendar (Nov 2026)
+  // Generate 30 days for current calendar (Nov 2026)
   const [calendarDays, setCalendarDays] = useState<DaySlot[]>(() => {
     return Array.from({ length: 30 }, (_, i) => {
       const day = i + 1
       const dayStr = day < 10 ? `0${day}` : `${day}`
       const date = `2026-11-${dayStr}`
-      const isWeekend = (day + 5) % 7 === 0 || (day + 5) % 7 === 6 // mock weekend
-
-      // Simulate a few days already fully booked / closed
-      const isClosed = day === 6 || day === 7 || day === 15
+      const isWeekend = (day + 5) % 7 === 0 || (day + 5) % 7 === 6
 
       return {
         date,
         dayNumber: day,
-        isAvailable: !isClosed,
-        slots: isClosed ? 0 : 2,
-        priceOverride: isWeekend ? 300000 : undefined,
+        isAvailable: true,
+        slots: 1,
         isWeekend,
       }
     })
@@ -90,6 +86,18 @@ export function PartnerInventoryCalendar({
     setCalendarDays((prev) => prev.map((d) => ({ ...d, isAvailable: true, slots: 2 })))
     setSavedNotice(true)
     setTimeout(() => setSavedNotice(false), 2500)
+  }
+
+  if (services.length === 0) {
+    return (
+      <div className="text-center py-16 bg-slate-900/60 rounded-2xl border border-dashed border-slate-800">
+        <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+        <h3 className="text-base font-semibold text-slate-300">Chưa có dịch vụ nào</h3>
+        <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          Vui lòng thêm dịch vụ ở tab &quot;Quản lý Dịch vụ&quot; trước khi cài đặt lịch và tồn kho.
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -179,7 +187,19 @@ export function PartnerInventoryCalendar({
             const basePrice = activeService ? Number.parseInt(activeService.price) : 1500000
             const dayPrice = basePrice + (slot.priceOverride || 0)
 
-            return (
+            if (services.length === 0) {
+    return (
+      <div className="text-center py-16 bg-slate-900/60 rounded-2xl border border-dashed border-slate-800">
+        <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+        <h3 className="text-base font-semibold text-slate-300">Chưa có dịch vụ nào</h3>
+        <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          Vui lòng thêm dịch vụ ở tab &quot;Quản lý Dịch vụ&quot; trước khi cài đặt lịch và tồn kho.
+        </p>
+      </div>
+    )
+  }
+
+  return (
               <div
                 key={slot.date}
                 onClick={() => toggleDayAvailability(idx)}

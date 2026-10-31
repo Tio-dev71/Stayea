@@ -162,10 +162,18 @@ export function PartnerKpiCards({
           </div>
         </div>
         <div className="mt-3 flex items-baseline gap-2">
-          <div className="text-3xl font-extrabold text-white">
-            {profile.rating}
-          </div>
-          <span className="text-xs text-amber-300 font-medium">/ 5.0 sao</span>
+          {Number(profile.totalOrders) > 0 && Number(profile.rating || 0) > 0 ? (
+            <>
+              <div className="text-3xl font-extrabold text-white">
+                {profile.rating}
+              </div>
+              <span className="text-xs text-amber-300 font-medium">/ 5.0 sao</span>
+            </>
+          ) : (
+            <div className="text-lg font-bold text-slate-400">
+              Chưa có đánh giá
+            </div>
+          )}
         </div>
         <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
           <span>Tổng đơn phục vụ:</span>

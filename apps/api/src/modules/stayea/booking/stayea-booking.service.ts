@@ -231,51 +231,46 @@ export class StayeaBookingService {
           )
           .limit(1)
 
-        const fallbackPartnerId =
-          dto.bookingType === "stay"
-            ? "ptn_sunshine_01"
-            : dto.bookingType === "experience"
-            ? "ptn_tour_01"
-            : "ptn_carrent_01"
+        if (matchedPartner) {
+          const targetPartnerId = matchedPartner.id
+          const commissionRate = matchedPartner.commissionRate
+            ? Number.parseFloat(matchedPartner.commissionRate) / 100
+            : 0.1
+          const commissionAmount = Math.round(finalAmount * commissionRate)
+          const partnerPayoutAmount = Math.max(0, finalAmount - commissionAmount)
 
-        const targetPartnerId = matchedPartner?.id || fallbackPartnerId
-        const commissionRate = matchedPartner?.commissionRate
-          ? Number.parseFloat(matchedPartner.commissionRate) / 100
-          : 0.1
-        const commissionAmount = Math.round(finalAmount * commissionRate)
-        const partnerPayoutAmount = Math.max(0, finalAmount - commissionAmount)
+          const rawPhone = dto.details?.contactInfo?.phone || "0912345678"
+          const cleanPhone = rawPhone.replace(/[\s.-]/g, "")
+          const customerName = dto.details?.contactInfo?.fullName || "Khách hàng STAYEA"
+          const customerEmail = dto.details?.contactInfo?.email || null
 
-        const rawPhone = dto.details?.contactInfo?.phone || "0912345678"
-        const cleanPhone = rawPhone.replace(/[\s.-]/g, "")
-        const customerName = dto.details?.contactInfo?.fullName || "Khách hàng STAYEA"
-        const customerEmail = dto.details?.contactInfo?.email || null
-
-        await tx.insert(partnerOrdersTable).values({
-          id: `pord-${crypto.randomUUID()}`,
-          orderCode: `ORD-${bookingCode}`,
-          partnerId: targetPartnerId,
-          serviceId:
-            dto.details?.stayId ||
-            dto.details?.experienceId ||
-            dto.details?.packageId ||
-            `srv-${crypto.randomUUID().slice(0, 8)}`,
-          bookingId: newBooking?.id || bookingId,
-          customerName,
-          customerPhone: cleanPhone,
-          customerEmail,
-          serviceTitle: dto.title,
-          serviceType: dto.bookingType,
-          startDate: dto.startDate,
-          endDate: dto.endDate,
-          quantity: dto.guestCount ?? 1,
-          unitPrice: verifiedTotal.toString(),
-          totalAmount: finalAmount.toString(),
-          commissionAmount: commissionAmount.toString(),
-          partnerPayoutAmount: partnerPayoutAmount.toString(),
-          status: "pending_admin",
-          source: "direct_customer",
-          adminNotes: `Đơn đặt dịch vụ trực tuyến từ website (Mã booking: ${bookingCode})`,
-        })
+          await tx.insert(partnerOrdersTable).values({
+            id: `pord-${crypto.randomUUID()}`,
+            orderCode: `ORD-${bookingCode}`,
+            partnerId: targetPartnerId,
+            serviceId:
+              dto.details?.stayId ||
+              dto.details?.experienceId ||
+              dto.details?.packageId ||
+              `srv-${crypto.randomUUID().slice(0, 8)}`,
+            bookingId: newBooking?.id || bookingId,
+            customerName,
+            customerPhone: cleanPhone,
+            customerEmail,
+            serviceTitle: dto.title,
+            serviceType: dto.bookingType,
+            startDate: dto.startDate,
+            endDate: dto.endDate,
+            quantity: dto.guestCount ?? 1,
+            unitPrice: verifiedTotal.toString(),
+            totalAmount: finalAmount.toString(),
+            commissionAmount: commissionAmount.toString(),
+            partnerPayoutAmount: partnerPayoutAmount.toString(),
+            status: "pending_admin",
+            source: "direct_customer",
+            adminNotes: `Đơn đặt dịch vụ trực tuyến từ website (Mã booking: ${bookingCode})`,
+          })
+        }
       } catch (orderErr) {
         // Log but do not block booking if partner order dispatch hits non-critical warning
         console.warn("[StayeaBooking] Partner order dispatch warning:", orderErr)

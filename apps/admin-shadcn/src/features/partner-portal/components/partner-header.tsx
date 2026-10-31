@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Layers,
   LogOut,
+  Plus,
   Shield,
   Sparkles,
   User,
@@ -17,7 +18,7 @@ import {
 import type { PartnerProfileData } from "../types"
 
 interface PartnerHeaderProps {
-  currentProfile: PartnerProfileData
+  currentProfile: PartnerProfileData | null
   profiles: PartnerProfileData[]
   onSelectProfile: (profile: PartnerProfileData) => void
   activeTab: "overview" | "services" | "inventory" | "orders" | "settings"
@@ -26,6 +27,7 @@ interface PartnerHeaderProps {
   onNavigateHome?: () => void
   onNavigateAdmin?: () => void
   onLogout?: () => void
+  onAddPartner?: () => void
 }
 
 export function PartnerHeader({
@@ -38,21 +40,22 @@ export function PartnerHeader({
   onNavigateHome,
   onNavigateAdmin,
   onLogout,
+  onAddPartner,
 }: PartnerHeaderProps) {
-  const getServiceTypeIcon = (type: string) => {
+  const getServiceTypeIcon = (type?: string) => {
     switch (type) {
       case "homestay":
-        return <Building className="w-4 h-4 text-emerald-600" />
+        return <Building className="w-4 h-4 text-emerald-400" />
       case "transport":
-        return <Car className="w-4 h-4 text-blue-600" />
+        return <Car className="w-4 h-4 text-blue-400" />
       case "tour":
-        return <Compass className="w-4 h-4 text-amber-600" />
+        return <Compass className="w-4 h-4 text-amber-400" />
       default:
-        return <Layers className="w-4 h-4 text-teal-600" />
+        return <Layers className="w-4 h-4 text-teal-400" />
     }
   }
 
-  const getServiceTypeBadge = (type: string) => {
+  const getServiceTypeBadge = (type?: string) => {
     switch (type) {
       case "homestay":
         return "Homestay & Villa Nghỉ Dưỡng"
@@ -73,6 +76,7 @@ export function PartnerHeader({
           {/* Logo & Portal Name */}
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={onNavigateHome}
               className="flex items-center gap-2 group transition-transform hover:scale-105"
             >
@@ -84,53 +88,89 @@ export function PartnerHeader({
               </span>
             </button>
 
-            {/* Quick Profile Switcher (Demo selector) */}
-            <div className="relative group hidden sm:block">
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 hover:border-emerald-500/50 text-xs text-slate-200 transition-all">
-                {getServiceTypeIcon(currentProfile.businessType)}
-                <span className="font-medium max-w-[200px] truncate">
-                  {currentProfile.businessName}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-emerald-400 group-hover:rotate-180 transition-transform" />
-              </button>
+            {/* Profile Switcher or Add Partner Button */}
+            {currentProfile ? (
+              <div className="relative group hidden sm:block">
+                <button
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 hover:border-emerald-500/50 text-xs text-slate-200 transition-all"
+                >
+                  {getServiceTypeIcon(currentProfile.businessType)}
+                  <span className="font-medium max-w-[200px] truncate">
+                    {currentProfile.businessName}
+                  </span>
+                  {profiles.length > 1 && (
+                    <ChevronDown className="w-3.5 h-3.5 text-emerald-400 group-hover:rotate-180 transition-transform" />
+                  )}
+                </button>
 
-              {/* Dropdown Menu */}
-              <div className="absolute left-0 mt-1 w-72 bg-slate-900 border border-slate-700/80 rounded-xl shadow-xl py-2 hidden group-hover:block z-50">
-                <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                  Chuyển nhanh mô hình đối tác:
-                </div>
-                {profiles.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => onSelectProfile(p)}
-                    className={`w-full text-left px-3 py-2 flex items-start gap-2.5 text-xs hover:bg-emerald-950/80 transition-colors ${
-                      p.id === currentProfile.id ? "bg-emerald-900/40 text-emerald-300 font-semibold" : "text-slate-300"
-                    }`}
-                  >
-                    <span className="mt-0.5">{getServiceTypeIcon(p.businessType)}</span>
-                    <div className="flex-1 truncate">
-                      <div className="truncate">{p.businessName}</div>
-                      <div className="text-[10px] text-slate-400">{getServiceTypeBadge(p.businessType)}</div>
+                {/* Dropdown Menu (only if multiple partners) */}
+                {profiles.length > 1 && (
+                  <div className="absolute left-0 mt-1 w-72 bg-slate-900 border border-slate-700/80 rounded-xl shadow-xl py-2 hidden group-hover:block z-50">
+                    <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                      Chuyển đổi cơ sở đối tác:
                     </div>
-                    {p.id === currentProfile.id && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                    )}
-                  </button>
-                ))}
+                    {profiles.map((p) => (
+                      <button
+                        type="button"
+                        key={p.id}
+                        onClick={() => onSelectProfile(p)}
+                        className={`w-full text-left px-3 py-2 flex items-start gap-2.5 text-xs hover:bg-emerald-950/80 transition-colors ${
+                          p.id === currentProfile.id
+                            ? "bg-emerald-900/40 text-emerald-300 font-semibold"
+                            : "text-slate-300"
+                        }`}
+                      >
+                        <span className="mt-0.5">{getServiceTypeIcon(p.businessType)}</span>
+                        <div className="flex-1 truncate">
+                          <div className="truncate">{p.businessName}</div>
+                          <div className="text-[10px] text-slate-400">
+                            {getServiceTypeBadge(p.businessType)}
+                          </div>
+                        </div>
+                        {p.id === currentProfile.id && (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onAddPartner}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-xs text-emerald-300 hover:bg-emerald-900/60 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Đăng ký cơ sở đối tác</span>
+              </button>
+            )}
           </div>
 
           {/* Right Area: Status Badge & Actions */}
           <div className="flex items-center gap-3">
             {/* Status Pill */}
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Đối tác đã xác thực</span>
-            </div>
+            {currentProfile ? (
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>
+                  {currentProfile.status === "approved"
+                    ? "Đối tác đã xác thực"
+                    : currentProfile.status === "pending"
+                    ? "Chờ duyệt"
+                    : "Tạm dừng"}
+                </span>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs">
+                <span>Chưa có cơ sở</span>
+              </div>
+            )}
 
-            {/* Notification Bell with Badge */}
+            {/* Notification Bell */}
             <button
+              type="button"
               onClick={() => onSelectTab("orders")}
               className="relative p-2 rounded-lg bg-emerald-950/50 border border-emerald-800/40 hover:bg-emerald-900/40 text-slate-300 transition-colors"
               title="Đơn hàng chờ xử lý"
@@ -146,6 +186,7 @@ export function PartnerHeader({
             {/* Jump to Admin Portal */}
             {onNavigateAdmin && (
               <button
+                type="button"
                 onClick={onNavigateAdmin}
                 className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-xs text-slate-200 border border-slate-700 transition-colors"
               >
@@ -157,6 +198,7 @@ export function PartnerHeader({
             {/* Jump to Customer View */}
             {onNavigateHome && (
               <button
+                type="button"
                 onClick={onNavigateHome}
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-900/30 hover:bg-emerald-900/60 text-xs text-emerald-300 border border-emerald-800/40 transition-colors"
               >
@@ -168,6 +210,7 @@ export function PartnerHeader({
             {/* Logout / Exit */}
             {onLogout && (
               <button
+                type="button"
                 onClick={onLogout}
                 className="p-2 rounded-lg bg-slate-800/60 hover:bg-rose-950/50 hover:text-rose-400 text-slate-400 border border-slate-700/50 transition-colors"
                 title="Đăng xuất"
@@ -184,6 +227,7 @@ export function PartnerHeader({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-1 sm:space-x-4 overflow-x-auto py-2 no-scrollbar">
             <button
+              type="button"
               onClick={() => onSelectTab("overview")}
               className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
                 activeTab === "overview"
@@ -196,6 +240,7 @@ export function PartnerHeader({
             </button>
 
             <button
+              type="button"
               onClick={() => onSelectTab("services")}
               className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
                 activeTab === "services"
@@ -203,11 +248,12 @@ export function PartnerHeader({
                   : "text-slate-400 hover:text-slate-200 hover:bg-emerald-950/30"
               }`}
             >
-              {getServiceTypeIcon(currentProfile.businessType)}
+              {getServiceTypeIcon(currentProfile?.businessType)}
               <span>Quản lý Dịch vụ</span>
             </button>
 
             <button
+              type="button"
               onClick={() => onSelectTab("inventory")}
               className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
                 activeTab === "inventory"
@@ -220,6 +266,7 @@ export function PartnerHeader({
             </button>
 
             <button
+              type="button"
               onClick={() => onSelectTab("orders")}
               className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 relative ${
                 activeTab === "orders"
@@ -237,6 +284,7 @@ export function PartnerHeader({
             </button>
 
             <button
+              type="button"
               onClick={() => onSelectTab("settings")}
               className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
                 activeTab === "settings"
@@ -253,4 +301,3 @@ export function PartnerHeader({
     </header>
   )
 }
-

@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Request,
+  UnauthorizedException,
 } from "@nestjs/common"
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger"
 
@@ -210,13 +211,12 @@ export class StayeaPartnerController {
     return this.partnerService.deleteService(targetPartnerId || "", serviceId)
   }
 
-  @Public()
   @ApiBearerAuth()
   @Post("inventory/bulk")
   @UseEnvelope()
   @ApiOperation({ summary: "Bulk update availability / prices for date ranges" })
   async bulkUpdateInventory(
-    @Request() req: { user?: { id: string } },
+    @Request() req: { user: { id: string } },
     @Body() dto: BulkUpdateInventoryDto,
     @Query("partnerId") partnerId?: string
   ) {
@@ -226,10 +226,8 @@ export class StayeaPartnerController {
       if (profile) targetPartnerId = profile.id
     }
     if (!targetPartnerId) {
-      const [first] = await this.partnerService.getAllPartnersForAdmin()
-      targetPartnerId = first ? first.id : undefined
+      throw new UnauthorizedException("Chưa có hồ sơ đối tác hợp lệ để cập nhật tồn kho")
     }
-    if (!targetPartnerId) throw new Error("Chưa có hồ sơ đối tác")
     return this.partnerService.bulkUpdateInventory(targetPartnerId, dto)
   }
 

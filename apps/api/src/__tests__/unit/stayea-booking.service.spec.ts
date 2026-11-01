@@ -118,4 +118,75 @@ describe("stayea booking service", () => {
       BadRequestException
     )
   })
+
+  it("rejects booking if requested dates conflict with partner blackout dates", async () => {
+    let selectCallCount = 0
+    const mockTx = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockImplementation(() => {
+        selectCallCount++
+        if (selectCallCount === 1) {
+          // No booking collision
+          return Promise.resolve([])
+        }
+        // Blackout date found!
+        return Promise.resolve([
+          {
+            id: "inv-1",
+            date: "2026-11-02",
+            isAvailable: false,
+            note: "Bảo trì định kỳ",
+          },
+        ])
+      }),
+    }
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([]),
+      transaction: vi.fn().mockImplementation(async (callback) => callback(mockTx)),
+    }
+
+    const service = new StayeaBookingService(mockDb as any)
+
+    await expect(
+      service.createBooking("user-1", {
+        bookingType: "stay",
+        title: "Villa Blackout Test",
+        destination: "Phú Quốc",
+        startDate: "2026-11-01",
+        endDate: "2026-11-04",
+        totalAmount: 10_000_000,
+        details: { stayId: "villa-blackout" },
+      })
+    ).rejects.toThrow(ConflictException)
+  })
+
+  it("releases expired pending bookings in releaseExpiredBookings cron worker", async () => {
+    const mockExpired = [
+      { id: "bk-expired-1", bookingCode: "STA-202611-1001" },
+      { id: "bk-expired-2", bookingCode: "STA-202611-1002" },
+    ]
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockResolvedValue(mockExpired),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      }),
+    }
+
+    const service = new StayeaBookingService(mockDb as any)
+    const result = await service.releaseExpiredBookings()
+
+    expect(result.releasedCount).toBe(2)
+    expect(mockDb.update).toHaveBeenCalledTimes(1)
+  })
 })

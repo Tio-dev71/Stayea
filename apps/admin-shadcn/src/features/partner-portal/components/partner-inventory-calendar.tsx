@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Calendar as CalendarIcon,
   Check,
   Lock,
 } from "lucide-react"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import type { PartnerServiceData } from "../types"
 
 interface PartnerInventoryCalendarProps {
@@ -50,8 +51,56 @@ export function PartnerInventoryCalendar({
   })
 
   const [savedNotice, setSavedNotice] = useState(false)
-
   const activeService = services.find((s) => s.id === selectedServiceId) || services[0]
+
+  useEffect(() => {
+    if (!selectedServiceId) return
+    let isCancelled = false
+
+    async function loadInventory() {
+      const records = await stayeaApi.getPartnerInventory(selectedServiceId)
+      if (isCancelled || !Array.isArray(records) || records.length === 0) return
+
+      const recordMap = new Map(records.map((r: any) => [r.date, r]))
+      setCalendarDays((prev) =>
+        prev.map((d) => {
+          const matched = recordMap.get(d.date) as any
+          if (matched) {
+            return {
+              ...d,
+              isAvailable: matched.isAvailable ?? true,
+              slots: matched.totalSlots ?? (matched.isAvailable ? 1 : 0),
+              priceOverride: matched.priceOverride ? Number(matched.priceOverride) : undefined,
+            }
+          }
+          return d
+        })
+      )
+    }
+
+    loadInventory()
+    return () => {
+      isCancelled = true
+    }
+  }, [selectedServiceId])
+
+  const syncDaysToBackend = async (days: DaySlot[]) => {
+    if (!selectedServiceId) return
+    const dates = days.map((d) => ({
+      date: d.date,
+      isAvailable: d.isAvailable,
+      totalSlots: d.slots,
+      priceOverride: d.priceOverride,
+    }))
+    const ok = await stayeaApi.bulkUpdatePartnerInventory({
+      serviceId: selectedServiceId,
+      dates,
+    })
+    if (ok) {
+      setSavedNotice(true)
+      setTimeout(() => setSavedNotice(false), 2500)
+    }
+  }
 
   const toggleDayAvailability = (index: number) => {
     setCalendarDays((prev) => {
@@ -61,31 +110,36 @@ export function PartnerInventoryCalendar({
         updated[index] = {
           ...current,
           isAvailable: !current.isAvailable,
-          slots: current.isAvailable ? 0 : 2,
+          slots: current.isAvailable ? 0 : 1,
         }
       }
+      syncDaysToBackend(updated)
       return updated
     })
   }
 
   const handleBulkOpenWeekend = () => {
-    setCalendarDays((prev) =>
-      prev.map((d) => (d.isWeekend ? { ...d, isAvailable: true, slots: 2 } : d))
-    )
-    setSavedNotice(true)
-    setTimeout(() => setSavedNotice(false), 2500)
+    setCalendarDays((prev) => {
+      const updated = prev.map((d) => (d.isWeekend ? { ...d, isAvailable: true, slots: 1 } : d))
+      syncDaysToBackend(updated)
+      return updated
+    })
   }
 
   const handleBulkCloseMonth = () => {
-    setCalendarDays((prev) => prev.map((d) => ({ ...d, isAvailable: false, slots: 0 })))
-    setSavedNotice(true)
-    setTimeout(() => setSavedNotice(false), 2500)
+    setCalendarDays((prev) => {
+      const updated = prev.map((d) => ({ ...d, isAvailable: false, slots: 0 }))
+      syncDaysToBackend(updated)
+      return updated
+    })
   }
 
   const handleResetOpen = () => {
-    setCalendarDays((prev) => prev.map((d) => ({ ...d, isAvailable: true, slots: 2 })))
-    setSavedNotice(true)
-    setTimeout(() => setSavedNotice(false), 2500)
+    setCalendarDays((prev) => {
+      const updated = prev.map((d) => ({ ...d, isAvailable: true, slots: 1 }))
+      syncDaysToBackend(updated)
+      return updated
+    })
   }
 
   if (services.length === 0) {
@@ -130,19 +184,19 @@ export function PartnerInventoryCalendar({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={handleResetOpen}
-            className="px-3 py-1.5 rounded-lg bg-emerald-950/80 border border-emerald-800/50 text-emerald-300 hover:bg-emerald-900/60 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-emerald-950/80 border border-emerald-800/50 text-emerald-300 hover:bg-emerald-900/60 text-xs font-medium transition-colors cursor-pointer"
           >
             Mở Toàn Bộ Tháng
           </button>
           <button
             onClick={handleBulkOpenWeekend}
-            className="px-3 py-1.5 rounded-lg bg-blue-950/80 border border-blue-800/50 text-blue-300 hover:bg-blue-900/60 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-blue-950/80 border border-blue-800/50 text-blue-300 hover:bg-blue-900/60 text-xs font-medium transition-colors cursor-pointer"
           >
             Mở Cuối Tuần
           </button>
           <button
             onClick={handleBulkCloseMonth}
-            className="px-3 py-1.5 rounded-lg bg-rose-950/60 border border-rose-900/50 text-rose-300 hover:bg-rose-900/40 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-rose-950/60 border border-rose-900/50 text-rose-300 hover:bg-rose-900/40 text-xs font-medium transition-colors cursor-pointer"
           >
             Đóng Nhận Khách Tháng
           </button>
@@ -187,19 +241,7 @@ export function PartnerInventoryCalendar({
             const basePrice = activeService ? Number.parseInt(activeService.price) : 1500000
             const dayPrice = basePrice + (slot.priceOverride || 0)
 
-            if (services.length === 0) {
-    return (
-      <div className="text-center py-16 bg-slate-900/60 rounded-2xl border border-dashed border-slate-800">
-        <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-        <h3 className="text-base font-semibold text-slate-300">Chưa có dịch vụ nào</h3>
-        <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-          Vui lòng thêm dịch vụ ở tab &quot;Quản lý Dịch vụ&quot; trước khi cài đặt lịch và tồn kho.
-        </p>
-      </div>
-    )
-  }
-
-  return (
+            return (
               <div
                 key={slot.date}
                 onClick={() => toggleDayAvailability(idx)}
@@ -272,3 +314,4 @@ export function PartnerInventoryCalendar({
     </div>
   )
 }
+

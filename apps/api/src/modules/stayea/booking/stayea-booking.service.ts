@@ -3,8 +3,10 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common"
+import { Cron, CronExpression } from "@nestjs/schedule"
 import {
   stayeaAccommodationsTable,
   stayeaBookingsTable,
@@ -13,12 +15,13 @@ import {
   stayeaExperiencesTable,
   stayeaPromotionsTable,
   stayeaUserVouchersTable,
+  partnerInventoryTable,
   partnerOrdersTable,
   partnerProfilesTable,
   partnerServicesTable,
 } from "@workspace/database"
 import dayjs from "dayjs"
-import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm"
+import { and, desc, eq, gte, ilike, inArray, lte, ne, or, sql } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
@@ -28,6 +31,8 @@ import type { BookingQueryDto, CreateBookingDto } from "@/modules/stayea/booking
 
 @Injectable()
 export class StayeaBookingService {
+  private readonly logger = new Logger(StayeaBookingService.name)
+
   constructor(@Inject(DB_TOKEN) private readonly db: DrizzleDb) {}
 
   /**
@@ -93,6 +98,31 @@ export class StayeaBookingService {
           throw new ConflictException({
             code: ErrorCode.RESOURCE_CONFLICT,
             message: `Chỗ nghỉ này đã có khách giữ chỗ hoặc đặt từ ${conflict.startDate} đến ${conflict.endDate}. Vui lòng chọn ngày khác.`,
+          })
+        }
+      }
+
+      // Blackout Dates check: Verify dates are not blocked by the partner in partnerInventoryTable
+      const serviceId = dto.details?.stayId || dto.details?.experienceId
+      if (serviceId) {
+        const blackoutDates = await tx
+          .select()
+          .from(partnerInventoryTable)
+          .where(
+            and(
+              eq(partnerInventoryTable.serviceId, serviceId),
+              eq(partnerInventoryTable.isAvailable, false),
+              gte(partnerInventoryTable.date, dto.startDate),
+              lte(partnerInventoryTable.date, dto.endDate)
+            )
+          )
+          .limit(1)
+
+        const blackout = blackoutDates[0]
+        if (blackout) {
+          throw new ConflictException({
+            code: ErrorCode.RESOURCE_CONFLICT,
+            message: `Dịch vụ này đã bị khóa vào ngày ${blackout.date} (${blackout.note || "Lịch bận của cơ sở"}). Vui lòng chọn khoảng thời gian khác.`,
           })
         }
       }
@@ -511,5 +541,49 @@ export class StayeaBookingService {
     }
 
     return updated
+  }
+
+  /**
+   * Automated cron worker running every minute to release expired pending reservations (SEC-004)
+   * Any booking with status 'pending' whose expiration timestamp has passed will be marked 'cancelled'
+   */
+  @Cron(CronExpression.EVERY_MINUTE)
+  async releaseExpiredBookings(): Promise<{ releasedCount: number }> {
+    const nowIso = new Date().toISOString()
+
+    const expiredBookings = await this.db
+      .select({
+        id: stayeaBookingsTable.id,
+        bookingCode: stayeaBookingsTable.bookingCode,
+      })
+      .from(stayeaBookingsTable)
+      .where(
+        and(
+          eq(stayeaBookingsTable.status, "pending"),
+          eq(stayeaBookingsTable.paymentStatus, "unpaid"),
+          sql`(${stayeaBookingsTable.details}->'metadata'->>'expiresAt') IS NOT NULL`,
+          sql`(${stayeaBookingsTable.details}->'metadata'->>'expiresAt') < ${nowIso}`
+        )
+      )
+
+    if (expiredBookings.length === 0) {
+      return { releasedCount: 0 }
+    }
+
+    const ids = expiredBookings.map((b) => b.id)
+
+    await this.db
+      .update(stayeaBookingsTable)
+      .set({
+        status: "cancelled",
+        updatedAt: new Date(),
+      })
+      .where(inArray(stayeaBookingsTable.id, ids))
+
+    this.logger.log(
+      `Released ${ids.length} expired reservations: ${expiredBookings.map((b) => b.bookingCode).join(", ")}`
+    )
+
+    return { releasedCount: ids.length }
   }
 }

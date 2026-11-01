@@ -114,3 +114,4 @@ describe('getServerUser Security Verification (SEC-001 Remediation)', () => {
     expect(user?.role).toBe('ADMIN')
   })
 })
+

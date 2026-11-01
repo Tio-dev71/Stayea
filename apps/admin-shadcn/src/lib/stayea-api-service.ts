@@ -1331,6 +1331,38 @@ class StayeaApiService {
     }
   }
 
+  async getPartnerInventory(serviceId: string, startDate?: string, endDate?: string): Promise<any[]> {
+    try {
+      const params = new URLSearchParams({ serviceId })
+      if (startDate) params.append("startDate", startDate)
+      if (endDate) params.append("endDate", endDate)
+      const res = await fetch(`/api/stayea/partner/catalog/inventory?${params.toString()}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async bulkUpdatePartnerInventory(payload: {
+    serviceId: string
+    dates: { date: string; isAvailable?: boolean; priceOverride?: number; totalSlots?: number; note?: string }[]
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/stayea/partner/inventory/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(payload),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
   /**
    * Partner Hub: Get partner profile for currently logged-in user
    */

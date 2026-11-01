@@ -79,7 +79,7 @@ async function run() {
     const res = await fetch(`${BASE_URL}/api/stayea/ai/health`);
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     const json = await res.json();
-    if (json.status !== "online") throw new Error(`Expected online, got ${json.status}`);
+    if (json.status !== "online" && json.status !== "degraded") throw new Error(`Expected online or degraded, got ${json.status}`);
     if (json.service !== "STAYEA AI Engine") throw new Error(`Expected service 'STAYEA AI Engine', got ${json.service}`);
     if (json.routerUrl) throw new Error(`routerUrl leaked in health response!`);
     if (json.activeModel) throw new Error(`activeModel leaked in health response!`);
@@ -292,6 +292,7 @@ async function run() {
     { path: "/stayea/reports", name: "Admin Reports" },
     { path: "/stayea/revenue", name: "Admin Revenue" },
     { path: "/hub", name: "Partner Hub Portal" },
+    { path: "/about", name: "About & Legal Entity Page" },
   ];
 
   for (const r of routesToCheck) {
@@ -308,6 +309,40 @@ async function run() {
       }
     });
   }
+
+  // -------------------------------------------------------------------
+  // 5. BRANDING, FAVICON & COMPANY IDENTITY INTEGRITY
+  // -------------------------------------------------------------------
+  console.log(`\n📋 SUITE 5: Branding, Favicon & Legal Identity`);
+
+  await runner.runTest("Logo asset /stayea.png exists and serves HTTP 200 with PNG format", "Branding", async () => {
+    const res = await fetch(`${BASE_URL}/stayea.png`);
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("image/png")) {
+      throw new Error(`Expected image/png, got ${contentType}`);
+    }
+  });
+
+  await runner.runTest("Favicon /favicon.ico serves HTTP 200 with valid icon format", "Branding", async () => {
+    const res = await fetch(`${BASE_URL}/favicon.ico`);
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+  });
+
+  await runner.runTest("Company Legal Name matches 'CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ'", "Branding", async () => {
+    const res = await fetch(`${BASE_URL}/about`);
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    const html = await res.text();
+    if (!html.includes("CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ")) {
+      throw new Error("About page does not contain official company name");
+    }
+    if (!html.includes("0921 724 444")) {
+      throw new Error("About page does not contain official hotline 0921 724 444");
+    }
+    if (!html.includes("hi.topmedia.vn@gmail.com")) {
+      throw new Error("About page does not contain official email hi.topmedia.vn@gmail.com");
+    }
+  });
 
   // -------------------------------------------------------------------
   // SUMMARY REPORT

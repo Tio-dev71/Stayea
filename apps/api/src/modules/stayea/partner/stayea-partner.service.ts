@@ -383,7 +383,7 @@ export class StayeaPartnerService {
         unit: dto.unit || (dto.serviceType === "transport" ? "ngày" : "đêm"),
         images: dto.images || [],
         attributes: (dto.attributes as any) || {},
-        status: "active",
+        status: (dto.status as "active" | "inactive" | "pending_approval") || "active",
       })
       .returning()
 

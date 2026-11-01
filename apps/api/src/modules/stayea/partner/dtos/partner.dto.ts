@@ -168,6 +168,11 @@ export class CreatePartnerServiceDto {
   @IsOptional()
   images?: string[]
 
+  @ApiPropertyOptional({ enum: ["active", "inactive", "pending_approval"], example: "active" })
+  @IsEnum(["active", "inactive", "pending_approval"])
+  @IsOptional()
+  status?: "active" | "inactive" | "pending_approval"
+
   @ApiPropertyOptional({
     example: {
       bedrooms: 3,

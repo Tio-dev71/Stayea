@@ -1231,15 +1231,38 @@ class StayeaApiService {
 
   async createPartnerService(payload: Record<string, unknown>): Promise<any | null> {
     try {
+      const cleanPayload: Record<string, unknown> = {
+        serviceType: payload.serviceType,
+        title: payload.title,
+        location: payload.location,
+        price: Number(payload.price),
+      }
+      if (payload.partnerId) cleanPayload.partnerId = payload.partnerId
+      if (payload.description) cleanPayload.description = String(payload.description)
+      if (payload.originalPrice !== undefined && payload.originalPrice !== null && !isNaN(Number(payload.originalPrice))) {
+        cleanPayload.originalPrice = Number(payload.originalPrice)
+      }
+      if (payload.unit) cleanPayload.unit = String(payload.unit)
+      if (Array.isArray(payload.images)) cleanPayload.images = payload.images
+      if (payload.status) cleanPayload.status = String(payload.status)
+      if (payload.attributes && typeof payload.attributes === "object") {
+        cleanPayload.attributes = payload.attributes
+      }
+
       const res = await fetch(`/api/stayea/partner/services`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(cleanPayload),
       })
-      if (!res.ok) return null
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}))
+        console.error("createPartnerService failed:", res.status, errJson)
+        return null
+      }
       const json = await res.json()
       return json.data || json
-    } catch {
+    } catch (err) {
+      console.error("createPartnerService error:", err)
       return null
     }
   }

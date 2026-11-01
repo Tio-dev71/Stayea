@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 
 import { stayeaApi } from "@/lib/stayea-api-service"
-import { clearAllAuth } from "@/lib/token"
+import { clearAllAuth, getUser } from "@/lib/token"
 import { PartnerHeader } from "./components/partner-header"
 import { PartnerInventoryCalendar } from "./components/partner-inventory-calendar"
 import { PartnerKpiCards } from "./components/partner-kpi-cards"
@@ -65,9 +65,11 @@ export function PartnerPortalPage({
     let isMounted = true
     async function loadPartners() {
       try {
+        const currentUser = getUser()
+        const isAdmin = currentUser?.role === "ADMIN"
         const [selfPartner, adminPartners] = await Promise.all([
           stayeaApi.getPartnerProfile().catch(() => null),
-          stayeaApi.getAdminPartners().catch(() => []),
+          isAdmin ? stayeaApi.getAdminPartners().catch(() => []) : Promise.resolve([]),
         ])
 
         const list: any[] = Array.isArray(adminPartners) ? [...adminPartners] : []

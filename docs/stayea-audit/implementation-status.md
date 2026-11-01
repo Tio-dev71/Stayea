@@ -106,12 +106,19 @@ Over the course of 8 rigorous engineering phases, the STAYEA luxury hospitality 
   - Executed full test verification: **92/92 E2E tests passed**, **106/106 unit tests passed**, **36/36 frontend tests passed**.
 
 ### Phase 7: Production Reliability & Disaster Recovery Runbook
-- **Status:** Complete (Current Phase)
+- **Status:** Complete (Commit `60722c8`)
 - **Key Deliverables:**
   - Hardened Nginx production configuration (`docker/nginx/stayea-production.conf`) routing subdomains `stayea.com`, `hub.stayea.com`, `admin.stayea.com`, and `api.stayea.com`.
   - Created PM2 cluster configuration (`ecosystem.config.cjs`) with auto-restarts and graceful reload timeouts.
   - Created automated database backup and retention script (`scripts/backup-db.sh`).
   - Created complete Disaster Recovery Runbook (`docs/stayea-audit/disaster-recovery-runbook.md`).
+
+### Phase 8: Internationalization & Automated Production Deployment
+- **Status:** Complete (Current Phase)
+- **Key Deliverables:**
+  - Built ISO-4217 Multi-Currency & FX Engine (`apps/admin-shadcn/src/lib/currency.ts`) supporting VND, USD, EUR, KRW, JPY with localized formatters and Vietnamese tax/service fee breakdowns.
+  - Implemented unit tests for FX conversion and pricing accuracy (`apps/admin-shadcn/src/lib/currency.test.ts` - 6 tests passed).
+  - Created automated zero-downtime deployment runner (`scripts/deploy-production.sh`) for VPS `157.66.100.35` with automated rollback and smoke health checks.
 
 ---
 
@@ -121,7 +128,7 @@ Over the course of 8 rigorous engineering phases, the STAYEA luxury hospitality 
 | :--- | :--- | :--- | :--- | :--- |
 | **Backend Unit Tests** (`vitest`) | NestJS Services, DTOs, Guards | 106 | 106 | 0 |
 | **Backend E2E Tests** (`vitest.e2e`) | Security, Booking, Webhooks, Payouts | 92 | 92 | 0 |
-| **Frontend Unit Tests** (`vitest`) | React Components, Forms, Tables | 36 | 36 | 0 |
+| **Frontend Unit Tests** (`vitest`) | React Components, Forms, Currency | 42 | 42 | 0 |
 | **Typecheck** (`tsc -b --noEmit`) | Monorepo TypeScript Consistency | All pkgs | Pass | 0 |
 | **Turbo Build** (`pnpm build`) | Production Compiles (API + Next.js) | 6 pkgs | Pass | 0 |
 

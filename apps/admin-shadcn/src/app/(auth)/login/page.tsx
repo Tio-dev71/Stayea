@@ -20,7 +20,7 @@ export default async function LoginPage() {
 
   if (isPartnerDomain) {
     const user = await getServerUser()
-    if (user) {
+    if (user && user.role !== "ADMIN" && (user as any).role !== "admin") {
       redirect("/hub")
     }
     return <PartnerLoginPage />

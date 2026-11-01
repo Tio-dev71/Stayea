@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { PartnerPortalPage } from "@/features/partner-portal"
 import { stayeaApi } from "@/lib/stayea-api-service"
 import { clearAllAuth, getUser } from "@/lib/token"
+import { toast } from "sonner"
 
 export default function HubPage() {
   const [checkingAuth, setCheckingAuth] = useState(true)
@@ -13,10 +14,23 @@ export default function HubPage() {
     const u = getUser()
     if (!u || !u.email) {
       window.location.href = "/login"
-    } else {
-      setIsAuth(true)
-      setCheckingAuth(false)
+      return
     }
+
+    // Role Guard: Tài khoản Quản trị viên (ADMIN) không được phép dùng Cổng Đối tác
+    if (u.role === "ADMIN" || (u as any).role === "admin") {
+      clearAllAuth()
+      toast.error(
+        "Tài khoản Quản trị viên (ADMIN) không dùng cho Cổng Đối tác. Vui lòng truy cập Cổng Quản trị tại https://admin.stayea.com."
+      )
+      setTimeout(() => {
+        window.location.href = "/login"
+      }, 1500)
+      return
+    }
+
+    setIsAuth(true)
+    setCheckingAuth(false)
   }, [])
 
   const handleLogout = async () => {
@@ -29,10 +43,6 @@ export default function HubPage() {
 
   const handleNavigateHome = () => {
     window.open("https://stayea.com", "_blank")
-  }
-
-  const handleNavigateAdmin = () => {
-    window.open("https://admin.stayea.com/stayea", "_blank")
   }
 
   if (checkingAuth || !isAuth) {
@@ -50,7 +60,6 @@ export default function HubPage() {
     <PartnerPortalPage
       onLogout={handleLogout}
       onNavigateHome={handleNavigateHome}
-      onNavigateAdmin={handleNavigateAdmin}
     />
   )
 }

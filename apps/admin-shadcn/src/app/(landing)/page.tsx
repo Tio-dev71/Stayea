@@ -15,7 +15,7 @@ export default async function Home() {
   // 1. Partner / Hub portal domain (partner.stayea.com / hub.stayea.com)
   if (host.startsWith("partner.") || host.startsWith("hub.")) {
     const user = await getServerUser()
-    if (!user) {
+    if (!user || user.role === "ADMIN" || (user as any).role === "admin") {
       redirect("/login")
     }
     redirect("/hub")

@@ -29,7 +29,6 @@ interface PartnerHeaderProps {
   onSelectTab: (tab: "overview" | "services" | "inventory" | "orders" | "settings") => void
   pendingOrdersCount?: number
   onNavigateHome?: () => void
-  onNavigateAdmin?: () => void
   onLogout?: () => void
   onAddPartner?: () => void
 }
@@ -42,7 +41,6 @@ export function PartnerHeader({
   onSelectTab,
   pendingOrdersCount = 0,
   onNavigateHome,
-  onNavigateAdmin,
   onLogout,
   onAddPartner,
 }: PartnerHeaderProps) {
@@ -73,7 +71,6 @@ export function PartnerHeader({
     "Đối tác STAYEA"
 
   const displayEmail = currentUser?.email || currentProfile?.email || ""
-  const isAdmin = currentUser?.role === "ADMIN"
   const getServiceTypeIcon = (type?: string) => {
     switch (type) {
       case "homestay":
@@ -222,19 +219,6 @@ export function PartnerHeader({
               )}
             </button>
 
-            {/* Jump to Admin Portal */}
-            {(onNavigateAdmin || isAdmin) && (
-              <button
-                type="button"
-                onClick={onNavigateAdmin || (() => window.open("https://admin.stayea.com/stayea", "_blank"))}
-                className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-xs text-slate-200 border border-slate-700 transition-colors"
-                title="Truy cập cổng quản trị STAYEA"
-              >
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span>Cổng Quản Trị Admin</span>
-              </button>
-            )}
-
             {/* Jump to Customer View */}
             <button
               type="button"
@@ -272,7 +256,7 @@ export function PartnerHeader({
                     {displayName}
                   </span>
                   <span className="text-[10px] text-emerald-400 font-medium leading-tight mt-0.5 truncate">
-                    {isAdmin ? "Quản trị viên" : "Đối tác"}
+                    Đối tác
                   </span>
                 </div>
                 <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
@@ -295,7 +279,7 @@ export function PartnerHeader({
                       </p>
                       <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-950 text-emerald-400 text-[10px] font-bold rounded border border-emerald-800/40">
                         <Shield className="w-3 h-3 text-emerald-400" />
-                        <span>{isAdmin ? "Quyền Quản trị viên (ADMIN)" : "Tài khoản Đối tác"}</span>
+                        <span>Tài khoản Đối tác</span>
                       </div>
                     </div>
 
@@ -310,21 +294,6 @@ export function PartnerHeader({
                       <User className="w-4 h-4 text-slate-400" />
                       <span>Thông tin & Cài đặt đối tác</span>
                     </button>
-
-                    {(onNavigateAdmin || isAdmin) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsUserMenuOpen(false)
-                          if (onNavigateAdmin) onNavigateAdmin()
-                          else window.open("https://admin.stayea.com/stayea", "_blank")
-                        }}
-                        className="w-full px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg flex items-center gap-2 transition-colors text-left"
-                      >
-                        <Shield className="w-4 h-4 text-amber-400" />
-                        <span>Cổng Quản trị Admin</span>
-                      </button>
-                    )}
 
                     <button
                       type="button"

@@ -1324,9 +1324,6 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
             window.scrollTo({ top: 0, behavior: "smooth" })
           }
         }}
-        onNavigateAdmin={() => {
-          window.open("https://admin.stayea.com", "_blank")
-        }}
         onLogout={async () => {
           try {
             await stayeaApi.logout()

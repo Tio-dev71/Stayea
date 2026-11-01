@@ -30,14 +30,12 @@ import type {
 interface PartnerPortalPageProps {
   initialTab?: "overview" | "services" | "inventory" | "orders" | "settings"
   onNavigateHome?: () => void
-  onNavigateAdmin?: () => void
   onLogout?: () => void
 }
 
 export function PartnerPortalPage({
   initialTab = "overview",
   onNavigateHome,
-  onNavigateAdmin,
   onLogout,
 }: PartnerPortalPageProps) {
   // Profiles State
@@ -239,19 +237,36 @@ export function PartnerPortalPage({
   const handleAddService = async (
     newServiceData: Omit<PartnerServiceData, "id" | "partnerId">
   ) => {
-    if (!currentProfile) return
-    const created = await stayeaApi.createPartnerService({
-      ...newServiceData,
-      partnerId: currentProfile.id,
-      price: Number(newServiceData.price),
-      originalPrice: newServiceData.originalPrice ? Number(newServiceData.originalPrice) : undefined,
-    })
-    if (!created) {
-      toast.error("Không thể tạo dịch vụ. Vui lòng thử lại.")
-      return
+    try {
+      const created = await stayeaApi.createPartnerService({
+        ...newServiceData,
+        partnerId: currentProfile?.id,
+        price: Number(newServiceData.price),
+        originalPrice: newServiceData.originalPrice ? Number(newServiceData.originalPrice) : undefined,
+      })
+      if (!created) {
+        toast.error("Không thể tạo dịch vụ. Vui lòng kiểm tra lại thông tin.")
+        return
+      }
+      toast.success("Đã đăng bán dịch vụ thành công!")
+      if (!currentProfile && created.partnerId) {
+        const refreshed = await stayeaApi.getPartnerProfile()
+        if (refreshed) {
+          setCurrentProfile(refreshed)
+          setProfiles((prev) => [refreshed, ...prev.filter((p) => p.id !== refreshed.id)])
+        }
+      }
+      setAllServices((prev) => [
+        {
+          ...newServiceData,
+          ...created,
+          partnerId: created.partnerId || currentProfile?.id || "",
+        },
+        ...prev,
+      ])
+    } catch (err: any) {
+      toast.error(err?.message || "Lỗi khi đăng bán dịch vụ.")
     }
-    toast.success("Đã đăng bán dịch vụ thành công!")
-    setAllServices((prev) => [{ ...newServiceData, ...created, partnerId: created.partnerId || currentProfile.id }, ...prev])
   }
 
   // Toggle Service Status
@@ -318,14 +333,6 @@ export function PartnerPortalPage({
     window.open("https://stayea.com", "_blank")
   }
 
-  const handleNavigateAdmin = () => {
-    if (onNavigateAdmin) {
-      onNavigateAdmin()
-      return
-    }
-    window.open("https://admin.stayea.com/stayea", "_blank")
-  }
-
   return (
     <div className="min-h-screen bg-[#070e0d] text-slate-100 flex flex-col font-sans">
       {/* 1. Header */}
@@ -337,7 +344,6 @@ export function PartnerPortalPage({
         onSelectTab={setActiveTab}
         pendingOrdersCount={pendingOrdersCount}
         onNavigateHome={handleNavigateHome}
-        onNavigateAdmin={handleNavigateAdmin}
         onLogout={handleLogout}
         onAddPartner={() => setIsCreateProfileOpen(true)}
       />
@@ -360,7 +366,7 @@ export function PartnerPortalPage({
                 Chưa có cơ sở đối tác nào trong hệ thống
               </h2>
               <p className="text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
-                Cổng điều phối Partner Hub hiện chưa ghi nhận hồ sơ đối tác nào. Bạn có thể bấm tạo đối tác mới bên dưới hoặc truy cập trang quản trị Admin để thêm cơ sở.
+                Cổng điều phối Partner Hub hiện chưa ghi nhận hồ sơ đối tác nào. Bạn có thể bấm tạo đối tác mới bên dưới để bắt đầu kinh doanh trên STAYEA.
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">
@@ -372,15 +378,6 @@ export function PartnerPortalPage({
                 <Plus className="w-4 h-4" />
                 <span>Thêm Cơ Sở Đối Tác Mới</span>
               </button>
-              {onNavigateAdmin && (
-                <button
-                  type="button"
-                  onClick={onNavigateAdmin}
-                  className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all"
-                >
-                  Cổng Quản Trị Admin
-                </button>
-              )}
             </div>
           </div>
         ) : (

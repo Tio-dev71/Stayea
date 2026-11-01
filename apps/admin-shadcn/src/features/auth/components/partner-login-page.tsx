@@ -14,7 +14,6 @@ import {
   Building,
   Phone,
   User,
-  Shield,
   Layers,
 } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
@@ -75,6 +74,16 @@ export function PartnerLoginPage({
       }
 
       const user = res.user
+
+      // STRICT ROLE GUARD: Quản trị viên (ADMIN) không được phép dùng Cổng Đối tác
+      if (user?.role === "ADMIN" || (user as any)?.role === "admin") {
+        await stayeaApi.logout().catch(() => {})
+        setErrorMessage(
+          "Tài khoản Quản trị viên (ADMIN) không được phép đăng nhập Cổng Đối tác. Vui lòng truy cập Cổng Quản trị tại https://admin.stayea.com."
+        )
+        setIsLoading(false)
+        return
+      }
 
       // Store tokens
       if (res.token) {
@@ -577,14 +586,6 @@ export function PartnerLoginPage({
               className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-300 transition-colors"
             >
               <span>← Quay về trang chủ Stayea.com (Khách hàng)</span>
-            </a>
-
-            <a
-              href="https://admin.stayea.com/login"
-              className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-amber-300 transition-colors"
-            >
-              <Shield className="w-3 h-3 text-amber-400" />
-              <span>Dành cho Ban Quản trị: Cổng Admin Console →</span>
             </a>
           </div>
         </div>

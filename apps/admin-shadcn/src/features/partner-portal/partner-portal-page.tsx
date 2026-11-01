@@ -242,6 +242,7 @@ export function PartnerPortalPage({
     if (!currentProfile) return
     const created = await stayeaApi.createPartnerService({
       ...newServiceData,
+      partnerId: currentProfile.id,
       price: Number(newServiceData.price),
       originalPrice: newServiceData.originalPrice ? Number(newServiceData.originalPrice) : undefined,
     })
@@ -249,6 +250,7 @@ export function PartnerPortalPage({
       toast.error("Không thể tạo dịch vụ. Vui lòng thử lại.")
       return
     }
+    toast.success("Đã đăng bán dịch vụ thành công!")
     setAllServices((prev) => [{ ...newServiceData, ...created, partnerId: created.partnerId || currentProfile.id }, ...prev])
   }
 

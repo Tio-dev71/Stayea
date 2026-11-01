@@ -121,6 +121,11 @@ export class UpdatePartnerProfileDto {
 }
 
 export class CreatePartnerServiceDto {
+  @ApiPropertyOptional({ example: "ptn_sunshine_01" })
+  @IsString()
+  @IsOptional()
+  partnerId?: string
+
   @ApiProperty({
     enum: ["stay", "transport", "experience", "package"],
     example: "stay",

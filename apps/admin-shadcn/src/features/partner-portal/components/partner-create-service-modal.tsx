@@ -1,16 +1,45 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import {
   Building2,
   Car,
+  CheckCircle2,
   Compass,
+  FolderUp,
   Image as ImageIcon,
+  Loader2,
   MapPin,
   Plus,
+  Trash2,
   X,
 } from "lucide-react"
+import { toast } from "sonner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import type { BusinessType, PartnerServiceData } from "../types"
+
+/**
+ * Converts Google Drive sharing link to a direct high-speed image CDN link
+ */
+function parseDriveUrl(input: string): { convertedUrl: string; isDrive: boolean } {
+  if (!input) return { convertedUrl: "", isDrive: false }
+  const trimmed = input.trim()
+
+  if (trimmed.includes("drive.google.com") || trimmed.includes("docs.google.com")) {
+    const fileIdMatch =
+      trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+      trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/)
+
+    if (fileIdMatch && fileIdMatch[1]) {
+      return {
+        convertedUrl: `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`,
+        isDrive: true,
+      }
+    }
+  }
+
+  return { convertedUrl: trimmed, isDrive: false }
+}
 
 interface PartnerCreateServiceModalProps {
   isOpen: boolean
@@ -40,6 +69,64 @@ export function PartnerCreateServiceModal({
       ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80"
       : "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
   )
+  const [isDriveDetected, setIsDriveDetected] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleUrlChange = (val: string) => {
+    const { convertedUrl, isDrive } = parseDriveUrl(val)
+    setImageUrl(convertedUrl)
+    setIsDriveDetected(isDrive)
+    if (isDrive) {
+      toast.success("Đã tự động chuyển đổi liên kết Google Drive sang ảnh hiển thị!")
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Kích thước tệp tối đa là 10MB.")
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const uploadedUrl = await stayeaApi.uploadImage(file)
+      if (uploadedUrl) {
+        setImageUrl(uploadedUrl)
+        setIsDriveDetected(false)
+        toast.success("Tải ảnh từ thiết bị thành công!")
+      } else {
+        // Fallback to FileReader data URL
+        const reader = new FileReader()
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            setImageUrl(reader.result)
+            setIsDriveDetected(false)
+            toast.success("Đã tải ảnh lên thành công!")
+          }
+        }
+        reader.readAsDataURL(file)
+      }
+    } catch {
+      const reader = new FileReader()
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          setImageUrl(reader.result)
+          setIsDriveDetected(false)
+          toast.success("Đã tải ảnh lên thành công!")
+        }
+      }
+      reader.readAsDataURL(file)
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
+  }
 
   // Homestay specific
   const [bedrooms, setBedrooms] = useState(2)
@@ -203,37 +290,123 @@ export function PartnerCreateServiceModal({
             </div>
           </div>
 
-          {/* Location & Image */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Vị trí / Địa chỉ phục vụ <span className="text-rose-400">*</span>
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  required
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+          {/* Location */}
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Vị trí / Địa chỉ phục vụ <span className="text-rose-400">*</span>
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                required
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500"
+              />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                URL Hình ảnh đại diện
+          </div>
+
+          {/* Image Upload & Google Drive section */}
+          <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-emerald-400" />
+                <span>Hình ảnh dịch vụ (Link Drive / Tải từ thiết bị)</span>
               </label>
-              <div className="relative">
-                <ImageIcon className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              {isDriveDetected && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Google Drive CDN
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="sm:col-span-2 relative">
                 <input
                   type="text"
+                  placeholder="Dán link Google Drive hoặc URL ảnh..."
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
+
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  disabled={isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-full min-h-[38px] px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Đang tải lên...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FolderUp className="w-4 h-4" />
+                      <span>Tải từ thiết bị</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
+
+            <p className="text-[11px] text-slate-400">
+              💡 Hỗ trợ: Dán trực tiếp liên kết chia sẻ Google Drive (bật &quot;Bất kỳ ai có đường liên kết&quot;), URL ảnh trực tiếp, hoặc nhấn &quot;Tải từ thiết bị&quot; để tải file ảnh từ máy.
+            </p>
+
+            {/* Preview Box */}
+            {imageUrl && (
+              <div className="relative mt-2 p-2 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center gap-3">
+                <div className="relative w-20 h-14 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
+                  <img
+                    src={imageUrl}
+                    alt="Xem trước hình ảnh"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
+                    }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium text-slate-200 truncate">
+                    {isDriveDetected
+                      ? "Hình ảnh Google Drive (Đã tối ưu CDN)"
+                      : imageUrl.startsWith("data:")
+                      ? "Ảnh từ tệp tải lên (Bộ nhớ đệm)"
+                      : imageUrl.startsWith("/api/uploads")
+                      ? "Ảnh đã tải lên máy chủ STAYEA"
+                      : "Liên kết hình ảnh trực tiếp"}
+                  </div>
+                  <div className="text-[11px] text-slate-400 truncate max-w-sm">
+                    {imageUrl}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageUrl("")
+                    setIsDriveDetected(false)
+                  }}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+                  title="Xóa ảnh"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Custom Fields per Business Type */}

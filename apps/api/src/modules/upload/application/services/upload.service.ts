@@ -27,7 +27,10 @@ export class UploadService implements OnModuleInit {
 
   buildResult(file: Express.Multer.File): UploadResult {
     const apiBaseUrl = this.configService.get('API_BASE_URL', { infer: true })
-    const fileUrl = `${apiBaseUrl}/uploads/${file.filename}`
+    const isPlaceholder = !apiBaseUrl || apiBaseUrl.includes('example.com')
+    const fileUrl = isPlaceholder
+      ? `/api/uploads/${file.filename}`
+      : `${apiBaseUrl.replace(/\/+$/, '')}/api/uploads/${file.filename}`
 
     return {
       fileUrl,

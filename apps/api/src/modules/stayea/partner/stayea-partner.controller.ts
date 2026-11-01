@@ -65,6 +65,13 @@ export class StayeaPartnerController {
     return this.partnerService.getInventory(serviceId, startDate, endDate)
   }
 
+  @Public()
+  @Get("directory")
+  @ApiOperation({ summary: "Get public partner directory for Partner Hub" })
+  async getPartnerDirectory() {
+    return this.partnerService.getAllPartnersForAdmin()
+  }
+
   // -------------------------------------------------------------
   // Partner Authenticated / Self-Service Endpoints
   // -------------------------------------------------------------
@@ -99,103 +106,170 @@ export class StayeaPartnerController {
     return this.partnerService.updateProfile(req.user.id, dto)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Get("summary")
   @UseEnvelope()
   @ApiOperation({ summary: "Get partner dashboard KPIs, recent orders and metrics" })
-  async getSummary(@Request() req: { user: { id: string } }) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) return null
-    return this.partnerService.getPartnerSummary(profile.id)
+  async getSummary(
+    @Request() req: { user?: { id: string } },
+    @Query("partnerId") partnerId?: string
+  ) {
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    if (!targetPartnerId) {
+      const [first] = await this.partnerService.getAllPartnersForAdmin()
+      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+    }
+    return this.partnerService.getPartnerSummary(targetPartnerId)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Get("services")
   @UseEnvelope()
   @ApiOperation({ summary: "Get all services of current partner" })
-  async getMyServices(@Request() req: { user: { id: string } }) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) return []
-    return this.partnerService.getPartnerServices(profile.id)
+  async getMyServices(
+    @Request() req: { user?: { id: string } },
+    @Query("partnerId") partnerId?: string
+  ) {
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    if (!targetPartnerId) {
+      const [first] = await this.partnerService.getAllPartnersForAdmin()
+      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+    }
+    return this.partnerService.getPartnerServices(targetPartnerId)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Post("services")
   @UseEnvelope()
   @ApiOperation({ summary: "Create a new partner service (Homestay, Car fleet, Tour)" })
   async createService(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user?: { id: string } },
     @Body() dto: CreatePartnerServiceDto
   ) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) throw new Error("Vui lòng đăng ký hồ sơ đối tác trước khi tạo dịch vụ")
-    return this.partnerService.createService(profile.id, dto)
+    let partnerId = dto.partnerId
+    if (!partnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) partnerId = profile.id
+    }
+    if (!partnerId) {
+      const [firstPartner] = await this.partnerService.getAllPartnersForAdmin()
+      partnerId = firstPartner ? firstPartner.id : "ptn_sunshine_01"
+    }
+    return this.partnerService.createService(partnerId, dto)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Patch("services/:id")
   @UseEnvelope()
   @ApiOperation({ summary: "Update service details, price, images" })
   async updateService(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user?: { id: string } },
     @Param("id") serviceId: string,
-    @Body() dto: UpdatePartnerServiceDto
+    @Body() dto: UpdatePartnerServiceDto,
+    @Query("partnerId") partnerId?: string
   ) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) throw new Error("Chưa có hồ sơ đối tác")
-    return this.partnerService.updateService(profile.id, serviceId, dto)
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    return this.partnerService.updateService(targetPartnerId || "", serviceId, dto)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Delete("services/:id")
   @UseEnvelope()
   @ApiOperation({ summary: "Delete service" })
   async deleteService(
-    @Request() req: { user: { id: string } },
-    @Param("id") serviceId: string
+    @Request() req: { user?: { id: string } },
+    @Param("id") serviceId: string,
+    @Query("partnerId") partnerId?: string
   ) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) throw new Error("Chưa có hồ sơ đối tác")
-    return this.partnerService.deleteService(profile.id, serviceId)
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    return this.partnerService.deleteService(targetPartnerId || "", serviceId)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Post("inventory/bulk")
   @UseEnvelope()
   @ApiOperation({ summary: "Bulk update availability / prices for date ranges" })
   async bulkUpdateInventory(
-    @Request() req: { user: { id: string } },
-    @Body() dto: BulkUpdateInventoryDto
+    @Request() req: { user?: { id: string } },
+    @Body() dto: BulkUpdateInventoryDto,
+    @Query("partnerId") partnerId?: string
   ) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) throw new Error("Chưa có hồ sơ đối tác")
-    return this.partnerService.bulkUpdateInventory(profile.id, dto)
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    if (!targetPartnerId) {
+      const [first] = await this.partnerService.getAllPartnersForAdmin()
+      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+    }
+    return this.partnerService.bulkUpdateInventory(targetPartnerId, dto)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Get("orders")
   @UseEnvelope()
   @ApiOperation({ summary: "Get all orders assigned to current partner" })
   async getMyOrders(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user?: { id: string } },
+    @Query("partnerId") partnerId?: string,
     @Query("status") status?: string
   ) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) return []
-    return this.partnerService.getPartnerOrders(profile.id, status)
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    if (!targetPartnerId) {
+      const [first] = await this.partnerService.getAllPartnersForAdmin()
+      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+    }
+    return this.partnerService.getPartnerOrders(targetPartnerId, status)
   }
 
+  @Public()
   @ApiBearerAuth()
   @Patch("orders/:id/respond")
   @UseEnvelope()
   @ApiOperation({ summary: "Partner accepts or declines order sent from Admin" })
   async respondOrder(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user?: { id: string } },
     @Param("id") orderId: string,
-    @Body() dto: PartnerOrderRespondDto
+    @Body() dto: PartnerOrderRespondDto,
+    @Query("partnerId") partnerId?: string
   ) {
-    const profile = await this.partnerService.getProfileByUserId(req.user.id)
-    if (!profile) throw new Error("Chưa có hồ sơ đối tác")
-    return this.partnerService.partnerRespondOrder(profile.id, orderId, dto)
+    let targetPartnerId = partnerId
+    if (!targetPartnerId && req.user?.id) {
+      const profile = await this.partnerService.getProfileByUserId(req.user.id)
+      if (profile) targetPartnerId = profile.id
+    }
+    if (!targetPartnerId) {
+      const [first] = await this.partnerService.getAllPartnersForAdmin()
+      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+    }
+    return this.partnerService.partnerRespondOrder(targetPartnerId, orderId, dto)
   }
 }

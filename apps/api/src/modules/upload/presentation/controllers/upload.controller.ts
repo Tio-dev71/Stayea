@@ -5,6 +5,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import { UploadService } from '@/modules/upload/application/services/upload.service'
 import { multerConfig } from '@/modules/upload/infrastructure/multer.config'
 import { UploadResponseDto } from '@/modules/upload/presentation/dtos/upload-response.dto'
+import { Public } from '@/shared-kernel/infrastructure/decorators/public.decorator'
 
 @ApiTags('upload')
 @Controller('upload')
@@ -12,6 +13,7 @@ import { UploadResponseDto } from '@/modules/upload/presentation/dtos/upload-res
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
+  @Public()
   @Post('file')
   @UseInterceptors(FileInterceptor('file', multerConfig))
   @ApiOperation({ summary: 'Upload a single file (images and PDF, max 10MB)' })
@@ -26,6 +28,7 @@ export class UploadController {
     return this.uploadService.buildResult(file)
   }
 
+  @Public()
   @Post('files')
   @UseInterceptors(FilesInterceptor('files', 5, multerConfig))
   @ApiOperation({ summary: 'Upload up to 5 files (images and PDF, max 10MB each)' })

@@ -1077,7 +1077,7 @@ class StayeaApiService {
   }
 
   /**
-   * Admin: Get all partners
+   * Admin / Partner: Get all partners
    */
   async getAdminPartners(params?: { search?: string; status?: string; type?: string }): Promise<any[]> {
     try {
@@ -1096,7 +1096,43 @@ class StayeaApiService {
     } catch {
       // ignore
     }
+
+    // Fallback to public directory for partner hub
+    try {
+      const res = await fetch(`/api/stayea/partner/directory`)
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+
     return []
+  }
+
+  /**
+   * Upload image file to server (/api/upload/file)
+   */
+  async uploadImage(file: File): Promise<string | null> {
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const headers = this.getAuthHeader()
+      // Note: do not set Content-Type header with FormData, browser sets boundary automatically
+      const res = await fetch(`/api/upload/file`, {
+        method: "POST",
+        headers,
+        body: formData,
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      const data = json.data || json
+      return data.fileUrl || data.url || null
+    } catch {
+      return null
+    }
   }
 
   /**

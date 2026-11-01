@@ -14,6 +14,10 @@ export default async function Home() {
 
   // 1. Partner / Hub portal domain (partner.stayea.com / hub.stayea.com)
   if (host.startsWith("partner.") || host.startsWith("hub.")) {
+    const user = await getServerUser()
+    if (!user) {
+      redirect("/login")
+    }
     redirect("/hub")
   }
 
@@ -32,4 +36,3 @@ export default async function Home() {
   // 3. Customer portal (stayea.com / localhost)
   return <StayeaLandingPage />
 }
-

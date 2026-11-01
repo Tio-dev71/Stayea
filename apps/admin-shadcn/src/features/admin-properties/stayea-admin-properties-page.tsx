@@ -44,7 +44,8 @@ export function StayeaAdminPropertiesPage({
   const fetchAccommodations = async () => {
     setIsLoading(true)
     try {
-      const realItems = await stayeaApi.getAccommodations()
+      const res: any = await stayeaApi.getAccommodations()
+      const realItems = Array.isArray(res) ? res : res?.items || res?.data || []
       if (Array.isArray(realItems) && realItems.length > 0) {
         const mapped: PropertyItem[] = realItems.map((item: any, idx: number) => {
           let propType: PropertyItem["propertyType"] = "Biệt thự"

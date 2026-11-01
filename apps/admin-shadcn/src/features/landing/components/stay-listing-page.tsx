@@ -46,28 +46,33 @@ export function StayListingPage({ onNavigate, initialCategory }: StayListingPage
 
   React.useEffect(() => {
     let isMounted = true
-    stayeaApi.getAccommodations().then((res) => {
-      if (!isMounted || !res || !Array.isArray(res.items)) return
-      if (res.items.length === 0) {
+    stayeaApi.getAccommodations().then((res: any) => {
+      if (!isMounted || !res) return
+      const rawList = Array.isArray(res) ? res : res.items || []
+      if (rawList.length === 0) {
         setAccommodations([])
         return
       }
-      const mapped: StayAccommodationItem[] = res.items.map((db: any) => {
+      const mapped: StayAccommodationItem[] = rawList.map((db: any) => {
         const cat = (db.category || "").toLowerCase()
-        let categoryId: StayAccommodationItem["categoryId"] = "hotels"
-        let type: StayAccommodationItem["type"] = "Khách sạn"
-        if (cat === "villa") {
+        const titleLower = (db.title || "").toLowerCase()
+        let categoryId: StayAccommodationItem["categoryId"] = "villas"
+        let type: StayAccommodationItem["type"] = "Villa"
+        if (cat === "villa" || cat === "villas" || titleLower.includes("villa")) {
           categoryId = "villas"
           type = "Villa"
-        } else if (cat === "resort") {
+        } else if (cat === "resort" || titleLower.includes("resort")) {
           categoryId = "hotels"
           type = "Resort"
-        } else if (cat === "apartment") {
+        } else if (cat === "apartment" || cat === "apartments" || titleLower.includes("căn hộ") || titleLower.includes("apartment")) {
           categoryId = "apartments"
           type = "Căn hộ"
-        } else if (cat === "homestay") {
+        } else if (cat === "homestay" || cat === "homestays" || titleLower.includes("homestay") || titleLower.includes("phòng")) {
           categoryId = "homestays"
           type = "Homestay"
+        } else if (cat === "hotel" || cat === "hotels" || titleLower.includes("khách sạn")) {
+          categoryId = "hotels"
+          type = "Khách sạn"
         }
 
         let badgeVariant: "select" | "verified" | "bestseller" | "longstay" = "verified"

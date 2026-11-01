@@ -51,7 +51,9 @@ export function StayeaAdminDashboardPage({
         ])
 
         const bookings = Array.isArray(rawBookings) ? rawBookings : []
-        const accommodations = Array.isArray(rawAccommodations) ? rawAccommodations : []
+        const accommodations = Array.isArray(rawAccommodations)
+          ? rawAccommodations
+          : (rawAccommodations as any)?.items || (rawAccommodations as any)?.data || []
         const users = Array.isArray(rawUsers) ? rawUsers : []
 
         // 1. Calculate Revenue

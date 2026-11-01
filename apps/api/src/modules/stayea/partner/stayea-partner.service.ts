@@ -5,11 +5,14 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
+import type { OnModuleInit } from "@nestjs/common"
 import {
   partnerInventoryTable,
   partnerOrdersTable,
   partnerProfilesTable,
   partnerServicesTable,
+  stayeaAccommodationsTable,
+  stayeaExperiencesTable,
   usersTable,
 } from "@workspace/database"
 import { and, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm"
@@ -34,9 +37,158 @@ function generateUid(prefix: string) {
   return `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 12)}`
 }
 
+function toSlug(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
 @Injectable()
-export class StayeaPartnerService {
+export class StayeaPartnerService implements OnModuleInit {
   constructor(@Inject(DB_TOKEN) private readonly db: DrizzleDb) {}
+
+  async onModuleInit() {
+    await this.syncAllExistingPartnerServices()
+  }
+
+  async syncServiceToCatalog(service: any, hostName?: string) {
+    try {
+      const defaultStayImg = "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b"
+      const defaultExpImg = "https://images.unsplash.com/photo-1544551763-46a013bb70d5"
+      const images: string[] = Array.isArray(service.images) && service.images.length > 0
+        ? service.images
+        : []
+      const attrs = (service.attributes as any) || {}
+
+      if (service.serviceType === "stay") {
+        const slug = `${toSlug(service.title || "villa")}-${service.id}`
+        const cat = attrs.category || 
+          (/homestay/i.test(service.title) ? "homestay" : /căn hộ|apartment/i.test(service.title) ? "apartment" : /khách sạn|hotel/i.test(service.title) ? "hotel" : "villa")
+        const rawAmenities: string[] = Array.isArray(attrs.amenities) ? attrs.amenities : []
+        const mappedAmenities = rawAmenities.map((a: string) => ({
+          icon: "check",
+          label: a,
+        }))
+        const img = images[0] || defaultStayImg
+
+        await this.db
+          .insert(stayeaAccommodationsTable)
+          .values({
+            id: service.id,
+            title: service.title,
+            slug,
+            location: service.location || "Phú Quốc",
+            category: cat,
+            pricePerNight: service.price ? service.price.toString() : "1500000",
+            originalPrice: service.originalPrice ? service.originalPrice.toString() : null,
+            rating: "5.00",
+            reviewCount: 1,
+            imageUrl: img,
+            gallery: images.length > 0 ? images : [img],
+            badge: "Đối tác xác thực",
+            bedrooms: Number(attrs.bedrooms) || 1,
+            bathrooms: Number(attrs.bathrooms) || 1,
+            maxGuests: Number(attrs.maxGuests) || 2,
+            amenities: mappedAmenities,
+            isFeatured: true,
+            hostName: hostName || "Đối tác STAYEA",
+            description: service.description || "",
+            cancellationPolicy: "Miễn phí hủy phòng trước 48 giờ",
+          })
+          .onConflictDoUpdate({
+            target: stayeaAccommodationsTable.id,
+            set: {
+              title: service.title,
+              location: service.location || "Phú Quốc",
+              category: cat,
+              pricePerNight: service.price ? service.price.toString() : "1500000",
+              originalPrice: service.originalPrice ? service.originalPrice.toString() : null,
+              imageUrl: img,
+              gallery: images.length > 0 ? images : [img],
+              bedrooms: Number(attrs.bedrooms) || 1,
+              bathrooms: Number(attrs.bathrooms) || 1,
+              maxGuests: Number(attrs.maxGuests) || 2,
+              amenities: mappedAmenities,
+              description: service.description || "",
+              hostName: hostName || "Đối tác STAYEA",
+              updatedAt: new Date(),
+            },
+          })
+      } else if (service.serviceType === "experience") {
+        const slug = `${toSlug(service.title || "tour")}-${service.id}`
+        const img = images[0] || defaultExpImg
+
+        await this.db
+          .insert(stayeaExperiencesTable)
+          .values({
+            id: service.id,
+            title: service.title,
+            slug,
+            location: service.location || "Phú Quốc",
+            category: attrs.category || "tour",
+            duration: attrs.duration || "1 ngày",
+            rating: "5.00",
+            reviewCount: 1,
+            price: service.price ? service.price.toString() : "850000",
+            originalPrice: service.originalPrice ? service.originalPrice.toString() : null,
+            imageUrl: img,
+            gallery: images.length > 0 ? images : [img],
+            badge: "Tour trải nghiệm",
+            departureSchedule: attrs.schedule || "Hàng ngày",
+            groupSize: "1-15 khách",
+            highlights: attrs.amenities || ["Hướng dẫn viên", "Nước suối"],
+            included: ["Xe đưa đón", "Nước suối", "Bảo hiểm du lịch"],
+            isFeatured: true,
+            description: service.description || "",
+          })
+          .onConflictDoUpdate({
+            target: stayeaExperiencesTable.id,
+            set: {
+              title: service.title,
+              location: service.location || "Phú Quốc",
+              price: service.price ? service.price.toString() : "850000",
+              originalPrice: service.originalPrice ? service.originalPrice.toString() : null,
+              imageUrl: img,
+              gallery: images.length > 0 ? images : [img],
+              description: service.description || "",
+              updatedAt: new Date(),
+            },
+          })
+      }
+    } catch (err) {
+      console.error(`[StayeaPartnerService] Error syncing service ${service?.id} to catalog:`, err)
+    }
+  }
+
+  async syncAllExistingPartnerServices() {
+    try {
+      const services = await this.db
+        .select()
+        .from(partnerServicesTable)
+        .where(eq(partnerServicesTable.status, "active"))
+
+      for (const s of services) {
+        let hostName = "Đối tác STAYEA"
+        try {
+          const [p] = await this.db
+            .select()
+            .from(partnerProfilesTable)
+            .where(eq(partnerProfilesTable.id, s.partnerId))
+            .limit(1)
+          if (p) hostName = p.contactName || p.businessName
+        } catch {}
+
+        await this.syncServiceToCatalog(s, hostName)
+      }
+      console.log(`[StayeaPartnerService] Synced ${services.length} active partner services to catalog tables.`)
+    } catch (err) {
+      console.error("[StayeaPartnerService] Error syncing existing services:", err)
+    }
+  }
 
   // ==========================================
   // 1. PARTNER PROFILE MANAGEMENT
@@ -387,6 +539,9 @@ export class StayeaPartnerService {
       })
       .returning()
 
+    // Automatically sync into public & admin catalog
+    await this.syncServiceToCatalog(service, profile?.contactName || profile?.businessName)
+
     return service
   }
 
@@ -427,6 +582,11 @@ export class StayeaPartnerService {
       .where(eq(partnerServicesTable.id, serviceId))
       .returning()
 
+    // Automatically sync update into catalog
+    if (updated) {
+      await this.syncServiceToCatalog(updated)
+    }
+
     return updated
   }
 
@@ -448,6 +608,17 @@ export class StayeaPartnerService {
     await this.db
       .delete(partnerServicesTable)
       .where(eq(partnerServicesTable.id, serviceId))
+
+    // Also remove from catalog tables
+    await this.db
+      .delete(stayeaAccommodationsTable)
+      .where(eq(stayeaAccommodationsTable.id, serviceId))
+      .catch(() => {})
+
+    await this.db
+      .delete(stayeaExperiencesTable)
+      .where(eq(stayeaExperiencesTable.id, serviceId))
+      .catch(() => {})
 
     return { success: true, deletedId: serviceId }
   }

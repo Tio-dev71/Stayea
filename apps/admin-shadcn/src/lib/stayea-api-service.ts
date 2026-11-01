@@ -226,7 +226,15 @@ class StayeaApiService {
       const url = `${this.baseUrl}/accommodations${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return await res.json()
+      const json = await res.json()
+      const data = json.data || json
+      if (Array.isArray(data)) {
+        return { items: data, count: data.length }
+      }
+      return {
+        items: Array.isArray(data?.items) ? data.items : [],
+        count: data?.count || (Array.isArray(data?.items) ? data.items.length : 0),
+      }
     } catch {
       return { items: [], count: 0 }
     }
@@ -252,7 +260,15 @@ class StayeaApiService {
       const url = `${this.baseUrl}/experiences${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return await res.json()
+      const json = await res.json()
+      const data = json.data || json
+      if (Array.isArray(data)) {
+        return { items: data, count: data.length }
+      }
+      return {
+        items: Array.isArray(data?.items) ? data.items : [],
+        count: data?.count || (Array.isArray(data?.items) ? data.items.length : 0),
+      }
     } catch {
       return { items: [], count: 0 }
     }
@@ -277,7 +293,15 @@ class StayeaApiService {
       const url = `${this.baseUrl}/packages${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return await res.json()
+      const json = await res.json()
+      const data = json.data || json
+      if (Array.isArray(data)) {
+        return { items: data, count: data.length }
+      }
+      return {
+        items: Array.isArray(data?.items) ? data.items : [],
+        count: data?.count || (Array.isArray(data?.items) ? data.items.length : 0),
+      }
     } catch {
       return { items: [], count: 0 }
     }

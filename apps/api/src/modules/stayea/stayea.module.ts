@@ -4,12 +4,14 @@ import { StayeaBookingModule } from "@/modules/stayea/booking/stayea-booking.mod
 import { StayeaCatalogModule } from "@/modules/stayea/catalog/stayea-catalog.module"
 import { StayeaClubModule } from "@/modules/stayea/club/stayea-club.module"
 import { StayeaAiAgentModule } from "@/modules/stayea/ai-agent/stayea-ai-agent.module"
+import { StayeaNotificationModule } from "@/modules/stayea/notification/stayea-notification.module"
 import { StayeaPartnerModule } from "@/modules/stayea/partner/stayea-partner.module"
 import { StayeaPaymentModule } from "@/modules/stayea/payment/stayea-payment.module"
 import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
 
 @Module({
   imports: [
+    StayeaNotificationModule,
     StayeaCatalogModule,
     StayeaBookingModule,
     StayeaClubModule,
@@ -19,6 +21,7 @@ import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
     StayeaAiAgentModule,
   ],
   exports: [
+    StayeaNotificationModule,
     StayeaCatalogModule,
     StayeaBookingModule,
     StayeaClubModule,

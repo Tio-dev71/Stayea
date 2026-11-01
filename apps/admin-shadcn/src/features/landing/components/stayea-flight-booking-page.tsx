@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckCircle2, X, ChevronDown, Plane, CreditCard, ShieldCheck, Check, ArrowRight } from "lucide-react"
+import { CheckCircle2, X, ChevronDown, Plane, ShieldCheck, Check, ArrowRight } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,11 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
     STAYEA_FLIGHT_BOOKING_SUMMARY
   )
   const [showCheckoutModal, setShowCheckoutModal] = React.useState<boolean>(false)
-  const [paymentOption, setPaymentOption] = React.useState<string>("card")
+  const [passengerName, setPassengerName] = React.useState<string>("")
+  const [passengerPhone, setPassengerPhone] = React.useState<string>("")
+  const [passengerEmail, setPassengerEmail] = React.useState<string>("")
+  const [passengerNotes, setPassengerNotes] = React.useState<string>("")
+  const [requestReference, setRequestReference] = React.useState<string>("PQC-REQ-8921")
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false)
   const [bookingSuccess, setBookingSuccess] = React.useState<boolean>(false)
 
@@ -50,13 +54,20 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
   }
 
   function handleConfirmBooking() {
+    if (!passengerName.trim() || !passengerPhone.trim()) {
+      showToast("Vui lòng điền họ tên hành khách và số điện thoại liên hệ.")
+      return
+    }
+
     setIsProcessing(true)
     setTimeout(() => {
+      const generatedRef = `PQC-REQ-${Math.floor(1000 + Math.random() * 9000)}`
+      setRequestReference(generatedRef)
       setIsProcessing(false)
       setShowCheckoutModal(false)
       setBookingSuccess(true)
-      showToast("Đặt vé máy bay thành công! Mã đặt chỗ: PQC-8921. Vé điện tử đã gửi tới email.")
-    }, 1200)
+      showToast(`Yêu cầu giữ chỗ đã được tiếp nhận thành công! Mã: ${generatedRef}`)
+    }, 1000)
   }
 
   function handleSelectFlight(flight: FlightItem) {
@@ -130,6 +141,19 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
           }}
           onSearch={() => showToast("Đang cập nhật danh sách chuyến bay phù hợp...")}
         />
+
+        {/* Regulatory & Compliance Notice: Request-to-Book Concierge */}
+        <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200/90 flex items-start gap-3.5 text-xs text-amber-950">
+          <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <span className="font-bold text-amber-900 block text-xs sm:text-sm">
+              Dịch Vụ Tư Vấn &amp; Đặt Giữ Chỗ Chuyến Bay (Request-to-Book Concierge)
+            </span>
+            <p className="text-amber-800 leading-relaxed text-[11px] sm:text-xs">
+              STAYEA là đơn vị lữ hành cao cấp hỗ trợ du khách tìm kiếm hành trình và săn vé máy bay giá tốt tới Phú Quốc. Giá vé và lịch bay hiển thị theo biểu phí thời gian thực; chuyên viên phòng vé STAYEA sẽ liên hệ đối soát tình trạng chỗ thực tế với các hãng hàng không nội địa (Vietnam Airlines, Vietjet Air, Bamboo Airways) để giữ chỗ và xuất vé chính hãng theo quy định.
+            </p>
+          </div>
+        </div>
 
         {/* 2c. 3-Column Main Flight Booking Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -219,7 +243,7 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
       </div>
 
       {/* =========================================================================
-          DIALOG MODAL: XÁC NHẬN & THANH TOÁN VÉ MÁY BAY
+          DIALOG MODAL: XÁC NHẬN YÊU CẦU GIỮ CHỖ CHUYẾN BAY (REQUEST-TO-BOOK)
       ========================================================================= */}
       <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
         <DialogContent className="sm:max-w-lg rounded-2xl p-6">
@@ -228,15 +252,15 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1E3A8A] border border-blue-200">
                 <Plane className="w-3 h-3" /> Chuyến bay thẳng
               </span>
-              <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
-                <Check className="w-3 h-3" /> Đã giảm 10%
+              <span className="text-xs text-amber-700 font-semibold flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" /> Request-to-Book Concierge
               </span>
             </div>
             <DialogTitle className="text-lg font-black text-[#0A2239]">
-              Xác nhận thông tin & Thanh toán
+              Thông Tin Hành Khách &amp; Yêu Cầu Giữ Chỗ
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
-              Kiểm tra thông tin hành trình đến Phú Quốc trước khi xuất vé.
+              Vui lòng cung cấp thông tin để chuyên viên phòng vé STAYEA đối soát chỗ thực tế với hãng hàng không.
             </DialogDescription>
           </DialogHeader>
 
@@ -255,56 +279,71 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
                 <span>{bookingSummary.arrivalTime} (PQC)</span>
               </div>
               <div className="text-[11px] text-slate-500">
-                Hành khách: {bookingSummary.passengerText}
+                Hành khách dự kiến: {bookingSummary.passengerText}
               </div>
             </div>
 
-            {/* Payment Method Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-800 block">
-                Phương thức thanh toán
-              </label>
-              <div className="space-y-2">
-                <label className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
-                  paymentOption === "card" ? "border-[#1E3A8A] bg-blue-50/50" : "border-slate-200 hover:bg-slate-50"
-                }`}>
-                  <div className="flex items-center gap-2.5">
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      checked={paymentOption === "card"}
-                      onChange={() => setPaymentOption("card")}
-                      className="text-[#1E3A8A] focus:ring-0"
-                    />
-                    <CreditCard className="w-4 h-4 text-blue-800" />
-                    <span>Thẻ Visa / MasterCard mặc định (•••• 4242)</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-normal">Miễn phí giao dịch</span>
+            {/* Passenger Contact Input Form */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  Họ và tên hành khách (theo CCCD / Hộ chiếu) *
                 </label>
+                <input
+                  type="text"
+                  placeholder="NGUYEN VAN A"
+                  value={passengerName}
+                  onChange={(e) => setPassengerName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A]"
+                />
+              </div>
 
-                <label className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
-                  paymentOption === "vnpay" ? "border-[#1E3A8A] bg-blue-50/50" : "border-slate-200 hover:bg-slate-50"
-                }`}>
-                  <div className="flex items-center gap-2.5">
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      checked={paymentOption === "vnpay"}
-                      onChange={() => setPaymentOption("vnpay")}
-                      className="text-[#1E3A8A] focus:ring-0"
-                    />
-                    <div className="w-4 h-4 rounded-sm bg-red-600 text-[8px] font-black text-white flex items-center justify-center">VN</div>
-                    <span>Quét mã QR VNPay / Mobile Banking</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-normal">Xác nhận tức thì</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-800 block mb-1">
+                    Số điện thoại liên hệ *
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="0912 345 678"
+                    value={passengerPhone}
+                    onChange={(e) => setPassengerPhone(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-800 block mb-1">
+                    Email nhận vé điện tử
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="khachhang@example.com"
+                    value={passengerEmail}
+                    onChange={(e) => setPassengerEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  Yêu cầu đặc biệt (Hành lý ký gửi, chỗ ngồi ưu tiên, suất ăn)
                 </label>
+                <textarea
+                  rows={2}
+                  placeholder="Ví dụ: Thêm 20kg hành lý ký gửi, chọn ghế gần cửa sổ..."
+                  value={passengerNotes}
+                  onChange={(e) => setPassengerNotes(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] resize-none"
+                />
               </div>
             </div>
 
-            {/* Total Price Row */}
+            {/* Estimated Price Row */}
             <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-slate-500 block">Tổng thanh toán (đã bao gồm thuế, phí)</span>
+                <span className="text-[11px] text-slate-500 block">Biểu phí tham khảo (đã gồm thuế, phí hãng)</span>
                 <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" /> Tiết kiệm {new Intl.NumberFormat("vi-VN").format(bookingSummary.clubDiscountAmount)}đ nhờ Stayea Club
                 </span>
@@ -330,10 +369,10 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
               className="px-5 py-2.5 rounded-xl bg-[#1E3A8A] hover:bg-[#1E40AF] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-2"
             >
               {isProcessing ? (
-                <span>Đang xử lý xuất vé...</span>
+                <span>Đang gửi yêu cầu giữ chỗ...</span>
               ) : (
                 <>
-                  <span>Xác nhận & Thanh toán</span>
+                  <span>Gửi Yêu Cầu Giữ Chỗ</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -343,7 +382,7 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
       </Dialog>
 
       {/* =========================================================================
-          DIALOG MODAL: ĐẶT VÉ THÀNH CÔNG
+          DIALOG MODAL: TIẾP NHẬN YÊU CẦU THÀNH CÔNG
       ========================================================================= */}
       <Dialog open={bookingSuccess} onOpenChange={setBookingSuccess}>
         <DialogContent className="sm:max-w-md rounded-2xl p-6 text-center">
@@ -351,13 +390,21 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
             <Check className="w-8 h-8 stroke-[3]" />
           </div>
           <DialogTitle className="text-lg sm:text-xl font-black text-[#0A2239]">
-            Đặt vé máy bay thành công!
+            Tiếp nhận yêu cầu giữ chỗ thành công!
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-600 mt-1">
-            Mã đặt chỗ của bạn là <strong className="font-mono text-slate-900 font-black">PQC-8921</strong>. Thông tin vé điện tử và hướng dẫn làm thủ tục đã được gửi về email của bạn.
+            Mã yêu cầu giữ chỗ: <strong className="font-mono text-slate-900 font-black">{requestReference}</strong>. Chuyên viên phòng vé STAYEA sẽ đối soát tình trạng chỗ thực tế với hãng và liên hệ lại quý khách trong vòng 15 phút.
           </DialogDescription>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1 my-3 text-left">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Hành khách:</span>
+              <span className="font-semibold text-slate-800">{passengerName || "Quý khách"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Số điện thoại:</span>
+              <span className="font-semibold text-slate-800">{passengerPhone}</span>
+            </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Chuyến bay:</span>
               <span className="font-semibold text-slate-800">{bookingSummary.flightNumber} ({bookingSummary.departureTime} - {bookingSummary.arrivalTime})</span>
@@ -367,7 +414,7 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
               <span className="font-semibold text-slate-800">Hà Nội (HAN) → Phú Quốc (PQC)</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Tổng thanh toán:</span>
+              <span className="text-slate-400">Giá vé tham khảo:</span>
               <span className="font-bold text-[#1E3A8A]">{new Intl.NumberFormat("vi-VN").format(bookingSummary.totalPayment)}đ</span>
             </div>
           </div>
@@ -378,17 +425,17 @@ export function StayeaFlightBookingPage({ onNavigate }: StayeaFlightBookingPageP
               onClick={() => setBookingSuccess(false)}
               className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold cursor-pointer"
             >
-              Tiếp tục tìm kiếm
+              Tiếp tục tra cứu
             </button>
             <button
               type="button"
               onClick={() => {
                 setBookingSuccess(false)
-                onNavigate?.("bookings")
+                onNavigate?.("home")
               }}
               className="px-5 py-2.5 rounded-xl bg-[#0A2239] hover:bg-[#071726] text-white text-xs font-semibold shadow-xs cursor-pointer"
             >
-              Xem đơn dịch vụ
+              Về trang chủ STAYEA
             </button>
           </div>
         </DialogContent>

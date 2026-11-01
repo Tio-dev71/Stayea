@@ -3,7 +3,9 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from "@nestjs/common"
 import {
@@ -22,6 +24,7 @@ import { and, desc, eq, inArray, or } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
+import { StayeaNotificationService } from "@/modules/stayea/notification/stayea-notification.service"
 
 import type { DrizzleDb } from "@/app/database/db.port"
 import type {
@@ -35,7 +38,12 @@ import type {
 
 @Injectable()
 export class StayeaPaymentService {
-  constructor(@Inject(DB_TOKEN) private readonly db: DrizzleDb) {}
+  private readonly logger = new Logger(StayeaPaymentService.name)
+
+  constructor(
+    @Inject(DB_TOKEN) private readonly db: DrizzleDb,
+    @Optional() private readonly notificationService?: StayeaNotificationService
+  ) {}
 
   /**
    * Get all user saved payment methods
@@ -300,7 +308,7 @@ export class StayeaPaymentService {
     }
 
     // 4. Atomic database transaction to update booking, log transaction and grant loyalty points
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       const isPaid = dto.status === "PAID"
 
       // Update or create payment transaction log
@@ -387,6 +395,14 @@ export class StayeaPaymentService {
         message: "Thanh toán thành công và đã cập nhật trạng thái đơn đặt",
       }
     })
+
+    if (result.success && !result.replayed && result.booking) {
+      this.dispatchNotifications(result.booking, dto.gateway || "VietQR").catch((err) => {
+        this.logger.warn(`Failed to dispatch booking notification: ${err.message}`)
+      })
+    }
+
+    return result
   }
 
   /**
@@ -418,7 +434,7 @@ export class StayeaPaymentService {
       })
     }
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       const randomSuffix = Math.floor(100_000 + Math.random() * 900_000)
       const transactionRef = `TX-${dayjs().format("YYYYMMDD")}-${randomSuffix}`
 
@@ -498,6 +514,14 @@ export class StayeaPaymentService {
         awardedPoints,
       }
     })
+
+    if (result.success && result.booking) {
+      this.dispatchNotifications(result.booking, dto.paymentMethodId || "VietQR").catch((err) => {
+        this.logger.warn(`Failed to dispatch booking notification: ${err.message}`)
+      })
+    }
+
+    return result
   }
 
   // ---------------------------------------------------------------------------
@@ -743,6 +767,75 @@ export class StayeaPaymentService {
       .where(eq(partnerPayoutRequestsTable.id, id))
       .returning()
 
+    if (this.notificationService && updated) {
+      this.notificationService
+        .sendPayoutStatusNotification({
+          partnerId: updated.partnerId,
+          partnerName: `Đối tác ${updated.partnerId}`,
+          payoutId: updated.id,
+          amount: updated.amount,
+          bankName: updated.bankName,
+          bankAccount: updated.bankAccount,
+          status: updated.status as any,
+          rejectionReason: updated.adminNotes ?? undefined,
+        })
+        .catch(() => {})
+    }
+
     return updated
+  }
+
+  /**
+   * Helper to dispatch booking confirmation voucher and partner order alert
+   */
+  private async dispatchNotifications(booking: any, paymentMethod: string) {
+    if (!this.notificationService) return
+    try {
+      const details = booking.details || {}
+      await this.notificationService.sendBookingConfirmation({
+        bookingCode: booking.bookingCode,
+        serviceTitle: booking.title || "Dịch vụ nghỉ dưỡng / trải nghiệm STAYEA",
+        serviceType: booking.bookingType || "stay",
+        customerName: booking.contactName || details.contactName || "Quý khách",
+        customerEmail: booking.contactEmail || details.contactEmail || "guest@stayea.com",
+        customerPhone: booking.contactPhone || details.contactPhone || "",
+        startDate: booking.checkIn ? new Date(booking.checkIn).toLocaleDateString("vi-VN") : "Linh hoạt",
+        endDate: booking.checkOut ? new Date(booking.checkOut).toLocaleDateString("vi-VN") : undefined,
+        totalAmount: booking.finalAmount || booking.totalAmount,
+        paymentMethod,
+        transactionId: booking.paymentTransactionId || booking.bookingCode,
+      })
+
+      const [order] = await this.db
+        .select()
+        .from(partnerOrdersTable)
+        .where(eq(partnerOrdersTable.bookingId, booking.id))
+        .limit(1)
+
+      if (order && order.partnerId) {
+        const [partner] = await this.db
+          .select()
+          .from(partnerProfilesTable)
+          .where(eq(partnerProfilesTable.id, order.partnerId))
+          .limit(1)
+
+        if (partner) {
+          await this.notificationService.sendPartnerOrderAlert({
+            partnerId: partner.id,
+            partnerName: partner.businessName || partner.contactName,
+            partnerEmail: partner.email,
+            serviceTitle: booking.title || "Dịch vụ đối tác STAYEA",
+            bookingCode: booking.bookingCode,
+            startDate: booking.checkIn ? new Date(booking.checkIn).toLocaleDateString("vi-VN") : "Linh hoạt",
+            endDate: booking.checkOut ? new Date(booking.checkOut).toLocaleDateString("vi-VN") : undefined,
+            customerName: booking.contactName || "Khách hàng STAYEA",
+            customerPhone: booking.contactPhone || "",
+            estimatedPayout: order.partnerPayoutAmount,
+          })
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Failed to dispatch notifications: ${err.message}`)
+    }
   }
 }

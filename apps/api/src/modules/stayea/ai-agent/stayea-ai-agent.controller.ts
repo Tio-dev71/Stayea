@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from "@nestjs/common"
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger"
+import { Throttle } from "@nestjs/throttler"
 
 import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
 import { AiChatRequestDto } from "@/modules/stayea/ai-agent/dtos/ai-agent.dto"
@@ -11,6 +12,7 @@ export class StayeaAiAgentController {
   constructor(private readonly aiService: StayeaAiAgentService) {}
 
   @Public()
+  @Throttle({ default: { limit: 20, ttl: 300000 } })
   @Post("chat")
   @ApiOperation({
     summary:

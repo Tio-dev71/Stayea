@@ -95,11 +95,8 @@ export function PartnerPortalPage({
 
         if (isMounted) {
           setProfiles(mapped)
-          if (mapped.length > 0) {
-            setCurrentProfile(mapped[0] || null)
-          } else {
-            setCurrentProfile(null)
-          }
+          const myProfile = selfPartner ? mapped.find((p) => p.id === selfPartner.id) : null
+          setCurrentProfile(myProfile || mapped[0] || null)
           setLoading(false)
         }
       } catch {

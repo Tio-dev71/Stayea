@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Building, Car, Compass, Plus, X } from "lucide-react"
 import type { BusinessType, PartnerProfileData } from "../types"
 import { stayeaApi } from "@/lib/stayea-api-service"
@@ -29,6 +29,16 @@ export function PartnerCreateProfileModal({
   const [bankAccountHolder, setBankAccountHolder] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  useEffect(() => {
+    stayeaApi.getProfile().then((u) => {
+      if (u) {
+        if (u.name && !contactName) setContactName(u.name)
+        if (u.email && !email) setEmail(u.email)
+        if (u.phone && !phone) setPhone(u.phone)
+      }
+    }).catch(() => {})
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,7 +65,7 @@ export function PartnerCreateProfileModal({
         status: "approved",
       }
 
-      const res = await stayeaApi.adminCreatePartner(dto)
+      const res = await stayeaApi.registerPartner(dto)
       const createdId = res?.id || `ptn_${Date.now()}`
 
       const newProfile: PartnerProfileData = {

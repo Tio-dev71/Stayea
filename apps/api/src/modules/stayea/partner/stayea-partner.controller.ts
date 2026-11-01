@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import {
   Body,
   Controller,
@@ -122,8 +123,9 @@ export class StayeaPartnerController {
     }
     if (!targetPartnerId) {
       const [first] = await this.partnerService.getAllPartnersForAdmin()
-      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+      targetPartnerId = first ? first.id : undefined
     }
+    if (!targetPartnerId) return null
     return this.partnerService.getPartnerSummary(targetPartnerId)
   }
 
@@ -143,8 +145,9 @@ export class StayeaPartnerController {
     }
     if (!targetPartnerId) {
       const [first] = await this.partnerService.getAllPartnersForAdmin()
-      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+      targetPartnerId = first ? first.id : undefined
     }
+    if (!targetPartnerId) return []
     return this.partnerService.getPartnerServices(targetPartnerId)
   }
 
@@ -164,9 +167,10 @@ export class StayeaPartnerController {
     }
     if (!partnerId) {
       const [firstPartner] = await this.partnerService.getAllPartnersForAdmin()
-      partnerId = firstPartner ? firstPartner.id : "ptn_sunshine_01"
+      partnerId =
+        firstPartner?.id || `ptn_${randomUUID().replace(/-/g, "").slice(0, 10)}`
     }
-    return this.partnerService.createService(partnerId, dto)
+    return this.partnerService.createService(partnerId, dto, req.user?.id)
   }
 
   @Public()
@@ -223,8 +227,9 @@ export class StayeaPartnerController {
     }
     if (!targetPartnerId) {
       const [first] = await this.partnerService.getAllPartnersForAdmin()
-      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+      targetPartnerId = first ? first.id : undefined
     }
+    if (!targetPartnerId) throw new Error("Chưa có hồ sơ đối tác")
     return this.partnerService.bulkUpdateInventory(targetPartnerId, dto)
   }
 
@@ -245,8 +250,9 @@ export class StayeaPartnerController {
     }
     if (!targetPartnerId) {
       const [first] = await this.partnerService.getAllPartnersForAdmin()
-      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+      targetPartnerId = first ? first.id : undefined
     }
+    if (!targetPartnerId) return []
     return this.partnerService.getPartnerOrders(targetPartnerId, status)
   }
 
@@ -268,8 +274,9 @@ export class StayeaPartnerController {
     }
     if (!targetPartnerId) {
       const [first] = await this.partnerService.getAllPartnersForAdmin()
-      targetPartnerId = first ? first.id : "ptn_sunshine_01"
+      targetPartnerId = first ? first.id : undefined
     }
+    if (!targetPartnerId) throw new Error("Chưa có hồ sơ đối tác")
     return this.partnerService.partnerRespondOrder(targetPartnerId, orderId, dto)
   }
 }

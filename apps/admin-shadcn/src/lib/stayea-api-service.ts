@@ -1136,6 +1136,27 @@ class StayeaApiService {
   }
 
   /**
+   * Register as partner / create partner profile
+   */
+  async registerPartner(dto: any): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/partner/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        body: JSON.stringify(dto),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+
+    return this.adminCreatePartner(dto)
+  }
+
+  /**
    * Admin: Create a new partner profile
    */
   async adminCreatePartner(dto: any): Promise<any> {

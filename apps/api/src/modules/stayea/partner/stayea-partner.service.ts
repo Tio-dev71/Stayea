@@ -42,140 +42,69 @@ export class StayeaPartnerService {
   // 1. PARTNER PROFILE MANAGEMENT
   // ==========================================
 
-  async ensureDefaultPartners() {
-    const existing = await this.db.select().from(partnerProfilesTable).limit(1)
-    if (existing.length > 0) return
-
-    const defaults = [
-      {
-        id: "ptn_sunshine_01",
-        userId: "usr_partner_sunshine",
-        businessName: "Phú Quốc Sunshine Homestay & Villa",
-        businessType: "homestay" as const,
-        contactName: "Nguyễn Văn Phát",
-        phone: "0912345678",
-        email: "phat.homestay@gmail.com",
-        address: "Đường Trần Hưng Đạo, Dương Đông, Phú Quốc",
-        city: "Phú Quốc",
-        taxId: "0312456789",
-        bankName: "Techcombank",
-        bankAccount: "1903456789012",
-        bankAccountHolder: "NGUYEN VAN PHAT",
-        status: "approved" as const,
-        commissionRate: "10.00",
-        rating: "4.92",
-        totalOrders: 18,
-        metadata: {},
-      },
-      {
-        id: "ptn_carrent_02",
-        userId: "usr_partner_carrent",
-        businessName: "Phú Quốc Car Rent & Transfer",
-        businessType: "transport" as const,
-        contactName: "Trần Minh Đức",
-        phone: "0987654321",
-        email: "carrent.phuquoc@gmail.com",
-        address: "Sân bay Quốc tế Phú Quốc, Dương Tơ",
-        city: "Phú Quốc",
-        taxId: "0312987654",
-        bankName: "Vietcombank",
-        bankAccount: "0071001234567",
-        bankAccountHolder: "TRAN MINH DUC",
-        status: "approved" as const,
-        commissionRate: "12.00",
-        rating: "4.88",
-        totalOrders: 26,
-        metadata: {},
-      },
-      {
-        id: "ptn_tour_03",
-        userId: "usr_partner_tour",
-        businessName: "Đảo Ngọc Travel & Diving",
-        businessType: "tour" as const,
-        contactName: "Lê Hoàng Yến",
-        phone: "0933112233",
-        email: "daongoctravel@gmail.com",
-        address: "Cảng An Thới, Nam Phú Quốc",
-        city: "Phú Quốc",
-        taxId: "0312888999",
-        bankName: "MB Bank",
-        bankAccount: "9999033112233",
-        bankAccountHolder: "LE HOANG YEN",
-        status: "approved" as const,
-        commissionRate: "15.00",
-        rating: "4.95",
-        totalOrders: 34,
-        metadata: {},
-      },
-    ]
-
-    for (const d of defaults) {
-      await this.db
-        .insert(partnerProfilesTable)
-        .values(d)
-        .onConflictDoNothing()
-        .catch(() => {})
-    }
-  }
-
   async getProfileByUserId(userId: string) {
-    await this.ensureDefaultPartners()
-    const [profile] = await this.db
+    let [profile] = await this.db
       .select()
       .from(partnerProfilesTable)
       .where(eq(partnerProfilesTable.userId, userId))
       .limit(1)
 
+    if (!profile) {
+      // If user exists in usersTable, initialize their personal partner profile
+      const [user] = await this.db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1)
+
+      if (user) {
+        const partnerId = `ptn_${user.id.replace(/-/g, "").slice(0, 10)}`
+        const [created] = await this.db
+          .insert(partnerProfilesTable)
+          .values({
+            id: partnerId,
+            userId: user.id,
+            businessName:
+              user.name === "CTO"
+                ? "Cơ sở STAYEA - CTO"
+                : `Cơ sở ${user.name || "Đối tác"}`,
+            businessType: "homestay",
+            contactName: user.name || "Chủ cơ sở",
+            phone: (user as any).phone || "",
+            email: user.email,
+            address: "Phú Quốc, Kiên Giang",
+            city: "Phú Quốc",
+            status: "approved",
+            commissionRate: "10.00",
+            rating: "0.00",
+            totalOrders: 0,
+            metadata: {},
+          })
+          .onConflictDoNothing()
+          .returning()
+
+        if (created) return created
+
+        const [recheck] = await this.db
+          .select()
+          .from(partnerProfilesTable)
+          .where(eq(partnerProfilesTable.userId, userId))
+          .limit(1)
+        if (recheck) return recheck
+      }
+    }
+
     return profile || null
   }
 
   async getProfileById(id: string) {
-    let [profile] = await this.db
+    const [profile] = await this.db
       .select()
       .from(partnerProfilesTable)
       .where(eq(partnerProfilesTable.id, id))
       .limit(1)
 
     if (!profile) {
-      await this.ensureDefaultPartners()
-      const [recheck] = await this.db
-        .select()
-        .from(partnerProfilesTable)
-        .where(eq(partnerProfilesTable.id, id))
-        .limit(1)
-      if (recheck) return recheck
-
-      // Auto provision an approved partner profile so creating services or querying never fails
-      const [created] = await this.db
-        .insert(partnerProfilesTable)
-        .values({
-          id,
-          userId: generateUid("usr_partner"),
-          businessName: "Đối tác STAYEA",
-          businessType: "homestay",
-          contactName: "Quản lý đối tác",
-          phone: "0912345678",
-          email: "partner@stayea.com",
-          address: "Phú Quốc, Kiên Giang",
-          city: "Phú Quốc",
-          status: "approved",
-          commissionRate: "10.00",
-          rating: "5.00",
-          totalOrders: 0,
-          metadata: {},
-        })
-        .onConflictDoNothing()
-        .returning()
-
-      if (created) return created
-
-      const [fallback] = await this.db
-        .select()
-        .from(partnerProfilesTable)
-        .where(eq(partnerProfilesTable.id, id))
-        .limit(1)
-      if (fallback) return fallback
-
       throw new NotFoundException(`Partner with ID "${id}" not found`)
     }
     return profile
@@ -251,7 +180,6 @@ export class StayeaPartnerService {
   }
 
   async getAllPartnersForAdmin(query?: { search?: string; status?: string; type?: string }) {
-    await this.ensureDefaultPartners()
     let conditions = []
 
     if (query?.status) {
@@ -380,7 +308,11 @@ export class StayeaPartnerService {
       .orderBy(desc(partnerServicesTable.createdAt))
   }
 
-  async createService(partnerId: string, dto: CreatePartnerServiceDto) {
+  async createService(
+    partnerId: string,
+    dto: CreatePartnerServiceDto,
+    userId?: string
+  ) {
     let profile: any
     try {
       profile = await this.getProfileById(partnerId)
@@ -389,26 +321,38 @@ export class StayeaPartnerService {
     }
 
     if (!profile) {
+      let realUser: any = null
+      if (userId) {
+        const [u] = await this.db
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable.id, userId))
+          .limit(1)
+        realUser = u
+      }
+
       const [created] = await this.db
         .insert(partnerProfilesTable)
         .values({
           id: partnerId,
-          userId: generateUid("usr_partner"),
-          businessName: "Đối tác STAYEA",
+          userId: realUser?.id || userId || generateUid("usr_partner"),
+          businessName: realUser?.name
+            ? `Cơ sở ${realUser.name}`
+            : "Cơ sở đối tác",
           businessType:
             dto.serviceType === "transport"
               ? "transport"
               : dto.serviceType === "experience"
               ? "tour"
               : "homestay",
-          contactName: "Quản lý đối tác",
-          phone: "0912345678",
-          email: "partner@stayea.com",
+          contactName: realUser?.name || "Chủ cơ sở",
+          phone: realUser?.phone || "",
+          email: realUser?.email || "partner@stayea.com",
           address: dto.location || "Phú Quốc",
           city: "Phú Quốc",
           status: "approved",
           commissionRate: "10.00",
-          rating: "5.00",
+          rating: "0.00",
           totalOrders: 0,
           metadata: {},
         })

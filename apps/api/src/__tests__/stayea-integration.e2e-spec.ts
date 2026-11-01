@@ -2,7 +2,7 @@ import crypto from "node:crypto"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { USER_ROLE_REPOSITORY } from "@/modules/auth/application/ports/user-role.repository.port.js"
 import { createTestApp } from "./helpers/create-app.js"
-import { registerAndLogin, withToken } from "./helpers/create-authenticated-request.js"
+import { registerAndLogin } from "./helpers/create-authenticated-request.js"
 import { createRequest } from "./helpers/create-request.js"
 
 import type { UserRoleRepository } from "@/modules/auth/application/ports/user-role.repository.port.js"
@@ -138,7 +138,9 @@ describe("STAYEA Full Platform E2E Integration Suite", () => {
         guestCount: 2,
       }
 
-      const res = await withToken(createRequest(app).post("/api/stayea/bookings"), customerToken)
+      const res = await createRequest(app)
+        .post("/api/stayea/bookings")
+        .set("Authorization", `Bearer ${customerToken}`)
         .send(payload)
         .expect(201)
 
@@ -195,10 +197,10 @@ describe("STAYEA Full Platform E2E Integration Suite", () => {
 
   describe("5. Admin Control Plane & Governance Endpoints", () => {
     it("GET /api/stayea/bookings/admin/analytics/revenue returns time-series analytics for ADMIN", async () => {
-      const res = await withToken(
-        createRequest(app).get("/api/stayea/bookings/admin/analytics/revenue?days=7"),
-        adminToken
-      ).expect(200)
+      const res = await createRequest(app)
+        .get("/api/stayea/bookings/admin/analytics/revenue?days=7")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200)
 
       const body = res.body?.data || res.body
       expect(body).toHaveProperty("windowDays")
@@ -211,10 +213,10 @@ describe("STAYEA Full Platform E2E Integration Suite", () => {
     })
 
     it("GET /api/stayea/admin/partners/catalog/services lists services for moderation", async () => {
-      const res = await withToken(
-        createRequest(app).get("/api/stayea/admin/partners/catalog/services"),
-        adminToken
-      ).expect(200)
+      const res = await createRequest(app)
+        .get("/api/stayea/admin/partners/catalog/services")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200)
 
       const body = res.body?.data || res.body
       expect(Array.isArray(body)).toBe(true)

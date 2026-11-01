@@ -15,6 +15,7 @@ import {
   stayeaUserVouchersTable,
   partnerOrdersTable,
   partnerProfilesTable,
+  partnerServicesTable,
 } from "@workspace/database"
 import dayjs from "dayjs"
 import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm"
@@ -37,32 +38,7 @@ export class StayeaBookingService {
    * - Atomic DB transaction for point deduction, vouchers, and booking insertion
    */
   async createBooking(userId: string, dto: CreateBookingDto) {
-    // 1. Prevent Double-Booking collisions on Stays
-    if (dto.bookingType === "stay" && dto.details?.stayId) {
-      const conflictingBookings = await this.db
-        .select()
-        .from(stayeaBookingsTable)
-        .where(
-          and(
-            eq(stayeaBookingsTable.bookingType, "stay"),
-            ne(stayeaBookingsTable.status, "cancelled"),
-            ne(stayeaBookingsTable.status, "refunded"),
-            sql`(${stayeaBookingsTable.details}->>'stayId') = ${dto.details.stayId}`,
-            sql`${stayeaBookingsTable.startDate} < ${dto.endDate} AND ${stayeaBookingsTable.endDate} > ${dto.startDate}`
-          )
-        )
-        .limit(1)
-
-      const conflict = conflictingBookings[0]
-      if (conflict) {
-        throw new ConflictException({
-          code: ErrorCode.RESOURCE_CONFLICT,
-          message: `Chỗ nghỉ này đã có khách đặt từ ${conflict.startDate} đến ${conflict.endDate}. Vui lòng chọn ngày khác.`,
-        })
-      }
-    }
-
-    // 2. Server-side price validation to prevent price tampering
+    // 1. Server-side price validation to prevent price tampering
     let verifiedTotal = Number(dto.totalAmount)
     if (dto.bookingType === "stay" && dto.details?.stayId) {
       const [acc] = await this.db
@@ -94,8 +70,32 @@ export class StayeaBookingService {
       }
     }
 
-    // 3. Execute atomic creation inside a database transaction
+    // 2. Execute atomic reservation inside a database transaction (SEC-003: prevents double booking race conditions)
     return this.db.transaction(async (tx) => {
+      // Concurrency Gate: Atomically check for conflicting active or pending reservations
+      if (dto.bookingType === "stay" && dto.details?.stayId) {
+        const conflictingBookings = await tx
+          .select()
+          .from(stayeaBookingsTable)
+          .where(
+            and(
+              eq(stayeaBookingsTable.bookingType, "stay"),
+              ne(stayeaBookingsTable.status, "cancelled"),
+              ne(stayeaBookingsTable.status, "refunded"),
+              sql`(${stayeaBookingsTable.details}->>'stayId') = ${dto.details.stayId}`,
+              sql`${stayeaBookingsTable.startDate} < ${dto.endDate} AND ${stayeaBookingsTable.endDate} > ${dto.startDate}`
+            )
+          )
+          .limit(1)
+
+        const conflict = conflictingBookings[0]
+        if (conflict) {
+          throw new ConflictException({
+            code: ErrorCode.RESOURCE_CONFLICT,
+            message: `Chỗ nghỉ này đã có khách giữ chỗ hoặc đặt từ ${conflict.startDate} đến ${conflict.endDate}. Vui lòng chọn ngày khác.`,
+          })
+        }
+      }
       let voucherDiscount = 0
       let pointsDiscount = 0
       let validatedVoucherCode: string | null = null
@@ -181,7 +181,7 @@ export class StayeaBookingService {
           startDate: dto.startDate,
           endDate: dto.endDate,
           guestCount: dto.guestCount ?? 1,
-          status: "confirmed",
+          status: "pending", // State Machine: Unpaid reservations are 'pending', confirmed only after payment
           paymentStatus: "unpaid",
           paymentMethod: dto.paymentMethod ?? "credit_card",
           totalAmount: verifiedTotal.toString(),
@@ -191,7 +191,13 @@ export class StayeaBookingService {
           voucherCode: validatedVoucherCode,
           pointsUsed,
           pointsEarned,
-          details: dto.details ?? {},
+          details: {
+            ...(dto.details ?? {}),
+            metadata: {
+              ...((dto.details as any)?.metadata ?? {}),
+              expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+            },
+          },
         })
         .returning()
 
@@ -210,26 +216,56 @@ export class StayeaBookingService {
       // Automatically dispatch order to partnerOrdersTable so Admin Approval Queue
       // and Partner Hub receive and update the state in real time!
       try {
-        const partnerBusinessType =
-          dto.bookingType === "stay"
-            ? "homestay"
-            : dto.bookingType === "experience" || dto.bookingType === "combo"
-            ? "tour"
-            : "transport"
+        let targetPartnerId: string | null = null
 
-        const [matchedPartner] = await tx
-          .select()
-          .from(partnerProfilesTable)
-          .where(
-            and(
-              eq(partnerProfilesTable.status, "approved"),
-              or(
-                eq(partnerProfilesTable.businessType, partnerBusinessType),
-                eq(partnerProfilesTable.businessType, "multi")
+        // 1. Prioritize real owner from partnerServicesTable
+        const serviceLookupId = dto.details?.stayId || dto.details?.experienceId
+        if (serviceLookupId) {
+          const [service] = await tx
+            .select()
+            .from(partnerServicesTable)
+            .where(eq(partnerServicesTable.id, serviceLookupId))
+            .limit(1)
+          if (service?.partnerId) {
+            targetPartnerId = service.partnerId
+          }
+        }
+
+        // 2. Fetch partner profile
+        let matchedPartner: any = null
+        if (targetPartnerId) {
+          const [p] = await tx
+            .select()
+            .from(partnerProfilesTable)
+            .where(eq(partnerProfilesTable.id, targetPartnerId))
+            .limit(1)
+          matchedPartner = p
+        }
+
+        // 3. Fallback only if item is platform direct listing without a specific partner
+        if (!matchedPartner) {
+          const partnerBusinessType =
+            dto.bookingType === "stay"
+              ? "homestay"
+              : dto.bookingType === "experience" || dto.bookingType === "combo"
+              ? "tour"
+              : "transport"
+
+          const [fallback] = await tx
+            .select()
+            .from(partnerProfilesTable)
+            .where(
+              and(
+                eq(partnerProfilesTable.status, "approved"),
+                or(
+                  eq(partnerProfilesTable.businessType, partnerBusinessType),
+                  eq(partnerProfilesTable.businessType, "multi")
+                )
               )
             )
-          )
-          .limit(1)
+            .limit(1)
+          matchedPartner = fallback
+        }
 
         if (matchedPartner) {
           const targetPartnerId = matchedPartner.id

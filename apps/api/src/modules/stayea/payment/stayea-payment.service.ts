@@ -227,25 +227,37 @@ export class StayeaPaymentService {
   }
 
   /**
-   * Handle Webhook Notification from Payment Gateway (with HMAC Verification & Idempotency)
+   * Handle Webhook Notification from Payment Gateway (with Mandatory HMAC Verification & Idempotency)
    */
   async handlePaymentWebhook(dto: PaymentWebhookDto, signatureHeader?: string) {
     const webhookSecret = process.env["PAYMENT_WEBHOOK_SECRET"] || "stayea-webhook-secret-key-2026"
 
-    // 1. Verify HMAC Signature if signature header provided
-    if (signatureHeader && signatureHeader !== "skip_dev_check") {
-      const dataToSign = `${dto.orderCode}|${dto.amount}|${dto.status}`
-      const computedHash = crypto
-        .createHmac("sha256", webhookSecret)
-        .update(dataToSign)
-        .digest("hex")
+    // 1. Mandatory HMAC Signature Verification (SEC-002: no bypass in any mode)
+    const signature = signatureHeader || dto.signature
+    if (!signature || signature === "skip_dev_check") {
+      throw new UnauthorizedException({
+        code: ErrorCode.UNAUTHORIZED,
+        message: "Thiếu chữ ký Webhook hợp lệ (Missing or Invalid HMAC Signature)",
+      })
+    }
 
-      if (computedHash !== signatureHeader && dto.signature !== computedHash) {
-        throw new UnauthorizedException({
-          code: ErrorCode.UNAUTHORIZED,
-          message: "Chữ ký Webhook không hợp lệ (Invalid HMAC Signature)",
-        })
-      }
+    const dataToSign = `${dto.orderCode}|${dto.amount}|${dto.status}`
+    const computedHash = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(dataToSign)
+      .digest("hex")
+
+    const sigBuffer = Buffer.from(signature)
+    const compBuffer = Buffer.from(computedHash)
+
+    if (
+      sigBuffer.length !== compBuffer.length ||
+      !crypto.timingSafeEqual(sigBuffer, compBuffer)
+    ) {
+      throw new UnauthorizedException({
+        code: ErrorCode.UNAUTHORIZED,
+        message: "Chữ ký Webhook không hợp lệ (Invalid HMAC Signature)",
+      })
     }
 
     // 2. Lookup booking by bookingCode

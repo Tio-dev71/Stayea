@@ -4,8 +4,8 @@ import { ConflictException, BadRequestException } from "@nestjs/common"
 import { StayeaBookingService } from "@/modules/stayea/booking/stayea-booking.service"
 
 describe("stayea booking service", () => {
-  it("detects double-booking conflict and throws ConflictException", async () => {
-    const mockDb = {
+  it("detects double-booking conflict and throws ConflictException atomically inside transaction", async () => {
+    const mockTx = {
       select: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
       where: vi.fn().mockReturnThis(),
@@ -15,9 +15,17 @@ describe("stayea booking service", () => {
           bookingCode: "STA-202610-1111",
           startDate: "2026-10-25",
           endDate: "2026-10-28",
-          status: "confirmed",
+          status: "pending",
         },
       ]),
+    }
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([]),
+      transaction: vi.fn().mockImplementation(async (callback) => callback(mockTx)),
     }
 
     const service = new StayeaBookingService(mockDb as any)
@@ -33,16 +41,18 @@ describe("stayea booking service", () => {
         details: { stayId: "villa-1" },
       })
     ).rejects.toThrow(ConflictException)
+
+    expect(mockDb.transaction).toHaveBeenCalledTimes(1)
   })
 
-  it("creates a booking inside a transaction when no conflict", async () => {
+  it("creates a booking with initial status pending and reserves inventory", async () => {
     const mockBooking = {
       id: "bk-new",
       bookingCode: "STA-202610-9999",
       userId: "user-1",
       totalAmount: "5000000",
       finalAmount: "5000000",
-      status: "confirmed",
+      status: "pending",
       paymentStatus: "unpaid",
     }
 
@@ -67,7 +77,7 @@ describe("stayea booking service", () => {
       select: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
       where: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue([]), // no conflict, no accommodation override
+      limit: vi.fn().mockResolvedValue([]),
       transaction: vi.fn().mockImplementation(async (callback) => callback(mockTx)),
     }
 
@@ -84,6 +94,7 @@ describe("stayea booking service", () => {
 
     expect(result).toBeDefined()
     expect(result?.id).toBe("bk-new")
+    expect(result?.status).toBe("pending")
     expect(mockDb.transaction).toHaveBeenCalledTimes(1)
   })
 

@@ -6,15 +6,15 @@ services:
     container_name: stayea-postgres
     restart: unless-stopped
     environment:
-      - POSTGRESQL_USERNAME=postgres
-      - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_DATABASE=stayea
+      - POSTGRESQL_USERNAME=${POSTGRES_USER:-postgres}
+      - POSTGRESQL_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRESQL_DATABASE=${POSTGRES_DB:-stayea}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/bitnami/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d stayea"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-stayea}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,7 +24,7 @@ services:
     container_name: stayea-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -40,14 +40,15 @@ services:
     container_name: stayea-api
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/stayea
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=a370f0e007e07e31e694c004c5eae0f367e0a3e1eb9f51ce9e0dc4fd56b795c8
-      - ALLOWED_ORIGINS=http://localhost:8080,https://stayea.com
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${API_PORT:-3000}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/stayea}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in environment}
+      - PAYMENT_WEBHOOK_SECRET=${PAYMENT_WEBHOOK_SECRET:-stayea-webhook-secret-key-2026}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:8080,https://stayea.com,https://hub.stayea.com,https://admin.stayea.com}
     ports:
-      - "3000:3000"
+      - "${API_PORT:-3000}:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,16 +62,19 @@ services:
     container_name: stayea-web
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - PORT=8080
-      - NEXT_PUBLIC_APP_NAME=Stayea - Nền tảng Đặt phòng & Trải nghiệm Du lịch
-      - NEXT_PUBLIC_APP_URL=http://localhost:8080
-      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${WEB_PORT:-8080}
+      - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-Stayea - Nền tảng Đặt phòng & Trải nghiệm Du lịch}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:8080}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+      - INTERNAL_API_URL=${INTERNAL_API_URL:-http://api:3000}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in environment}
     ports:
-      - "8080:8080"
+      - "${WEB_PORT:-8080}:8080"
     depends_on:
       - api
 
 volumes:
   postgres_data:
   redis_data:
+

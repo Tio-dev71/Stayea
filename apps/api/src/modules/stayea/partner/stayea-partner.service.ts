@@ -195,56 +195,11 @@ export class StayeaPartnerService implements OnModuleInit {
   // ==========================================
 
   async getProfileByUserId(userId: string) {
-    let [profile] = await this.db
+    const [profile] = await this.db
       .select()
       .from(partnerProfilesTable)
       .where(eq(partnerProfilesTable.userId, userId))
       .limit(1)
-
-    if (!profile) {
-      // If user exists in usersTable, initialize their personal partner profile
-      const [user] = await this.db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.id, userId))
-        .limit(1)
-
-      if (user) {
-        const partnerId = `ptn_${user.id.replace(/-/g, "").slice(0, 10)}`
-        const [created] = await this.db
-          .insert(partnerProfilesTable)
-          .values({
-            id: partnerId,
-            userId: user.id,
-            businessName:
-              user.name === "CTO"
-                ? "Cơ sở STAYEA - CTO"
-                : `Cơ sở ${user.name || "Đối tác"}`,
-            businessType: "homestay",
-            contactName: user.name || "Chủ cơ sở",
-            phone: (user as any).phone || "",
-            email: user.email,
-            address: "Phú Quốc, Kiên Giang",
-            city: "Phú Quốc",
-            status: "approved",
-            commissionRate: "10.00",
-            rating: "0.00",
-            totalOrders: 0,
-            metadata: {},
-          })
-          .onConflictDoNothing()
-          .returning()
-
-        if (created) return created
-
-        const [recheck] = await this.db
-          .select()
-          .from(partnerProfilesTable)
-          .where(eq(partnerProfilesTable.userId, userId))
-          .limit(1)
-        if (recheck) return recheck
-      }
-    }
 
     return profile || null
   }

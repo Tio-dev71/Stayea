@@ -60,7 +60,13 @@ export function AdminLoginPage({ onLoginSuccess }: AdminLoginPageProps) {
         setToken(res.token)
       }
       if (user) {
-        setUser({ id: user.id, email: user.email, role: "ADMIN" })
+        setUser({
+          id: user.id,
+          email: user.email,
+          name: user.name || user.displayName || user.email.split("@")[0],
+          displayName: user.displayName || user.name,
+          role: "ADMIN",
+        })
       }
 
       setSuccessMessage("Đăng nhập thành công! Đang chuyển hướng vào bảng điều khiển...")

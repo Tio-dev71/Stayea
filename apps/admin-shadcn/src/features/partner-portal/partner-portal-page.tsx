@@ -369,7 +369,7 @@ export function PartnerPortalPage({
                       Xin chào, {currentProfile.contactName}!
                     </h1>
                     <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                      Cơ sở: <strong className="text-emerald-300">{currentProfile.businessName}</strong>. 
+                      Cơ sở: <strong className="text-emerald-300">{currentProfile.businessName}</strong>.
                       Hệ thống AI Agent và đội ngũ Admin STAYEA đang liên tục kết nối các yêu cầu du khách Phú Quốc tới bạn.
                     </p>
 
@@ -563,7 +563,7 @@ export function PartnerPortalPage({
             {activeTab === "settings" && (
               <PartnerPayoutSettings
                 profile={currentProfile}
-          onUpdateProfile={handleUpdateProfile}
+                onUpdateProfile={handleUpdateProfile}
               />
             )}
           </>

@@ -12,6 +12,50 @@ import { ExploreMegaMenu } from "./explore-mega-menu"
 import { DealsMegaMenu } from "./deals-mega-menu"
 import { PackageMegaMenu } from "./package-mega-menu"
 
+export interface NotificationItem {
+  id: string
+  title: string
+  description: string
+  time: string
+  target: string
+  icon: "check" | "crown" | "clock" | "gift"
+}
+
+const DEFAULT_NOTIFICATIONS: readonly NotificationItem[] = [
+  {
+    id: "notif_welcome",
+    title: "Chào mừng bạn đến với STAYEA",
+    description: "Tài khoản của bạn đã được kích hoạt. Hãy trải nghiệm kỳ nghỉ dưỡng tuyệt mỹ tại STAYEA!",
+    time: "Vừa xong",
+    target: "stayea-club",
+    icon: "crown",
+  },
+  {
+    id: "notif_voucher",
+    title: "Bạn đã nhận ưu đãi thành công",
+    description: "Ưu đãi Giảm 10% vé máy bay (STAYEA10AIR) đã được lưu vào ví và sẵn sàng sử dụng.",
+    time: "10 phút trước",
+    target: "my-deals",
+    icon: "check",
+  },
+  {
+    id: "notif_points",
+    title: "Điểm thưởng Stayea Club +150",
+    description: "Bạn vừa tích lũy 150 điểm chào mừng thành viên mới từ Stayea Club.",
+    time: "Hôm qua",
+    target: "stayea-club",
+    icon: "gift",
+  },
+  {
+    id: "notif_plan",
+    title: "Nhắc nhở lịch trình",
+    description: "Kỳ nghỉ Phú Quốc đã sẵn sàng các thông tin dịch vụ và gợi ý trải nghiệm.",
+    time: "2 ngày trước",
+    target: "plans",
+    icon: "clock",
+  },
+]
+
 interface StayeaHeaderProps {
   readonly activeDropdown?: string | null
   readonly onSelectDropdown?: (dropdown: string | null) => void
@@ -50,6 +94,65 @@ export function StayeaHeader({
   const [notificationOpen, setNotificationOpen] = React.useState(false)
   const userMenuRef = React.useRef<HTMLDivElement | null>(null)
   const notifMenuRef = React.useRef<HTMLDivElement | null>(null)
+
+  // User-scoped notifications & read status
+  const userStorageKey = React.useMemo(() => {
+    const identifier = currentUser?.email || currentUser?.name || "guest"
+    return `stayea_read_notifications_${identifier}`
+  }, [currentUser?.email, currentUser?.name])
+
+  const [readNotifIds, setReadNotifIds] = React.useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set()
+    try {
+      const stored = localStorage.getItem(userStorageKey)
+      return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch {
+      return new Set()
+    }
+  })
+
+  // Synchronize when active user changes
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const stored = localStorage.getItem(userStorageKey)
+      setReadNotifIds(stored ? new Set(JSON.parse(stored)) : new Set())
+    } catch {
+      setReadNotifIds(new Set())
+    }
+  }, [userStorageKey])
+
+  const unreadCount = React.useMemo(() => {
+    return DEFAULT_NOTIFICATIONS.filter((n) => !readNotifIds.has(n.id)).length
+  }, [readNotifIds])
+
+  const handleMarkAllAsRead = React.useCallback(() => {
+    const allIds = new Set(DEFAULT_NOTIFICATIONS.map((n) => n.id))
+    setReadNotifIds(allIds)
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(userStorageKey, JSON.stringify(Array.from(allIds)))
+      } catch {}
+    }
+  }, [userStorageKey])
+
+  const handleNotificationClick = React.useCallback(
+    (item: NotificationItem) => {
+      setReadNotifIds((prev) => {
+        const next = new Set(prev)
+        next.add(item.id)
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(userStorageKey, JSON.stringify(Array.from(next)))
+          } catch {}
+        }
+        return next
+      })
+      setNotificationOpen(false)
+      onNavigate?.(item.target)
+    },
+    [userStorageKey, onNavigate]
+  )
 
   React.useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -250,9 +353,9 @@ export function StayeaHeader({
                   className="relative p-1.5 text-slate-600 hover:text-[#0c3b40] hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
                 >
                   <Bell className="w-4 h-4" />
-                  {Boolean(currentUser.notificationsCount) && (
+                  {unreadCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
-                      {currentUser.notificationsCount}
+                      {unreadCount}
                     </span>
                   )}
                 </button>
@@ -263,70 +366,57 @@ export function StayeaHeader({
                     <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xs sm:text-sm font-bold text-slate-900">Thông báo</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
-                          {currentUser.notificationsCount} mới
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          unreadCount > 0 ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-500"
+                        }`}>
+                          {unreadCount > 0 ? `${unreadCount} mới` : "0 mới"}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setNotificationOpen(false)}
-                        className="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                      >
-                        Đánh dấu đã đọc
-                      </button>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleMarkAllAsRead}
+                          className="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer transition-colors"
+                        >
+                          Đánh dấu đã đọc
+                        </button>
+                      )}
                     </div>
 
                     <div className="py-1 divide-y divide-slate-50 max-h-72 overflow-y-auto">
-                      <div
-                        onClick={() => {
-                          setNotificationOpen(false)
-                          onNavigate?.("stayea-club-claimed")
-                        }}
-                        className="p-3 hover:bg-slate-50 cursor-pointer transition-colors space-y-1"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="text-xs font-bold text-slate-800">Bạn đã nhận ưu đãi thành công</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-snug">
-                          Ưu đãi Giảm 10% vé máy bay (STAYEA10AIR) đã được lưu vào ví và sẵn sàng sử dụng.
-                        </p>
-                        <span className="text-[10px] text-slate-400 block pt-0.5">10 phút trước</span>
-                      </div>
-
-                      <div
-                        onClick={() => {
-                          setNotificationOpen(false)
-                          onNavigate?.("stayea-club")
-                        }}
-                        className="p-3 hover:bg-slate-50 cursor-pointer transition-colors space-y-1"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <Crown className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="text-xs font-bold text-slate-800">Điểm thưởng Stayea Club +150</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-snug">
-                          Bạn vừa tích lũy điểm thưởng từ đơn đặt dịch vụ thành công.
-                        </p>
-                        <span className="text-[10px] text-slate-400 block pt-0.5">Hôm qua</span>
-                      </div>
-
-                      <div
-                        onClick={() => {
-                          setNotificationOpen(false)
-                          onNavigate?.("plans")
-                        }}
-                        className="p-3 hover:bg-slate-50 cursor-pointer transition-colors space-y-1"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-blue-600" />
-                          <span className="text-xs font-bold text-slate-800">Nhắc nhở lịch trình</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-snug">
-                          Kỳ nghỉ Phú Quốc (19/06 - 22/06) đã sẵn sàng các thông tin dịch vụ.
-                        </p>
-                        <span className="text-[10px] text-slate-400 block pt-0.5">2 ngày trước</span>
-                      </div>
+                      {DEFAULT_NOTIFICATIONS.map((item) => {
+                        const isRead = readNotifIds.has(item.id)
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => handleNotificationClick(item)}
+                            className={`p-3 cursor-pointer transition-colors space-y-1 ${
+                              isRead
+                                ? "opacity-75 hover:opacity-100 hover:bg-slate-50"
+                                : "bg-sky-50/40 hover:bg-sky-50/70 border-l-2 border-emerald-500 pl-2.5"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1.5">
+                              <div className="flex items-center gap-1.5">
+                                {item.icon === "check" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                                {item.icon === "crown" && <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                                {item.icon === "gift" && <Gift className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                                {item.icon === "clock" && <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                                <span className={`text-xs ${isRead ? "font-semibold text-slate-700" : "font-bold text-slate-900"}`}>
+                                  {item.title}
+                                </span>
+                              </div>
+                              {!isRead && (
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug">
+                              {item.description}
+                            </p>
+                            <span className="text-[10px] text-slate-400 block pt-0.5">{item.time}</span>
+                          </div>
+                        )
+                      })}
                     </div>
 
                     <div className="pt-2 px-3 border-t border-slate-100 text-center">

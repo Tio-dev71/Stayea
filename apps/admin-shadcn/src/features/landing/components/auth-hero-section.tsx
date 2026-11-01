@@ -6,7 +6,7 @@ import { AuthCard } from "./auth-card"
 
 interface AuthHeroSectionProps {
   readonly initialMode?: "login" | "register"
-  readonly onAuthSuccess?: (user: string) => void
+  readonly onAuthSuccess?: (user: any) => void
   readonly onForgotPassword?: () => void
 }
 

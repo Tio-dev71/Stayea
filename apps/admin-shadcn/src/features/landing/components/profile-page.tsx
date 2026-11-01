@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { getUser } from "@/lib/token"
 import { X, CheckCircle2, Shield, Calendar, MapPin, Users, Heart } from "lucide-react"
 import { ProfileHeroBanner } from "./profile-hero-banner"
 import { ProfileSidebar } from "./profile-sidebar"
@@ -26,8 +27,22 @@ interface ProfilePageProps {
 }
 
 export function ProfilePage({ onNavigate }: ProfilePageProps) {
-  // 1. State
-  const [profile, setProfile] = React.useState<UserProfileInfo>(CURRENT_USER_PROFILE)
+  // 1. Dynamic State initialized with current authenticated session
+  const [profile, setProfile] = React.useState<UserProfileInfo>(() => {
+    const stored = getUser()
+    if (stored && stored.email) {
+      const isAdmin = stored.role === "ADMIN" || (stored as any).role === "admin"
+      const displayName = (stored as any).name || (stored as any).displayName || stored.email.split("@")[0] || "Thành viên STAYEA"
+      return {
+        ...CURRENT_USER_PROFILE,
+        id: stored.id || CURRENT_USER_PROFILE.id,
+        name: displayName,
+        email: stored.email,
+        membershipTier: isAdmin ? "Diamond Elite" : "Thành viên Staya Club",
+      }
+    }
+    return CURRENT_USER_PROFILE
+  })
   const [activeTab, setActiveTab] = React.useState<string>("profile")
   const [favoritesList, setFavoritesList] = React.useState<readonly FavoriteDestination[]>([])
   const [upcomingTrip, setUpcomingTrip] = React.useState<UpcomingTrip | null>(null)
@@ -48,6 +63,28 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
   const [editBio, setEditBio] = React.useState(profile.bio)
   const [editPhone, setEditPhone] = React.useState(profile.phone)
   const [editEmail, setEditEmail] = React.useState(profile.email)
+
+  // Listen for auth-change events
+  React.useEffect(() => {
+    const handleAuthChange = (e: any) => {
+      const u = e?.detail
+      if (u && u.email) {
+        const isAdmin = u.role === "ADMIN" || u.role === "admin"
+        const displayName = u.name || u.displayName || u.email.split("@")[0] || "Thành viên STAYEA"
+        setProfile((prev) => ({
+          ...prev,
+          id: u.id || prev.id,
+          name: displayName,
+          email: u.email,
+          membershipTier: isAdmin ? "Diamond Elite" : "Thành viên Staya Club",
+        }))
+        setEditName(displayName)
+        setEditEmail(u.email)
+      }
+    }
+    window.addEventListener("stayea-auth-change", handleAuthChange)
+    return () => window.removeEventListener("stayea-auth-change", handleAuthChange)
+  }, [])
 
   // Load real authenticated profile, bookings, favorites, reviews from NestJS backend
   React.useEffect(() => {

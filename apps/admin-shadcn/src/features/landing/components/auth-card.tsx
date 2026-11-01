@@ -6,7 +6,7 @@ import { stayeaApi } from "@/lib/stayea-api-service"
 
 interface AuthCardProps {
   readonly initialMode?: "login" | "register"
-  readonly onAuthSuccess?: (emailOrPhone: string) => void
+  readonly onAuthSuccess?: (userOrIdentifier: any) => void
   readonly onForgotPassword?: () => void
 }
 
@@ -133,7 +133,7 @@ export function AuthCard({
         if (res.success) {
           setSuccessMsg(`Đăng nhập thành công! Chào mừng trở lại STAYEA.`)
           setTimeout(() => {
-            onAuthSuccess?.(identifier)
+            onAuthSuccess?.(res.user || identifier)
           }, 600)
         } else {
           setErrorMsg(res.error || "Tài khoản hoặc mật khẩu không chính xác.")
@@ -143,7 +143,7 @@ export function AuthCard({
         if (res.success) {
           setSuccessMsg(`Đăng ký thành công! Chào mừng ${fullName || identifier} đến với STAYEA.`)
           setTimeout(() => {
-            onAuthSuccess?.(identifier)
+            onAuthSuccess?.(res.user || identifier)
           }, 600)
         } else {
           setErrorMsg(res.error || "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.")

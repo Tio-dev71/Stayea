@@ -1,4 +1,14 @@
 // Mock data types and services for Stayea
+import {
+  getToken,
+  setToken,
+  getRefreshToken,
+  setRefreshToken,
+  getUser,
+  setUser,
+  clearAllAuth,
+} from "@/lib/token"
+
 /**
  * STAYEA API SERVICE
  * ------------------
@@ -313,10 +323,7 @@ class StayeaApiService {
    * Helper to get Authorization headers from token
    */
   getAuthHeader(): Record<string, string> {
-    if (typeof window === "undefined") return {}
-    const token =
-      localStorage.getItem("stayea_token") ||
-      document.cookie.match(/(?:^|;\s*)token=([^;]+)/)?.[1]
+    const token = getToken()
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
 
@@ -378,30 +385,35 @@ class StayeaApiService {
    */
   async login(email: string, pass: string): Promise<{ success: boolean; user?: any; token?: string; error?: string }> {
     try {
+      clearAllAuth()
+      const cleanEmail = email.trim().toLowerCase()
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: pass }),
+        body: JSON.stringify({ email: cleanEmail, password: pass }),
       })
       if (res.ok) {
         const data = await res.json()
         const token = data.accessToken || data.token
-        if (typeof window !== "undefined") {
-          const isProd = window.location.hostname.endsWith("stayea.com")
-          const domainPart = isProd ? "; domain=.stayea.com" : ""
-          if (token) {
-            localStorage.setItem("stayea_token", token)
-            document.cookie = `token=${token}; path=/${domainPart}; max-age=604800; SameSite=Lax`
-          }
-          if (data.user) {
-            localStorage.setItem("stayea_user", JSON.stringify(data.user))
-            document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+        const refreshToken = data.refreshToken
+        const user = data.user
+        if (token) {
+          setToken(token)
+          if (refreshToken) setRefreshToken(refreshToken)
+          if (user) {
+            setUser({
+              id: user.id,
+              email: user.email,
+              name: user.name || user.displayName || user.email?.split("@")[0] || "Thành viên",
+              displayName: user.displayName || null,
+              role: user.role || "USER",
+            })
           }
         }
         return { success: true, user: data.user, token }
       }
       const err = await res.json().catch(() => ({}))
-      return { success: false, error: err.message || "Tài khoản hoặc mật khẩu không chính xác" }
+      return { success: false, error: err.message || err.detail || "Tài khoản hoặc mật khẩu không chính xác" }
     } catch {
       return { success: false, error: "Không thể kết nối đến máy chủ xác thực" }
     }
@@ -417,6 +429,7 @@ class StayeaApiService {
     avatarUrl?: string
   ): Promise<{ success: boolean; user?: any; token?: string; error?: string }> {
     try {
+      clearAllAuth()
       const res = await fetch("/api/auth/oauth/social-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -425,16 +438,19 @@ class StayeaApiService {
       if (res.ok) {
         const data = await res.json()
         const token = data.accessToken || data.token
-        if (typeof window !== "undefined") {
-          const isProd = window.location.hostname.endsWith("stayea.com")
-          const domainPart = isProd ? "; domain=.stayea.com" : ""
-          if (token) {
-            localStorage.setItem("stayea_token", token)
-            document.cookie = `token=${token}; path=/${domainPart}; max-age=604800; SameSite=Lax`
-          }
-          if (data.user) {
-            localStorage.setItem("stayea_user", JSON.stringify(data.user))
-            document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/${domainPart}; max-age=604800; SameSite=Lax`
+        const refreshToken = data.refreshToken
+        const user = data.user
+        if (token) {
+          setToken(token)
+          if (refreshToken) setRefreshToken(refreshToken)
+          if (user) {
+            setUser({
+              id: user.id,
+              email: user.email,
+              name: user.name || user.displayName || name || "Thành viên",
+              displayName: user.displayName || null,
+              role: user.role || "USER",
+            })
           }
         }
         return { success: true, user: data.user, token }
@@ -463,7 +479,19 @@ class StayeaApiService {
       })
       if (res.ok) {
         const data = await res.json()
-        return data.data || data
+        const updated = data.data || data
+        if (updated) {
+          const current = getUser()
+          if (current) {
+            setUser({
+              ...current,
+              displayName: updated.displayName || current.displayName,
+              name: updated.displayName || updated.name || current.name,
+              avatarUrl: updated.avatarUrl || current.avatarUrl,
+            })
+          }
+        }
+        return updated
       }
       return null
     } catch {
@@ -474,18 +502,43 @@ class StayeaApiService {
   /**
    * Real Authentication: Register a new customer
    */
-  async register(email: string, pass: string, name: string): Promise<{ success: boolean; user?: any; error?: string }> {
+  async register(email: string, pass: string, name: string): Promise<{ success: boolean; user?: any; token?: string; error?: string }> {
     try {
+      clearAllAuth()
+      const cleanEmail = email.trim().toLowerCase()
+      const cleanName = name.trim() || cleanEmail.split("@")[0]
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: pass, name }),
+        body: JSON.stringify({ email: cleanEmail, password: pass, name: cleanName }),
       })
       if (res.ok) {
-        return await this.login(email, pass)
+        const data = await res.json()
+        const token = data.accessToken || data.token
+        const refreshToken = data.refreshToken
+        const user = data.user || {
+          id: data.id || data.userId,
+          email: cleanEmail,
+          name: cleanName,
+          role: "USER",
+        }
+        if (token) {
+          setToken(token)
+          if (refreshToken) setRefreshToken(refreshToken)
+          if (user) {
+            setUser({
+              id: user.id,
+              email: user.email,
+              name: user.name || user.displayName || cleanName,
+              displayName: user.displayName || null,
+              role: user.role || "USER",
+            })
+          }
+        }
+        return { success: true, user, token }
       }
       const err = await res.json().catch(() => ({}))
-      return { success: false, error: err.message || "Đăng ký không thành công" }
+      return { success: false, error: err.message || err.detail || "Đăng ký không thành công" }
     } catch {
       return { success: false, error: "Không thể kết nối đến máy chủ" }
     }
@@ -501,7 +554,19 @@ class StayeaApiService {
       const res = await fetch("/api/profile", { headers })
       if (res.ok) {
         const data = await res.json()
-        return data.data || data
+        const profile = data.data || data
+        if (profile && profile.id) {
+          const current = getUser()
+          setUser({
+            id: profile.id,
+            email: profile.email || current?.email || "",
+            name: profile.displayName || profile.name || current?.name || "Thành viên",
+            displayName: profile.displayName || null,
+            avatarUrl: profile.avatarUrl || null,
+            role: profile.role || current?.role || "USER",
+          })
+        }
+        return profile
       }
       // Fallback to /api/auth/session
       const sessionRes = await fetch("/api/auth/session", { headers })
@@ -510,9 +575,10 @@ class StayeaApiService {
         const u = sessionData.user || {}
         return {
           id: u.id,
-          displayName: u.name || u.email?.split("@")[0] || "Quý khách",
+          name: u.name || u.displayName || u.email?.split("@")[0] || "Quý khách",
+          displayName: u.displayName || u.name || null,
           email: u.email,
-          role: u.role,
+          role: u.role || "USER",
         }
       }
       return null
@@ -758,26 +824,20 @@ class StayeaApiService {
   }
 
   /**
-   * Logout customer
+   * Logout customer & revoke credentials completely
    */
   async logout(): Promise<void> {
-    if (typeof window !== "undefined") {
-      const isProd = window.location.hostname.endsWith("stayea.com")
-      const domainPart = isProd ? "; domain=.stayea.com" : ""
-      localStorage.removeItem("stayea_token")
-      localStorage.removeItem("stayea_user")
-      document.cookie = `token=; path=/${domainPart}; max-age=0`
-      document.cookie = "token=; path=/; max-age=0"
-      document.cookie = `user=; path=/${domainPart}; max-age=0`
-      document.cookie = "user=; path=/; max-age=0"
-    }
+    const refreshToken = getRefreshToken()
+    const headers = this.getAuthHeader()
+    clearAllAuth()
     try {
-      const headers = this.getAuthHeader()
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...headers },
-        body: JSON.stringify({}),
-      })
+      if (refreshToken) {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...headers },
+          body: JSON.stringify({ refreshToken }),
+        })
+      }
     } catch {
       // ignore
     }

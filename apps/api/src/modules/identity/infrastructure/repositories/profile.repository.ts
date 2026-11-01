@@ -44,6 +44,7 @@ export class ProfileRepositoryImpl implements ProfileRepository {
       displayName: user.displayName ?? null,
       bio: user.bio ?? null,
       avatarUrl: user.image ?? null,
+      role: user.role ?? 'USER',
     }
   }
 }

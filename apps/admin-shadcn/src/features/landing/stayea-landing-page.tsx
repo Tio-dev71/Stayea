@@ -260,28 +260,81 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       // Safe fallback
     }
   }, [pageState, selectedServiceItem])
-  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(false)
+  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(() => {
+    return Boolean(getUser()?.email)
+  })
   const [currentUser, setCurrentUser] = React.useState<{
     name: string
     email?: string
     avatarUrl: string
     notificationsCount?: number
     role?: "customer" | "admin" | "host"
-  }>({
-    name: "Quý khách",
-    email: "",
-    avatarUrl: "/profile/profile-avatar.jpg",
-    notificationsCount: 0,
-    role: "customer",
+  }>(() => {
+    const local = getUser()
+    if (local && local.email) {
+      const isAdmin = local.role === "ADMIN" || (local as any).role === "admin"
+      return {
+        name: local.displayName || local.name || local.email.split("@")[0] || "Thành viên STAYEA",
+        email: local.email,
+        avatarUrl: local.avatarUrl || "/profile/profile-avatar.jpg",
+        notificationsCount: 0,
+        role: isAdmin ? "admin" : "customer",
+      }
+    }
+    return {
+      name: "Quý khách",
+      email: "",
+      avatarUrl: "/profile/profile-avatar.jpg",
+      notificationsCount: 0,
+      role: "customer",
+    }
   })
+
+  // Listen to auth state changes across the entire app
+  React.useEffect(() => {
+    function handleAuthEvent(e: Event) {
+      const customEvent = e as CustomEvent<any>
+      const u = customEvent.detail
+      if (!u || !u.email) {
+        setIsLoggedIn(false)
+        setCurrentUser({
+          name: "Quý khách",
+          email: "",
+          avatarUrl: "/profile/profile-avatar.jpg",
+          notificationsCount: 0,
+          role: "customer",
+        })
+      } else {
+        const isAdmin = u.role === "ADMIN" || u.role === "admin"
+        setIsLoggedIn(true)
+        setCurrentUser({
+          name: u.displayName || u.name || u.email.split("@")[0] || "Thành viên STAYEA",
+          email: u.email,
+          avatarUrl: u.avatarUrl || "/profile/profile-avatar.jpg",
+          notificationsCount: 0,
+          role: isAdmin ? "admin" : "customer",
+        })
+      }
+    }
+    window.addEventListener("stayea-auth-change", handleAuthEvent)
+    return () => window.removeEventListener("stayea-auth-change", handleAuthEvent)
+  }, [])
 
   // Sync real profile on mount from NestJS Auth
   React.useEffect(() => {
     async function syncAuth() {
+      const currentLocal = getUser()
+      if (!currentLocal) {
+        setIsLoggedIn(false)
+        if (isDetectedAdmin) {
+          setPageState("login")
+        }
+        return
+      }
+
       try {
         const profile = await stayeaApi.getProfile()
         if (profile && (profile.id || profile.email)) {
-          setIsLoggedIn(true)
           const isAdmin = profile.role === "ADMIN" || profile.role === "admin"
           if (isDetectedAdmin && !isAdmin) {
             setIsLoggedIn(false)
@@ -303,9 +356,12 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
           }
         }
       } catch {
-        setIsLoggedIn(false)
-        if (isDetectedAdmin) {
-          setPageState("login")
+        const checkUser = getUser()
+        if (!checkUser) {
+          setIsLoggedIn(false)
+          if (isDetectedAdmin) {
+            setPageState("login")
+          }
         }
       }
     }
@@ -1020,14 +1076,25 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       setIsLoggedIn(true)
       setActiveItem("Trang cá nhân")
       setActiveDropdown(null)
+      const targetUser = itemData || getUser()
+      if (targetUser && targetUser.email) {
+        const isAdmin = targetUser.role === "ADMIN" || targetUser.role === "admin"
+        setCurrentUser({
+          name: targetUser.displayName || targetUser.name || targetUser.email.split("@")[0] || "Thành viên STAYEA",
+          email: targetUser.email,
+          avatarUrl: targetUser.avatarUrl || "/profile/profile-avatar.jpg",
+          notificationsCount: 0,
+          role: isAdmin ? "admin" : "customer",
+        })
+      }
       stayeaApi.getProfile().then((p) => {
-        if (p) {
+        if (p && p.email) {
           const isAdmin = p.role === "ADMIN" || p.role === "admin"
           setCurrentUser({
-            name: p.displayName || p.name || p.email?.split("@")[0] || "Thành viên STAYEA",
+            name: p.displayName || p.name || p.email.split("@")[0] || "Thành viên STAYEA",
             email: p.email,
             avatarUrl: p.avatarUrl || "/profile/profile-avatar.jpg",
-            notificationsCount: 3,
+            notificationsCount: 0,
             role: isAdmin ? "admin" : "customer",
           })
         }
@@ -1043,10 +1110,10 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         notificationsCount: 0,
         role: "customer",
       })
-      setCurrentPage("login")
-      setActiveItem("Đăng nhập")
+      setCurrentPage(isDetectedAdmin ? "login" : "home")
+      setActiveItem(isDetectedAdmin ? "Đăng nhập" : "Trang chủ")
       setActiveDropdown(null)
-            window.scrollTo({ top: 0, behavior: "smooth" })
+      window.scrollTo({ top: 0, behavior: "smooth" })
     } else if (item === "login" || item === "Đăng nhập" || item === "dang-nhap") {
       setCurrentPage("login")
       setActiveItem("Đăng nhập")

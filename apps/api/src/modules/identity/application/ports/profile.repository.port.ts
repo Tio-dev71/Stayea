@@ -5,6 +5,7 @@ export interface ProfileData {
   displayName: string | null
   bio: string | null
   avatarUrl: string | null
+  role?: string | null
 }
 
 export interface UpdateProfileData {

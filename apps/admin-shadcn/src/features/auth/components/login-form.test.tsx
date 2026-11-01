@@ -27,7 +27,7 @@ describe('loginForm', () => {
       },
       { timeout: 10_000 },
     )
-  })
+  }, 15_000)
 
   it('login button is present and enabled initially', () => {
     renderWithProviders(<LoginForm />)

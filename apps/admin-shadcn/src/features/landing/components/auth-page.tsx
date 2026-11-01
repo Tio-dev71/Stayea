@@ -8,7 +8,7 @@ import { AuthOnboardingSteps } from "./auth-onboarding-steps"
 
 interface AuthPageProps {
   readonly initialMode?: "login" | "register"
-  readonly onNavigate?: (target: string) => void
+  readonly onNavigate?: (target: string, subCategory?: string, itemData?: any) => void
 }
 
 export function AuthPage({
@@ -36,8 +36,7 @@ export function AuthPage({
       {/* 1. Hero Section with Background, Calligraphy, Auth Card and Side Badges */}
       <AuthHeroSection
         initialMode={initialMode}
-        onAuthSuccess={(_user) => {
-          // Redirect or notify
+        onAuthSuccess={(user) => {
           setTimeout(() => {
             if (typeof window !== "undefined") {
               const params = new URLSearchParams(window.location.search)
@@ -48,11 +47,11 @@ export function AuthPage({
               }
             }
             if (onNavigate) {
-              onNavigate("profile")
+              onNavigate("profile", undefined, user)
             } else {
               window.location.hash = "home"
             }
-          }, 1200)
+          }, 800)
         }}
         onForgotPassword={() => setShowForgotModal(true)}
       />

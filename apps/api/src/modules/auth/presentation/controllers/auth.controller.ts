@@ -103,11 +103,17 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(200)
-
+  @Public()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout (single device)' })
   @ApiResponse({ status: 200, type: LogoutResponseDto })
-  async logout(@Body() dto: LogoutDto): Promise<LogoutResponseDto> {
+  async logout(@Body() dto?: LogoutDto): Promise<LogoutResponseDto> {
+    if (!dto?.refreshToken) {
+      return {
+        success: true,
+        message: 'Logged out successfully',
+      }
+    }
     const success = await this.authService.logout(dto.refreshToken)
     return {
       success,

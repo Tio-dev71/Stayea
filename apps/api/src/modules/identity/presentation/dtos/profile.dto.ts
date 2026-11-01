@@ -25,6 +25,9 @@ export class ProfileResponseDto {
 
   @ApiProperty({ type: String, example: 'https://example.com/avatar.png', nullable: true })
   avatarUrl: string | null
+
+  @ApiPropertyOptional({ type: String, example: 'USER', nullable: true })
+  role?: string | null
 }
 
 export class UpdateProfileDto {

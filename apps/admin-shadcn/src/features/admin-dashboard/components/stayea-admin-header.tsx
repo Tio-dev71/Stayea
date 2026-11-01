@@ -13,7 +13,7 @@ import {
   User,
   Shield,
 } from "lucide-react"
-import { getUser, removeToken, removeUser } from "@/lib/token"
+import { getUser, clearAllAuth } from "@/lib/token"
 import { stayeaApi } from "@/lib/stayea-api-service"
 
 interface StayeaAdminHeaderProps {
@@ -67,14 +67,13 @@ export function StayeaAdminHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const handleDefaultLogout = () => {
+  const handleDefaultLogout = async () => {
     if (onLogout) {
       onLogout()
       return
     }
-    stayeaApi.logout()
-    removeToken()
-    removeUser()
+    await stayeaApi.logout()
+    clearAllAuth()
     window.location.href = "/login"
   }
 

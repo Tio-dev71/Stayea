@@ -60,6 +60,15 @@ export class StayeaBookingController {
     return this.bookingService.findAllBookingsForAdmin(query)
   }
 
+  @Get("admin/analytics/revenue")
+  @Roles("ADMIN")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Get real-time revenue analytics & daily trends (Admin only)" })
+  async getRevenueAnalytics(@Query("days") days?: string) {
+    const daysNum = days ? Number.parseInt(days, 10) : 7
+    return this.bookingService.getRevenueAnalytics(daysNum)
+  }
+
   @Get("admin/:idOrCode")
   @Roles("ADMIN")
   @ApiOperation({ summary: "Get any booking details (Admin only)" })

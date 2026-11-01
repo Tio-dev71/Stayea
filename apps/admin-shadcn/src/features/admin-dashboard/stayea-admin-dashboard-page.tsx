@@ -40,15 +40,21 @@ export function StayeaAdminDashboardPage({
   const [liveKpis, setLiveKpis] = useState<readonly AdminKpiItem[]>(ADMIN_KPIS_VI)
   const [liveStatusData, setLiveStatusData] = useState<readonly BookingStatusSlice[]>(BOOKING_STATUS_DATA_VI)
   const [liveRecentBookings, setLiveRecentBookings] = useState<readonly AdminRecentBooking[]>(ADMIN_RECENT_BOOKINGS_VI)
+  const [liveRevenueTimeline, setLiveRevenueTimeline] = useState<any[] | null>(null)
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const [rawBookings, rawAccommodations, rawUsers] = await Promise.all([
+        const [rawBookings, rawAccommodations, rawUsers, analytics] = await Promise.all([
           stayeaApi.getAllBookingsForAdmin().catch(() => []),
           stayeaApi.getAccommodations().catch(() => []),
           stayeaApi.getUsers().catch(() => []),
+          stayeaApi.getAdminRevenueAnalytics(7).catch(() => null),
         ])
+
+        if (analytics?.timeline && Array.isArray(analytics.timeline)) {
+          setLiveRevenueTimeline(analytics.timeline)
+        }
 
         const bookings = Array.isArray(rawBookings) ? rawBookings : []
         const accommodations = Array.isArray(rawAccommodations)
@@ -245,7 +251,7 @@ export function StayeaAdminDashboardPage({
                 {/* Middle Charts Row (Doanh thu theo thời gian + Tình trạng đặt phòng) */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                   <div className="md:col-span-7">
-                    <StayeaAdminRevenueChart />
+                    <StayeaAdminRevenueChart data={liveRevenueTimeline || undefined} />
                   </div>
                   <div className="md:col-span-5">
                     <StayeaAdminBookingStatusChart

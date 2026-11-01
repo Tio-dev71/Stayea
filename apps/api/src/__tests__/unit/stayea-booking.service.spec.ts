@@ -189,4 +189,47 @@ describe("stayea booking service", () => {
     expect(result.releasedCount).toBe(2)
     expect(mockDb.update).toHaveBeenCalledTimes(1)
   })
+
+  it("aggregates real-time financial metrics and continuous timeline points in getRevenueAnalytics", async () => {
+    const today = new Date()
+    const mockBookings = [
+      {
+        id: "bk-1",
+        createdAt: today,
+        finalAmount: "5000000",
+        currency: "VND",
+        status: "confirmed",
+        paymentStatus: "paid",
+        serviceType: "stay",
+      },
+      {
+        id: "bk-2",
+        createdAt: today,
+        finalAmount: "2000000",
+        currency: "VND",
+        status: "pending",
+        paymentStatus: "unpaid",
+        serviceType: "tour",
+      },
+    ]
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockResolvedValue(mockBookings),
+    }
+
+    const service = new StayeaBookingService(mockDb as any)
+    const analytics = await service.getRevenueAnalytics(7)
+
+    expect(analytics.windowDays).toBe(7)
+    expect(analytics.timeline).toHaveLength(7)
+    expect(analytics.kpis.totalBookings).toBe(2)
+    expect(analytics.kpis.totalRevenue).toBe(7_000_000)
+    expect(analytics.kpis.paidRevenue).toBe(5_000_000)
+    expect(analytics.kpis.pendingRevenue).toBe(2_000_000)
+    expect(analytics.kpis.platformCommission).toBe(Math.round(7_000_000 * 0.12))
+    expect(analytics.categoryBreakdown).toHaveLength(2)
+  })
 })

@@ -8,7 +8,6 @@ import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
 import {
-  MOCK_REVENUE_TIMELINE,
   MOCK_QUICK_ACTIONS,
 } from "./stayea-admin-revenue-mock-data"
 import type {
@@ -17,6 +16,7 @@ import type {
   RevenueCategorySlice,
   PaymentMethodItem,
   LocationRevenueItem,
+  RevenueTimelinePoint,
 } from "./stayea-admin-revenue-mock-data"
 import { RevenueKpiCards } from "./components/revenue-kpi-cards"
 import { RevenueFilterBar } from "./components/revenue-filter-bar"
@@ -44,6 +44,7 @@ export function StayeaAdminRevenuePage({
   const [selectedPartner, setSelectedPartner] = useState("Tất cả đối tác")
 
   const [ordersList, setOrdersList] = useState<RevenueOrderItem[]>([])
+  const [realTimeline, setRealTimeline] = useState<RevenueTimelinePoint[]>([])
   const [revenueKpis, setRevenueKpis] = useState<RevenueKpiItem[]>([
     {
       id: "total-revenue",
@@ -90,7 +91,22 @@ export function StayeaAdminRevenuePage({
   useEffect(() => {
     async function fetchRevenueData() {
       try {
-        const bookings = await stayeaApi.getAllBookingsForAdmin()
+        const [bookings, analytics] = await Promise.all([
+          stayeaApi.getAllBookingsForAdmin().catch(() => []),
+          stayeaApi.getAdminRevenueAnalytics(30).catch(() => null),
+        ])
+
+        if (analytics?.timeline && Array.isArray(analytics.timeline)) {
+          const mappedPoints: RevenueTimelinePoint[] = analytics.timeline.map((p: any) => ({
+            date: p.date,
+            fullDate: p.fullDate,
+            totalRevenue: p.totalRevenue,
+            paidRevenue: p.paidRevenue,
+            totalFormatted: p.totalFormatted || new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(p.totalRevenue),
+            paidFormatted: p.paidFormatted || new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(p.paidRevenue),
+          }))
+          setRealTimeline(mappedPoints)
+        }
         if (Array.isArray(bookings) && bookings.length > 0) {
           let totalRev = 0
           let paidRev = 0
@@ -422,7 +438,7 @@ export function StayeaAdminRevenuePage({
 
               {/* Dual Charts (Revenue over time + Revenue by category) */}
               <RevenueCharts
-                timelineData={ordersList.length > 0 ? MOCK_REVENUE_TIMELINE : []}
+                timelineData={realTimeline}
                 categoryData={dynamicCategoryData}
                 totalRevenueFormatted={totalRevenueFormatted}
                 onViewCategoryDetails={() => {

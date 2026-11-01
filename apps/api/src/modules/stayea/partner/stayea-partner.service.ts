@@ -22,6 +22,7 @@ import type {
   AdminApproveOrderDto,
   AdminCreatePartnerDto,
   AdminUpdatePartnerStatusDto,
+  AdminUpdateServiceStatusDto,
   BulkUpdateInventoryDto,
   CreateDraftOrderDto,
   CreatePartnerServiceDto,
@@ -325,6 +326,16 @@ export class StayeaPartnerService implements OnModuleInit {
         ...(dto.commissionRate !== undefined
           ? { commissionRate: dto.commissionRate.toFixed(2) }
           : {}),
+        ...(dto.adminNotes
+          ? {
+              metadata: {
+                ...(partner.metadata || {}),
+                adminNotes: dto.adminNotes,
+                reviewedAt: new Date().toISOString(),
+              },
+            }
+          : {}),
+        updatedAt: new Date(),
       })
       .where(eq(partnerProfilesTable.id, partner.id))
       .returning()
@@ -467,14 +478,13 @@ export class StayeaPartnerService implements OnModuleInit {
         .returning()
 
       profile = created || (await this.getProfileById(partnerId))
-    } else if (profile.status !== "approved") {
-      await this.db
-        .update(partnerProfilesTable)
-        .set({ status: "approved" })
-        .where(eq(partnerProfilesTable.id, profile.id))
     }
 
     const serviceId = generateUid("svc")
+    const isPartnerApproved = profile.status === "approved"
+    const serviceStatus =
+      (dto.status as "active" | "inactive" | "pending_approval") ||
+      (isPartnerApproved ? "active" : "pending_approval")
 
     const [service] = await this.db
       .insert(partnerServicesTable)
@@ -490,12 +500,17 @@ export class StayeaPartnerService implements OnModuleInit {
         unit: dto.unit || (dto.serviceType === "transport" ? "ngày" : "đêm"),
         images: dto.images || [],
         attributes: (dto.attributes as any) || {},
-        status: (dto.status as "active" | "inactive" | "pending_approval") || "active",
+        status: serviceStatus,
       })
       .returning()
 
-    // Automatically sync into public & admin catalog
-    await this.syncServiceToCatalog(service, profile?.contactName || profile?.businessName)
+    // Automatically sync into public catalog only if active and approved
+    if (serviceStatus === "active" && isPartnerApproved) {
+      await this.syncServiceToCatalog(
+        service,
+        profile?.contactName || profile?.businessName
+      )
+    }
 
     return service
   }
@@ -966,5 +981,97 @@ export class StayeaPartnerService implements OnModuleInit {
       },
       recentOrders: orders.slice(0, 5),
     }
+  }
+
+  // ==========================================
+  // 6. ADMIN CATALOG MODERATION
+  // ==========================================
+
+  async adminGetAllServices(query?: {
+    status?: string
+    partnerId?: string
+    type?: string
+    search?: string
+  }) {
+    const conditions = []
+    if (query?.status) {
+      conditions.push(eq(partnerServicesTable.status, query.status as any))
+    }
+    if (query?.partnerId) {
+      conditions.push(eq(partnerServicesTable.partnerId, query.partnerId))
+    }
+    if (query?.type) {
+      conditions.push(eq(partnerServicesTable.serviceType, query.type as any))
+    }
+    if (query?.search) {
+      const s = `%${query.search.trim()}%`
+      conditions.push(
+        sql`(${partnerServicesTable.title} ILIKE ${s} OR coalesce(${partnerServicesTable.description}, '') ILIKE ${s} OR ${partnerServicesTable.location} ILIKE ${s})`
+      )
+    }
+
+    return this.db
+      .select({
+        id: partnerServicesTable.id,
+        partnerId: partnerServicesTable.partnerId,
+        serviceType: partnerServicesTable.serviceType,
+        title: partnerServicesTable.title,
+        description: partnerServicesTable.description,
+        location: partnerServicesTable.location,
+        price: partnerServicesTable.price,
+        originalPrice: partnerServicesTable.originalPrice,
+        unit: partnerServicesTable.unit,
+        images: partnerServicesTable.images,
+        attributes: partnerServicesTable.attributes,
+        status: partnerServicesTable.status,
+        createdAt: partnerServicesTable.createdAt,
+        updatedAt: partnerServicesTable.updatedAt,
+        partnerBusinessName: partnerProfilesTable.businessName,
+        partnerContactName: partnerProfilesTable.contactName,
+        partnerPhone: partnerProfilesTable.phone,
+        partnerStatus: partnerProfilesTable.status,
+      })
+      .from(partnerServicesTable)
+      .leftJoin(
+        partnerProfilesTable,
+        eq(partnerServicesTable.partnerId, partnerProfilesTable.id)
+      )
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(partnerServicesTable.createdAt))
+  }
+
+  async adminUpdateServiceStatus(
+    id: string,
+    dto: AdminUpdateServiceStatusDto
+  ) {
+    const [existing] = await this.db
+      .select()
+      .from(partnerServicesTable)
+      .where(eq(partnerServicesTable.id, id))
+      .limit(1)
+
+    if (!existing) {
+      throw new NotFoundException(`Dịch vụ với ID "${id}" không tồn tại`)
+    }
+
+    const [updated] = await this.db
+      .update(partnerServicesTable)
+      .set({
+        status: dto.status,
+        updatedAt: new Date(),
+      })
+      .where(eq(partnerServicesTable.id, id))
+      .returning()
+
+    if (updated && updated.status === "active") {
+      const [partner] = await this.db
+        .select()
+        .from(partnerProfilesTable)
+        .where(eq(partnerProfilesTable.id, updated.partnerId))
+        .limit(1)
+      await this.syncServiceToCatalog(updated, partner?.businessName)
+    }
+
+    return updated
   }
 }

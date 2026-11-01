@@ -16,6 +16,7 @@ import {
   AdminApproveOrderDto,
   AdminCreatePartnerDto,
   AdminUpdatePartnerStatusDto,
+  AdminUpdateServiceStatusDto,
 } from "@/modules/stayea/partner/dtos/partner.dto"
 import { StayeaPartnerService } from "@/modules/stayea/partner/stayea-partner.service"
 
@@ -90,5 +91,27 @@ export class StayeaPartnerAdminController {
   @ApiOperation({ summary: "Mark order as completed" })
   async completeOrder(@Param("id") orderId: string) {
     return this.partnerService.completeOrder(orderId)
+  }
+
+  @Get("catalog/services")
+  @UseEnvelope()
+  @ApiOperation({ summary: "List all partner services for moderation (Admin only)" })
+  async getAdminServices(
+    @Query("status") status?: string,
+    @Query("partnerId") partnerId?: string,
+    @Query("type") type?: string,
+    @Query("search") search?: string
+  ) {
+    return this.partnerService.adminGetAllServices({ status, partnerId, type, search })
+  }
+
+  @Patch("catalog/services/:id/status")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Approve or suspend a partner service listing" })
+  async updateServiceStatus(
+    @Param("id") id: string,
+    @Body() dto: AdminUpdateServiceStatusDto
+  ) {
+    return this.partnerService.adminUpdateServiceStatus(id, dto)
   }
 }

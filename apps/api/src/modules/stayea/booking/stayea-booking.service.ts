@@ -21,7 +21,7 @@ import {
   partnerServicesTable,
 } from "@workspace/database"
 import dayjs from "dayjs"
-import { and, desc, eq, gte, ilike, inArray, lte, ne, or, sql } from "drizzle-orm"
+import { and, asc, desc, eq, gte, ilike, inArray, lte, ne, or, sql } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
@@ -585,5 +585,129 @@ export class StayeaBookingService {
     )
 
     return { releasedCount: ids.length }
+  }
+
+  /**
+   * Real-time financial aggregation & revenue trends for Admin Control Plane
+   */
+  async getRevenueAnalytics(days = 7) {
+    const windowDays = Math.max(1, Math.min(days, 90))
+    const startDate = dayjs().subtract(windowDays - 1, "day").startOf("day")
+
+    // Fetch all bookings in range
+    const bookings = await this.db
+      .select({
+        id: stayeaBookingsTable.id,
+        createdAt: stayeaBookingsTable.createdAt,
+        finalAmount: stayeaBookingsTable.finalAmount,
+        currency: stayeaBookingsTable.currency,
+        status: stayeaBookingsTable.status,
+        paymentStatus: stayeaBookingsTable.paymentStatus,
+        serviceType: stayeaBookingsTable.bookingType,
+      })
+      .from(stayeaBookingsTable)
+      .where(sql`${stayeaBookingsTable.createdAt} >= ${startDate.toDate()}`)
+      .orderBy(asc(stayeaBookingsTable.createdAt))
+
+    // Build day buckets map for continuous timeline
+    const bucketsMap = new Map<
+      string,
+      {
+        date: string
+        fullDate: string
+        totalRevenue: number
+        paidRevenue: number
+        bookingCount: number
+      }
+    >()
+
+    for (let i = 0; i < windowDays; i++) {
+      const d = startDate.add(i, "day")
+      const key = d.format("YYYY-MM-DD")
+      bucketsMap.set(key, {
+        date: d.format("DD/MM"),
+        fullDate: d.format("DD/MM/YYYY"),
+        totalRevenue: 0,
+        paidRevenue: 0,
+        bookingCount: 0,
+      })
+    }
+
+    let grandTotal = 0
+    let grandPaid = 0
+    let grandPending = 0
+
+    const categoryMap = new Map<string, number>()
+    const statusMap = new Map<string, number>()
+
+    for (const b of bookings) {
+      const bDate = dayjs(b.createdAt).format("YYYY-MM-DD")
+      const amt = Number(b.finalAmount) || 0
+      const isPaid = b.paymentStatus === "paid"
+
+      grandTotal += amt
+      if (isPaid) grandPaid += amt
+      else grandPending += amt
+
+      const bucket = bucketsMap.get(bDate)
+      if (bucket) {
+        bucket.totalRevenue += amt
+        if (isPaid) bucket.paidRevenue += amt
+        bucket.bookingCount += 1
+      }
+
+      // Categories
+      const cat = b.serviceType || "stay"
+      categoryMap.set(cat, (categoryMap.get(cat) || 0) + amt)
+
+      // Status
+      const st = b.status || "pending"
+      statusMap.set(st, (statusMap.get(st) || 0) + 1)
+    }
+
+    const fmtVnd = (num: number) =>
+      new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(num)
+
+    const timeline = Array.from(bucketsMap.values()).map((p) => ({
+      date: p.date,
+      fullDate: p.fullDate,
+      revenue: p.totalRevenue / 1_000_000,
+      rawRevenue: p.totalRevenue,
+      paidRevenue: p.paidRevenue,
+      totalRevenue: p.totalRevenue,
+      bookingCount: p.bookingCount,
+      displayAmount: fmtVnd(p.totalRevenue),
+      totalFormatted: fmtVnd(p.totalRevenue),
+      paidFormatted: fmtVnd(p.paidRevenue),
+    }))
+
+    const platformCommission = Math.round(grandTotal * 0.12)
+
+    return {
+      windowDays,
+      timeline,
+      kpis: {
+        totalBookings: bookings.length,
+        totalRevenue: grandTotal,
+        totalRevenueFormatted: fmtVnd(grandTotal),
+        paidRevenue: grandPaid,
+        paidRevenueFormatted: fmtVnd(grandPaid),
+        pendingRevenue: grandPending,
+        pendingRevenueFormatted: fmtVnd(grandPending),
+        platformCommission,
+        platformCommissionFormatted: fmtVnd(platformCommission),
+      },
+      categoryBreakdown: Array.from(categoryMap.entries()).map(([cat, val]) => ({
+        category: cat,
+        value: val,
+        formattedValue: fmtVnd(val),
+        percent: grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0,
+      })),
+      statusBreakdown: Array.from(statusMap.entries()).map(([st, count]) => ({
+        status: st,
+        count,
+        percent: bookings.length > 0 ? Math.round((count / bookings.length) * 100) : 0,
+      })),
+    }
   }
 }

@@ -1711,6 +1711,94 @@ class StayeaApiService {
     }
     return json.data || json
   }
+
+  /**
+   * Analytics: Real-time revenue aggregation & trends
+   */
+  async getAdminRevenueAnalytics(days: number = 7): Promise<any> {
+    try {
+      const res = await fetch(`/api/stayea/bookings/admin/analytics/revenue?days=${days}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  /**
+   * Catalog Moderation: Admin list all partner services
+   */
+  async getAdminServices(params?: {
+    status?: string
+    partnerId?: string
+    type?: string
+    search?: string
+  }): Promise<any[]> {
+    try {
+      const sp = new URLSearchParams()
+      if (params?.status) sp.set("status", params.status)
+      if (params?.partnerId) sp.set("partnerId", params.partnerId)
+      if (params?.type) sp.set("type", params.type)
+      if (params?.search) sp.set("search", params.search)
+      const qs = sp.toString() ? `?${sp.toString()}` : ""
+
+      const res = await fetch(`/api/stayea/admin/partners/catalog/services${qs}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Catalog Moderation: Admin approve / suspend service listing
+   */
+  async updateAdminServiceStatus(
+    id: string,
+    status: "active" | "inactive" | "pending_approval",
+    reason?: string
+  ): Promise<any> {
+    const res = await fetch(`/api/stayea/admin/partners/catalog/services/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+      body: JSON.stringify({ status, reason }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      throw new Error(json.message || "Không thể cập nhật trạng thái dịch vụ")
+    }
+    return json.data || json
+  }
+
+  /**
+   * Partner Governance: Admin approve / reject / suspend partner profile
+   */
+  async updateAdminPartnerStatus(
+    id: string,
+    payload: { status: string; commissionRate?: number; adminNotes?: string }
+  ): Promise<any> {
+    const res = await fetch(`/api/stayea/admin/partners/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      throw new Error(json.message || "Không thể cập nhật trạng thái đối tác")
+    }
+    return json.data || json
+  }
 }
 
 export const stayeaApi = new StayeaApiService()

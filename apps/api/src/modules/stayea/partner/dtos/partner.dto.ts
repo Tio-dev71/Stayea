@@ -358,6 +358,22 @@ export class AdminUpdatePartnerStatusDto {
   @IsNumber()
   @IsOptional()
   commissionRate?: number
+
+  @ApiPropertyOptional({ example: "Hồ sơ giấy phép kinh doanh đầy đủ và hợp lệ" })
+  @IsString()
+  @IsOptional()
+  adminNotes?: string
+}
+
+export class AdminUpdateServiceStatusDto {
+  @ApiProperty({ enum: ["active", "inactive", "pending_approval"] })
+  @IsEnum(["active", "inactive", "pending_approval"])
+  status: "active" | "inactive" | "pending_approval"
+
+  @ApiPropertyOptional({ example: "Hình ảnh và thông tin dịch vụ đạt tiêu chuẩn STAYEA" })
+  @IsString()
+  @IsOptional()
+  reason?: string
 }
 
 export class AdminCreatePartnerDto {

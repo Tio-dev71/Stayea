@@ -15,6 +15,7 @@ export interface HostPartnerItem {
   commission: string
   status: PartnerStatus
   statusLabel: string
+  raw?: any
 }
 
 export interface HostKpiItem {

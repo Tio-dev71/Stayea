@@ -3,7 +3,15 @@
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Plus } from "lucide-react"
+import {
+  Check,
+  CreditCard,
+  Percent,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  X,
+} from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
 import type { HostPartnerItem } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
@@ -15,6 +23,7 @@ import { HostsDataTable } from "./components/hosts-data-table"
 import { HostsRightSidebar } from "./components/hosts-right-sidebar"
 import { AdminOrderApprovalQueue } from "./components/admin-order-approval-queue"
 import { AdminPayoutRequestsTable } from "./components/admin-payout-requests-table"
+import { AdminCatalogModerationTable } from "./components/admin-catalog-moderation-table"
 import { CreateHostModal } from "./components/create-host-modal"
 
 import type { ModalSubTab } from "./components/create-host-modal"
@@ -34,13 +43,21 @@ export function StayeaAdminHostsPage({
 }: StayeaAdminHostsPageProps) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [adminSection, setAdminSection] = useState<"hosts" | "approval_queue" | "payout_requests">("hosts")
+  const [adminSection, setAdminSection] = useState<
+    "hosts" | "approval_queue" | "payout_requests" | "catalog_moderation"
+  >("hosts")
   const [activeSegment, setActiveSegment] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
   const [livePartners, setLivePartners] = useState<HostPartnerItem[]>([])
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0)
   const [pendingPayoutsCount, setPendingPayoutsCount] = useState(0)
+
+  // KYC Partner Review Modal State
+  const [kycPartner, setKycPartner] = useState<HostPartnerItem | null>(null)
+  const [kycCommission, setKycCommission] = useState(10)
+  const [kycNotes, setKycNotes] = useState("")
+  const [kycProcessing, setKycProcessing] = useState(false)
 
   useEffect(() => {
     stayeaApi
@@ -97,6 +114,7 @@ export function StayeaAdminHostsPage({
                   ? "Tạm dừng"
                   : "Chờ duyệt",
             commission: `${p.commissionRate || 10}%`,
+            raw: p,
           }))
           setLivePartners(mapped)
         } else {
@@ -184,6 +202,59 @@ export function StayeaAdminHostsPage({
 
   const handleAddHost = () => {
     setIsCreateModalOpen(true)
+  }
+
+  const handleOpenKycModal = (host: HostPartnerItem) => {
+    setKycPartner(host)
+    setKycCommission(host.raw?.commissionRate ? Number(host.raw.commissionRate) : 10)
+    setKycNotes(host.raw?.adminNotes || "")
+  }
+
+  const handleUpdatePartnerKyc = async (newStatus: "approved" | "suspended" | "rejected") => {
+    if (!kycPartner) return
+    setKycProcessing(true)
+    try {
+      await stayeaApi.updateAdminPartnerStatus(kycPartner.id, {
+        status: newStatus,
+        commissionRate: kycCommission,
+        adminNotes: kycNotes.trim() || undefined,
+      })
+      toast.success(
+        newStatus === "approved"
+          ? `Đã phê duyệt đối tác: ${kycPartner.name}`
+          : newStatus === "suspended"
+            ? `Đã tạm đình chỉ đối tác: ${kycPartner.name}`
+            : `Đã từ chối đối tác: ${kycPartner.name}`
+      )
+      setLivePartners((prev) =>
+        prev.map((h) =>
+          h.id === kycPartner.id
+            ? {
+                ...h,
+                status: newStatus === "approved" ? "active" : "paused",
+                statusLabel:
+                  newStatus === "approved"
+                    ? "Đang hoạt động"
+                    : newStatus === "suspended"
+                      ? "Tạm dừng"
+                      : "Từ chối",
+                commission: `${kycCommission}%`,
+                raw: {
+                  ...h.raw,
+                  status: newStatus,
+                  commissionRate: kycCommission,
+                  adminNotes: kycNotes,
+                },
+              }
+            : h
+        )
+      )
+      setKycPartner(null)
+    } catch (err: any) {
+      toast.error(err.message || "Không thể cập nhật hồ sơ đối tác")
+    } finally {
+      setKycProcessing(false)
+    }
   }
 
   const handleAdvancedFilter = () => {
@@ -305,6 +376,17 @@ export function StayeaAdminHostsPage({
                   </span>
                 )}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminSection("catalog_moderation")}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${adminSection === "catalog_moderation"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+              >
+                <span>Kiểm Duyệt Dịch Vụ / BĐS</span>
+              </button>
             </div>
 
             {adminSection === "approval_queue" ? (
@@ -313,6 +395,8 @@ export function StayeaAdminHostsPage({
               />
             ) : adminSection === "payout_requests" ? (
               <AdminPayoutRequestsTable />
+            ) : adminSection === "catalog_moderation" ? (
+              <AdminCatalogModerationTable />
             ) : (
               /* Main Content Grid: 8 cols left, 4 cols right */
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -336,16 +420,8 @@ export function StayeaAdminHostsPage({
                   <HostsDataTable
                     hosts={filteredPartners}
                     onHostAction={async (action, host) => {
-                      if (action === "view") {
-                        toast.info(`Xem hồ sơ đối tác: ${host.name}`, {
-                          description: `Email: ${host.email} • Khu vực: ${host.region} • BĐS: ${host.propertiesCount}`,
-                        })
-                      } else if (action === "contract") {
-                        toast.info(`Hợp đồng hợp tác: ${host.name}`, {
-                          description: `Mức hoa hồng hiện hành: ${host.commission}`,
-                        })
-                      } else if (action === "commission") {
-                        toast.info(`Thiết lập hoa hồng: ${host.name}`)
+                      if (action === "view" || action === "contract" || action === "commission") {
+                        handleOpenKycModal(host)
                       } else if (action === "suspend") {
                         try {
                           await stayeaApi.adminUpdatePartnerStatus(
@@ -489,6 +565,175 @@ export function StayeaAdminHostsPage({
           })
         }}
       />
+      {/* 4. Modal Thẩm Định KYC Đối Tác */}
+      {kycPartner && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#1b7a4e] flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Thẩm Định &amp; Xét Duyệt Đối Tác (KYC)
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    {kycPartner.name} • Mã ID: <span className="font-mono">{kycPartner.id}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setKycPartner(null)}
+                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 overflow-y-auto">
+              {/* Partner Profile Summary */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Thông Tin Đăng Ký Pháp Lý &amp; Thanh Toán
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-500">Đơn vị / Đại diện:</span>
+                    <p className="font-semibold text-slate-900">{kycPartner.name}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Loại hình đối tác:</span>
+                    <p className="font-semibold text-slate-900">{kycPartner.partnerTypeLabel}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Email liên hệ:</span>
+                    <p className="font-semibold text-slate-900">{kycPartner.email}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Số điện thoại:</span>
+                    <p className="font-semibold text-slate-900">
+                      {kycPartner.raw?.phone || "Chưa cung cấp"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Mã số thuế:</span>
+                    <p className="font-semibold text-slate-900 font-mono">
+                      {kycPartner.raw?.taxId || "Chưa cung cấp"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Khu vực hoạt động:</span>
+                    <p className="font-semibold text-slate-900">
+                      {kycPartner.raw?.address || kycPartner.region}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2 pt-2 border-t border-slate-200/60">
+                    <span className="text-slate-500 flex items-center gap-1">
+                      <CreditCard className="w-3.5 h-3.5" /> Thông tin ngân hàng nhận thanh toán:
+                    </span>
+                    <p className="font-semibold text-slate-900 mt-0.5">
+                      {kycPartner.raw?.bankName ? (
+                        <>
+                          <span className="font-bold text-emerald-800">{kycPartner.raw.bankName}</span> — STK:{" "}
+                          <span className="font-mono font-bold text-slate-900">{kycPartner.raw.bankAccount}</span>{" "}
+                          ({kycPartner.raw.bankAccountHolder})
+                        </>
+                      ) : (
+                        <span className="text-amber-600 italic">Chưa khai báo tài khoản ngân hàng</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Commission Rate Config */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Percent className="w-3.5 h-3.5 text-[#1b7a4e]" />
+                  Tỷ lệ hoa hồng STAYEA khấu trừ (%)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={kycCommission}
+                    onChange={(e) => setKycCommission(Number(e.target.value))}
+                    className="w-28 px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#1b7a4e]/20 focus:border-[#1b7a4e]"
+                  />
+                  <span className="text-xs text-slate-500">
+                    Mặc định 10% cho lưu trú biệt thự &amp; tour trải nghiệm.
+                  </span>
+                </div>
+              </div>
+
+              {/* Admin Internal Review Notes */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Ghi chú thẩm định &amp; lý do phê duyệt / đình chỉ
+                </label>
+                <textarea
+                  rows={3}
+                  value={kycNotes}
+                  onChange={(e) => setKycNotes(e.target.value)}
+                  placeholder="Nhập kết quả xác minh giấy phép kinh doanh, số lượng phòng thực tế, hoặc lý do từ chối hồ sơ..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b7a4e]/20 focus:border-[#1b7a4e] resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setKycPartner(null)}
+                disabled={kycProcessing}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                Đóng
+              </button>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleUpdatePartnerKyc("rejected")}
+                  disabled={kycProcessing}
+                  className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 transition-colors disabled:opacity-50"
+                >
+                  Từ Chối Hồ Sơ
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleUpdatePartnerKyc("suspended")}
+                  disabled={kycProcessing}
+                  className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold border border-amber-200 transition-colors disabled:opacity-50"
+                >
+                  Tạm Đình Chỉ
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleUpdatePartnerKyc("approved")}
+                  disabled={kycProcessing}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1b7a4e] hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                >
+                  {kycProcessing ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  )}
+                  <span>Phê Duyệt Hoạt Động</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

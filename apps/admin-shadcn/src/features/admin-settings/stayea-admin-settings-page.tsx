@@ -35,12 +35,12 @@ export function StayeaAdminSettingsPage({
   const [isSaving, setIsSaving] = useState(false)
 
   // General Settings State
-  const [platformName, setPlatformName] = useState("Stayea Phú Quốc")
-  const [companyName, setCompanyName] = useState("Công ty Cổ phần Công nghệ Du lịch Stayea")
+  const [platformName, setPlatformName] = useState("STAYEA")
+  const [companyName, setCompanyName] = useState("CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ")
   const [taxId, setTaxId] = useState("0109887766")
-  const [hotline, setHotline] = useState("1900 6868")
-  const [supportEmail, setSupportEmail] = useState("support@stayea.com")
-  const [address, setAddress] = useState("Đường Trần Hưng Đạo, Phường Dương Đông, TP. Phú Quốc, Kiên Giang")
+  const [hotline, setHotline] = useState("0921724444")
+  const [supportEmail, setSupportEmail] = useState("hi.topmedia.vn@gmail.com")
+  const [address, setAddress] = useState("Số 8/24, Ngách 47, Ngõ 255, Đường Lĩnh Nam, Phường Vĩnh Hưng, Quận Hoàng Mai, Thành phố Hà Nội, Việt Nam")
   const [currency, setCurrency] = useState("VND")
   const [timezone, setTimezone] = useState("Asia/Ho_Chi_Minh")
 

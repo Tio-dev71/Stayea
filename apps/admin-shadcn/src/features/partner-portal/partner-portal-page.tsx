@@ -584,9 +584,9 @@ export function PartnerPortalPage({
             &copy; 2026 STAYEA Partner Hub • Hệ thống Quản lý Đối tác Du lịch Phú Quốc
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Hotline Hỗ Trợ Đối Tác: 0988 123 456</span>
+            <span>Hotline Hỗ Trợ Đối Tác: 0921 724 444</span>
             <span>•</span>
-            <span>Email: partner@stayea.com</span>
+            <span>Email: hi.topmedia.vn@gmail.com</span>
           </div>
         </div>
       </footer>

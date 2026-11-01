@@ -7,7 +7,7 @@ export function StayeaAdminFooter() {
     <footer className="mt-8 pt-6 pb-8 border-t border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
       {/* Left: Copyright */}
       <div className="flex items-center gap-2">
-        <span>&copy; 2025 Stayea.com. Tất cả quyền được bảo lưu.</span>
+        <span>&copy; 2026 CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ • Stayea.com. Tất cả quyền được bảo lưu.</span>
       </div>
 
       {/* Middle/Right: Terms, Policy, Help & Language Selector */}

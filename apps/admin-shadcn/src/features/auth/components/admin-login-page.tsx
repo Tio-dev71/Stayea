@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Lock, Mail, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
 import { setToken, setUser } from "@/lib/token"
 
@@ -108,8 +108,15 @@ export function AdminLoginPage({ onLoginSuccess }: AdminLoginPageProps) {
           {/* Brand Header */}
           <div className="flex flex-col items-center text-center mb-6">
             {/* Emblem */}
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#1b7a4e] to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-950/50 mb-3 border border-emerald-300/30">
-              <ShieldCheck className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-950/50 mb-3 border border-emerald-300/30 group-hover:scale-105 transition-transform">
+              <Image
+                src="/stayea.png"
+                alt="STAYEA Logo"
+                width={56}
+                height={56}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
 
             {/* Logo Typography */}

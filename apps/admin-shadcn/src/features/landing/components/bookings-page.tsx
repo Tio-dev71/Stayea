@@ -533,7 +533,7 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-emerald-600" />
-                  <span>Hotline khẩn cấp: <strong className="text-slate-900">+84 297 730 9999</strong></span>
+                  <span>Hotline khẩn cấp: <strong className="text-slate-900">0921 724 444</strong></span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-blue-600" />

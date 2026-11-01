@@ -108,7 +108,7 @@ export function StayeaFooter({ variant = "about", onNavigate }: StayeaFooterProp
       case "Câu hỏi thường gặp":
       case "FAQ":
       case "Liên hệ":
-        alert("Đang kết nối trung tâm hỗ trợ khách hàng STAYEA 24/7 (Hotline: +84 297 730 9999)...")
+        alert("Đang kết nối trung tâm hỗ trợ khách hàng STAYEA 24/7 (Hotline: 0921 724 444)...")
         break
       case "Điều khoản dịch vụ":
       case "Điều khoản sử dụng":
@@ -156,18 +156,31 @@ export function StayeaFooter({ variant = "about", onNavigate }: StayeaFooterProp
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-10 items-start">
             {/* Brand Info Column (Col 1-3) */}
             <div className="lg:col-span-3 space-y-4">
-              <div>
-                <span className="font-brand text-2xl sm:text-3xl font-bold tracking-[0.25em] text-white uppercase select-none drop-shadow">
-                  STAYEA
-                </span>
-                <span className="block text-[8.5px] uppercase tracking-[0.24em] text-white/80 font-semibold mt-0.5">
-                  MORE THAN A STAY
-                </span>
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/stayea.png"
+                  alt="STAYEA Logo"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-xl object-contain drop-shadow"
+                />
+                <div>
+                  <span className="font-brand text-2xl sm:text-3xl font-bold tracking-[0.25em] text-white uppercase select-none drop-shadow">
+                    STAYEA
+                  </span>
+                  <span className="block text-[8.5px] uppercase tracking-[0.24em] text-white/80 font-semibold mt-0.5">
+                    MORE THAN A STAY
+                  </span>
+                </div>
               </div>
 
-              <p className="text-xs text-white/85 leading-relaxed max-w-xs drop-shadow-sm font-normal">
-                Đồng hành cùng bạn khám phá Phú Quốc theo cách tinh tế và trọn vẹn hơn, với những nơi lưu trú tinh tuyển, trải nghiệm ý nghĩa và hành trình dễ dàng hơn.
-              </p>
+              <div className="text-xs text-white/85 leading-relaxed space-y-1 drop-shadow-sm font-normal">
+                <p className="font-bold text-white text-xs leading-snug">CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ</p>
+                <p className="text-[10.5px] text-white/70 tracking-wide">DIGITAL CONTENT AND TECHNOLOGY TOP COMPANY LIMITED</p>
+                <p className="pt-1 text-[11.5px] text-white/80">
+                  Đồng hành cùng bạn khám phá Phú Quốc theo cách tinh tế và trọn vẹn hơn, với những nơi lưu trú tinh tuyển, trải nghiệm ý nghĩa và hành trình dễ dàng hơn.
+                </p>
+              </div>
 
               {/* Social Icons */}
               <div className="flex items-center gap-3.5 text-white/90 pt-1">
@@ -257,19 +270,21 @@ export function StayeaFooter({ variant = "about", onNavigate }: StayeaFooterProp
               <div className="space-y-2.5 text-xs text-white/85">
                 <div className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                  <a href="tel:+842977309999" className="hover:text-white transition-colors">
-                    +84 297 730 9999
+                  <a href="tel:0921724444" className="hover:text-white transition-colors font-medium">
+                    0921 724 444
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                  <a href="mailto:hello@stayea.com" className="hover:text-white transition-colors">
-                    hello@stayea.com
+                  <a href="mailto:hi.topmedia.vn@gmail.com" className="hover:text-white transition-colors">
+                    hi.topmedia.vn@gmail.com
                   </a>
                 </div>
                 <div className="flex items-start gap-2 pt-0.5">
                   <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0 mt-0.5" />
-                  <span>Phú Quốc, Kiên Giang, Việt Nam</span>
+                  <span className="leading-relaxed">
+                    Số 8/24, Ngách 47, Ngõ 255, Đường Lĩnh Nam, Phường Vĩnh Hưng, Quận Hoàng Mai, Thành phố Hà Nội, Việt Nam
+                  </span>
                 </div>
               </div>
             </div>
@@ -279,22 +294,51 @@ export function StayeaFooter({ variant = "about", onNavigate }: StayeaFooterProp
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-10 items-start">
             {/* Brand Info Column (Col 1-3) */}
             <div className="lg:col-span-3 space-y-4">
-              <div>
-                <span className="font-brand text-2xl sm:text-3xl font-bold tracking-[0.25em] text-white uppercase select-none drop-shadow">
-                  STAYEA
-                </span>
-                <span className="block text-[9.5px] uppercase tracking-[0.22em] text-white/80 font-medium mt-1">
-                  Khám phá hơn một kỳ nghỉ
-                </span>
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/stayea.png"
+                  alt="STAYEA Logo"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-xl object-contain drop-shadow"
+                />
+                <div>
+                  <span className="font-brand text-2xl sm:text-3xl font-bold tracking-[0.25em] text-white uppercase select-none drop-shadow">
+                    STAYEA
+                  </span>
+                  <span className="block text-[9.5px] uppercase tracking-[0.22em] text-white/80 font-medium mt-1">
+                    Khám phá hơn một kỳ nghỉ
+                  </span>
+                </div>
               </div>
 
-              <p className="text-xs text-white/85 leading-relaxed max-w-xs drop-shadow-sm font-normal">
-                STAYEA là nền tảng du lịch và lưu trú cao cấp, mang đến những kỳ nghỉ tuyển chọn và trải nghiệm tinh tế tại Phú Quốc.
-              </p>
+              <div className="text-xs text-white/85 leading-relaxed space-y-1 drop-shadow-sm font-normal">
+                <p className="font-bold text-white text-xs leading-snug">CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ</p>
+                <p className="text-[10.5px] text-white/70 tracking-wide">DIGITAL CONTENT AND TECHNOLOGY TOP COMPANY LIMITED</p>
+                <p className="pt-1 text-[11.5px] text-white/80">
+                  STAYEA là nền tảng du lịch và lưu trú cao cấp, mang đến những kỳ nghỉ tuyển chọn và trải nghiệm tinh tế tại Phú Quốc.
+                </p>
+              </div>
 
-              <div className="flex items-center gap-2 text-xs text-white/90 pt-1">
-                <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                <span>Phú Quốc, Việt Nam</span>
+              <div className="space-y-2 text-xs text-white/90 pt-1">
+                <div className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                  <a href="tel:0921724444" className="hover:text-white transition-colors font-medium">
+                    Hotline: 0921 724 444
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                  <a href="mailto:hi.topmedia.vn@gmail.com" className="hover:text-white transition-colors">
+                    hi.topmedia.vn@gmail.com
+                  </a>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0 mt-0.5" />
+                  <span className="leading-snug">
+                    Số 8/24, Ngách 47, Ngõ 255, Đường Lĩnh Nam, Phường Vĩnh Hưng, Quận Hoàng Mai, Thành phố Hà Nội, Việt Nam
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -432,7 +476,7 @@ export function StayeaFooter({ variant = "about", onNavigate }: StayeaFooterProp
       <div className="relative z-10 w-full overflow-hidden border-t border-white/15">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/90 drop-shadow">
           <p className="font-normal text-white/85">
-            © 2024 STAYEA. Tất cả quyền được bảo lưu.
+            © 2026 CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ • STAYEA. Tất cả quyền được bảo lưu.
           </p>
 
           <div className="flex items-center gap-4 sm:gap-6">

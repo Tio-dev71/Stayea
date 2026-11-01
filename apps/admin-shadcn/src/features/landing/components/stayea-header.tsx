@@ -146,14 +146,24 @@ export function StayeaHeader({
               onNavigate("Trang chủ")
             }
           }}
-          className="flex flex-col items-start select-none group shrink-0"
+          className="flex items-center gap-2.5 select-none group shrink-0"
         >
-          <span className="font-brand text-xl sm:text-2xl font-bold tracking-[0.2em] text-[#0c3b40] group-hover:text-[#072528] transition-colors">
-            STAYEA
-          </span>
-          <span className="text-[7px] uppercase tracking-[0.24em] font-semibold text-slate-500 -mt-0.5">
-            MORE THAN A STAY
-          </span>
+          <Image
+            src="/stayea.png"
+            alt="STAYEA Logo"
+            width={38}
+            height={38}
+            className="w-9.5 h-9.5 rounded-lg object-contain shrink-0 group-hover:scale-105 transition-transform"
+            priority
+          />
+          <div className="flex flex-col items-start">
+            <span className="font-brand text-xl sm:text-2xl font-bold tracking-[0.2em] text-[#0c3b40] group-hover:text-[#072528] transition-colors">
+              STAYEA
+            </span>
+            <span className="text-[7px] uppercase tracking-[0.24em] font-semibold text-slate-500 -mt-0.5">
+              MORE THAN A STAY
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Navigation Links */}

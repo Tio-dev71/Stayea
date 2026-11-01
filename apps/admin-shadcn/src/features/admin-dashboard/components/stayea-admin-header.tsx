@@ -102,12 +102,15 @@ export function StayeaAdminHeader({
           className="flex items-center gap-2.5 text-left group"
           title="Về trang chủ Stayea (Tab mới)"
         >
-          {/* Custom Green House Icon */}
-          <div className="w-9 h-9 rounded-xl bg-[#1b7a4e] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
-            </svg>
-          </div>
+          {/* Brand Logo */}
+          <Image
+            src="/stayea.png"
+            alt="STAYEA Logo"
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl object-contain shadow-xs group-hover:scale-105 transition-transform shrink-0"
+            priority
+          />
           <div className="flex flex-col">
             <span className="font-sans text-lg font-bold text-slate-900 leading-tight tracking-tight">
               Stayea<span className="text-slate-500 font-normal">.com</span>

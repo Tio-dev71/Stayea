@@ -17,7 +17,6 @@ import {
   BarChart2,
   Settings,
   ArrowRight,
-  Home,
 } from "lucide-react"
 import type { SidebarNavMenuItem } from "@/features/admin-dashboard/stayea-admin-mock-data"
 import { ADMIN_SIDEBAR_NAV_VI } from "@/features/admin-dashboard/stayea-admin-mock-data"
@@ -242,8 +241,14 @@ export function StayeaAdminSidebar({
         {/* Brand & Version Info */}
         <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
           <div className="flex items-center gap-1.5">
-            <Home className="w-3.5 h-3.5 text-slate-400" />
-            <span>Stayea.com</span>
+            <Image
+              src="/stayea.png"
+              alt="STAYEA"
+              width={16}
+              height={16}
+              className="w-4 h-4 rounded-xs object-contain"
+            />
+            <span className="font-semibold text-slate-600">Stayea.com</span>
           </div>
           <span>Phiên bản 1.0.0</span>
         </div>

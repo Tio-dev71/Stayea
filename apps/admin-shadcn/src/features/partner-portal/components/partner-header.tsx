@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import {
   Bell,
   Building,
@@ -78,8 +79,15 @@ export function PartnerHeader({
             <button
               type="button"
               onClick={onNavigateHome}
-              className="flex items-center gap-2 group transition-transform hover:scale-105"
+              className="flex items-center gap-2.5 group transition-transform hover:scale-105"
             >
+              <Image
+                src="/stayea.png"
+                alt="STAYEA Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-lg object-contain shadow-xs"
+              />
               <span className="font-serif text-2xl font-bold tracking-widest text-emerald-400">
                 STAYEA
               </span>

@@ -43,12 +43,23 @@ export const metadata: Metadata = {
     template: "%s | STAYEA",
   },
   description: "STAYEA - Nền tảng du lịch và lưu trú cao cấp tại Phú Quốc. Biệt thự, homestay, trải nghiệm độc bản.",
+  icons: {
+    icon: [
+      { url: "/stayea.png", sizes: "any" },
+      { url: "/stayea.png", sizes: "192x192", type: "image/png" },
+      { url: "/stayea.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/stayea.png",
+    apple: "/stayea.png",
+  },
   openGraph: {
     type: "website",
     siteName: "STAYEA",
+    images: [{ url: "/stayea.png" }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/stayea.png"],
   },
 }
 

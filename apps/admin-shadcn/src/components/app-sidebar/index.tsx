@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import {
   Sidebar,
   SidebarContent,
@@ -7,7 +8,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@workspace/ui/components/sidebar'
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import * as React from 'react'
 
@@ -24,19 +24,17 @@ import type { RoleType } from '@/lib/rbac'
 
 const teams = [
   {
-    name: 'Acme Inc',
-    logo: <GalleryVerticalEndIcon />,
-    plan: 'Enterprise',
-  },
-  {
-    name: 'Acme Corp.',
-    logo: <AudioLinesIcon />,
-    plan: 'Startup',
-  },
-  {
-    name: 'Evil Corp.',
-    logo: <TerminalIcon />,
-    plan: 'Free',
+    name: 'STAYEA Admin',
+    logo: (
+      <Image
+        src="/stayea.png"
+        alt="STAYEA"
+        width={24}
+        height={24}
+        className="size-6 object-contain rounded"
+      />
+    ),
+    plan: 'TOP Media',
   },
 ]
 

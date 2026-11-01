@@ -177,7 +177,7 @@ export function AiConciergeWidget() {
         id: `ai-${Date.now()}`,
         role: "assistant",
         content:
-          "Dạ hệ thống AI đang cập nhật dữ liệu phòng/xe trong giây lát. Quý khách vui lòng để lại số điện thoại hoặc gọi trực tiếp Hotline STAYEA: 0987.654.321 để được cố vấn VIP hỗ trợ ngay lập tức ạ!",
+          "Dạ hệ thống AI đang cập nhật dữ liệu phòng/xe trong giây lát. Quý khách vui lòng để lại số điện thoại hoặc gọi trực tiếp Hotline STAYEA: 0921.724.444 để được cố vấn VIP hỗ trợ ngay lập tức ạ!",
         timestamp: new Date().toLocaleTimeString("vi-VN", {
           hour: "2-digit",
           minute: "2-digit",

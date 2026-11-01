@@ -1,11 +1,15 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common"
 import {
+  partnerOrdersTable,
+  partnerPayoutRequestsTable,
+  partnerProfilesTable,
   stayeaBookingsTable,
   stayeaClubProfilesTable,
   stayeaClubPointsTransactionsTable,
@@ -14,17 +18,19 @@ import {
 } from "@workspace/database"
 import crypto from "node:crypto"
 import dayjs from "dayjs"
-import { and, desc, eq, or } from "drizzle-orm"
+import { and, desc, eq, inArray, or } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
 
 import type { DrizzleDb } from "@/app/database/db.port"
 import type {
+  AdminUpdatePayoutStatusDto,
   CheckoutBookingDto,
   CreatePaymentMethodDto,
   InitiatePaymentDto,
   PaymentWebhookDto,
+  RequestPayoutDto,
 } from "@/modules/stayea/payment/dtos/payment.dto"
 
 @Injectable()
@@ -260,14 +266,18 @@ export class StayeaPaymentService {
       })
     }
 
-    // 2. Lookup booking by bookingCode
+    // 2. Lookup booking by bookingCode (support bank descriptions like "STAYEA STA-202611-1001", "STAYEA_STA-202611-1001", or "STA-202611-1001")
+    const rawOrderCode = dto.orderCode.trim()
+    const cleanOrderCode = rawOrderCode.replace(/^STAYEA[\s_-]*/i, "")
+
     const [booking] = await this.db
       .select()
       .from(stayeaBookingsTable)
       .where(
         or(
-          eq(stayeaBookingsTable.bookingCode, dto.orderCode),
-          eq(stayeaBookingsTable.id, dto.orderCode)
+          eq(stayeaBookingsTable.bookingCode, rawOrderCode),
+          eq(stayeaBookingsTable.bookingCode, cleanOrderCode),
+          eq(stayeaBookingsTable.id, rawOrderCode)
         )
       )
       .limit(1)
@@ -328,6 +338,15 @@ export class StayeaPaymentService {
         })
         .where(eq(stayeaBookingsTable.id, booking.id))
         .returning()
+
+      // Automatically dispatch partner order to partner upon successful payment
+      await tx
+        .update(partnerOrdersTable)
+        .set({
+          status: "sent_to_partner",
+          updatedAt: new Date(),
+        })
+        .where(eq(partnerOrdersTable.bookingId, booking.id))
 
       // Award loyalty points
       let awardedPoints = 0
@@ -432,6 +451,15 @@ export class StayeaPaymentService {
         .where(eq(stayeaBookingsTable.id, booking.id))
         .returning()
 
+      // Automatically dispatch partner order to partner upon successful payment
+      await tx
+        .update(partnerOrdersTable)
+        .set({
+          status: "sent_to_partner",
+          updatedAt: new Date(),
+        })
+        .where(eq(partnerOrdersTable.bookingId, booking.id))
+
       let awardedPoints = 0
       if (booking.pointsEarned && booking.pointsEarned > 0) {
         awardedPoints = booking.pointsEarned
@@ -470,5 +498,251 @@ export class StayeaPaymentService {
         awardedPoints,
       }
     })
+  }
+
+  // ---------------------------------------------------------------------------
+  // Partner Settlement & Payout Engine
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Request a new partner payout withdrawal
+   */
+  async requestPartnerPayout(userId: string, dto: RequestPayoutDto) {
+    const [partner] = await this.db
+      .select()
+      .from(partnerProfilesTable)
+      .where(eq(partnerProfilesTable.userId, userId))
+      .limit(1)
+
+    if (!partner) {
+      throw new ForbiddenException({
+        code: ErrorCode.FORBIDDEN,
+        message: "Bạn chưa có hồ sơ đối tác STAYEA để yêu cầu quyết toán",
+      })
+    }
+
+    const bankName = dto.bankName || partner.bankName
+    const bankAccount = dto.bankAccount || partner.bankAccount
+    const bankAccountHolder = dto.bankAccountHolder || partner.bankAccountHolder
+
+    if (!bankName || !bankAccount || !bankAccountHolder) {
+      throw new BadRequestException({
+        code: ErrorCode.BAD_REQUEST,
+        message: "Vui lòng cập nhật đầy đủ thông tin tài khoản ngân hàng nhận tiền trước khi yêu cầu quyết toán",
+      })
+    }
+
+    if (dto.amount < 100_000) {
+      throw new BadRequestException({
+        code: ErrorCode.BAD_REQUEST,
+        message: "Số tiền yêu cầu quyết toán tối thiểu là 100,000 VND",
+      })
+    }
+
+    // Calculate cleared balance
+    const partnerOrders = await this.db
+      .select()
+      .from(partnerOrdersTable)
+      .where(
+        and(
+          eq(partnerOrdersTable.partnerId, partner.id),
+          inArray(partnerOrdersTable.status, [
+            "completed",
+            "partner_accepted",
+            "in_progress",
+          ])
+        )
+      )
+
+    const totalEarned = partnerOrders.reduce(
+      (sum, o) => sum + Number(o.partnerPayoutAmount || 0),
+      0
+    )
+
+    const existingPayouts = await this.db
+      .select()
+      .from(partnerPayoutRequestsTable)
+      .where(
+        and(
+          eq(partnerPayoutRequestsTable.partnerId, partner.id),
+          inArray(partnerPayoutRequestsTable.status, [
+            "pending",
+            "approved",
+            "processing",
+            "paid",
+          ])
+        )
+      )
+
+    const totalPayouts = existingPayouts.reduce(
+      (sum, p) => sum + Number(p.amount || 0),
+      0
+    )
+
+    const availableBalance = Math.max(0, totalEarned - totalPayouts)
+
+    if (dto.amount > availableBalance) {
+      throw new BadRequestException({
+        code: ErrorCode.BAD_REQUEST,
+        message: `Số dư khả dụng (${availableBalance.toLocaleString("vi-VN")} VND) không đủ để yêu cầu rút ${dto.amount.toLocaleString("vi-VN")} VND`,
+      })
+    }
+
+    const payoutCode = `PAY-${dayjs().format("YYYYMM")}-${Math.floor(1000 + Math.random() * 9000)}`
+
+    const [payoutRequest] = await this.db
+      .insert(partnerPayoutRequestsTable)
+      .values({
+        id: `pay-${crypto.randomUUID()}`,
+        payoutCode,
+        partnerId: partner.id,
+        amount: dto.amount.toString(),
+        currency: "VND",
+        bankName,
+        bankAccount,
+        bankAccountHolder,
+        status: "pending",
+      })
+      .returning()
+
+    return {
+      success: true,
+      message: "Yêu cầu quyết toán đã được gửi tới Ban quản trị STAYEA",
+      payoutRequest,
+      availableBalance: availableBalance - dto.amount,
+    }
+  }
+
+  /**
+   * Get partner settlement overview (available balance, total earned, payout history)
+   */
+  async getPartnerPayoutOverview(userId: string) {
+    const [partner] = await this.db
+      .select()
+      .from(partnerProfilesTable)
+      .where(eq(partnerProfilesTable.userId, userId))
+      .limit(1)
+
+    if (!partner) {
+      return {
+        partner: null,
+        availableBalance: 0,
+        totalEarned: 0,
+        totalWithdrawn: 0,
+        payoutRequests: [],
+      }
+    }
+
+    const partnerOrders = await this.db
+      .select()
+      .from(partnerOrdersTable)
+      .where(
+        and(
+          eq(partnerOrdersTable.partnerId, partner.id),
+          inArray(partnerOrdersTable.status, [
+            "completed",
+            "partner_accepted",
+            "in_progress",
+          ])
+        )
+      )
+
+    const totalEarned = partnerOrders.reduce(
+      (sum, o) => sum + Number(o.partnerPayoutAmount || 0),
+      0
+    )
+
+    const payoutRequests = await this.db
+      .select()
+      .from(partnerPayoutRequestsTable)
+      .where(eq(partnerPayoutRequestsTable.partnerId, partner.id))
+      .orderBy(desc(partnerPayoutRequestsTable.createdAt))
+
+    const totalWithdrawnOrPending = payoutRequests
+      .filter((p) => ["pending", "approved", "processing", "paid"].includes(p.status))
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+
+    const availableBalance = Math.max(0, totalEarned - totalWithdrawnOrPending)
+
+    return {
+      partner,
+      availableBalance,
+      totalEarned,
+      totalWithdrawn: totalWithdrawnOrPending,
+      payoutRequests,
+    }
+  }
+
+  /**
+   * List all partner payout requests for Admin review
+   */
+  async getAllPayoutsForAdmin(
+    status?: "pending" | "approved" | "processing" | "paid" | "rejected"
+  ) {
+    const query = this.db
+      .select({
+        id: partnerPayoutRequestsTable.id,
+        payoutCode: partnerPayoutRequestsTable.payoutCode,
+        partnerId: partnerPayoutRequestsTable.partnerId,
+        amount: partnerPayoutRequestsTable.amount,
+        currency: partnerPayoutRequestsTable.currency,
+        bankName: partnerPayoutRequestsTable.bankName,
+        bankAccount: partnerPayoutRequestsTable.bankAccount,
+        bankAccountHolder: partnerPayoutRequestsTable.bankAccountHolder,
+        status: partnerPayoutRequestsTable.status,
+        adminNotes: partnerPayoutRequestsTable.adminNotes,
+        transactionRef: partnerPayoutRequestsTable.transactionRef,
+        requestedAt: partnerPayoutRequestsTable.requestedAt,
+        processedAt: partnerPayoutRequestsTable.processedAt,
+        createdAt: partnerPayoutRequestsTable.createdAt,
+        partnerBusinessName: partnerProfilesTable.businessName,
+        partnerContactName: partnerProfilesTable.contactName,
+        partnerPhone: partnerProfilesTable.phone,
+      })
+      .from(partnerPayoutRequestsTable)
+      .leftJoin(
+        partnerProfilesTable,
+        eq(partnerPayoutRequestsTable.partnerId, partnerProfilesTable.id)
+      )
+      .orderBy(desc(partnerPayoutRequestsTable.createdAt))
+
+    if (status) {
+      return query.where(eq(partnerPayoutRequestsTable.status, status))
+    }
+    return query
+  }
+
+  /**
+   * Admin updates payout status (e.g. approve, mark paid, reject)
+   */
+  async updatePayoutStatus(id: string, dto: AdminUpdatePayoutStatusDto) {
+    const [existing] = await this.db
+      .select()
+      .from(partnerPayoutRequestsTable)
+      .where(eq(partnerPayoutRequestsTable.id, id))
+      .limit(1)
+
+    if (!existing) {
+      throw new NotFoundException({
+        code: ErrorCode.RESOURCE_NOT_FOUND,
+        message: `Không tìm thấy yêu cầu quyết toán ${id}`,
+      })
+    }
+
+    const [updated] = await this.db
+      .update(partnerPayoutRequestsTable)
+      .set({
+        status: dto.status,
+        adminNotes: dto.adminNotes ?? existing.adminNotes,
+        transactionRef: dto.transactionRef ?? existing.transactionRef,
+        processedAt: ["paid", "rejected"].includes(dto.status)
+          ? new Date()
+          : existing.processedAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(partnerPayoutRequestsTable.id, id))
+      .returning()
+
+    return updated
   }
 }

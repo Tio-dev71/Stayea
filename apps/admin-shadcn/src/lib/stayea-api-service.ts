@@ -1621,6 +1621,96 @@ class StayeaApiService {
       return false
     }
   }
+
+  /**
+   * Payouts: Partner requests payout withdrawal
+   */
+  async requestPartnerPayout(payload: {
+    amount: number
+    bankName?: string
+    bankAccount?: string
+    bankAccountHolder?: string
+  }): Promise<{ success: boolean; message: string; payoutRequest?: any; availableBalance?: number }> {
+    const res = await fetch(`/api/stayea/payments/payouts/request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      throw new Error(json.message || "Không thể gửi yêu cầu quyết toán")
+    }
+    return json.data || json
+  }
+
+  /**
+   * Payouts: Get partner settlement overview
+   */
+  async getPartnerPayoutOverview(): Promise<{
+    partner: any
+    availableBalance: number
+    totalEarned: number
+    totalWithdrawn: number
+    payoutRequests: any[]
+  }> {
+    try {
+      const res = await fetch(`/api/stayea/payments/payouts/overview`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return {
+      partner: null,
+      availableBalance: 0,
+      totalEarned: 0,
+      totalWithdrawn: 0,
+      payoutRequests: [],
+    }
+  }
+
+  /**
+   * Payouts: Admin lists all partner payout requests
+   */
+  async getAdminPayouts(status?: string): Promise<any[]> {
+    try {
+      const query = status ? `?status=${encodeURIComponent(status)}` : ""
+      const res = await fetch(`/api/stayea/payments/admin/payouts${query}`, {
+        headers: this.getAuthHeader(),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : data.items || []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  /**
+   * Payouts: Admin updates payout status
+   */
+  async updateAdminPayoutStatus(
+    id: string,
+    payload: { status: string; adminNotes?: string; transactionRef?: string }
+  ): Promise<any> {
+    const res = await fetch(`/api/stayea/payments/admin/payouts/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      throw new Error(json.message || "Không thể cập nhật trạng thái quyết toán")
+    }
+    return json.data || json
+  }
 }
 
 export const stayeaApi = new StayeaApiService()

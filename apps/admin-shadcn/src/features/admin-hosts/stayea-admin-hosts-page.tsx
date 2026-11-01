@@ -14,6 +14,7 @@ import { HostsFilterBar } from "./components/hosts-filter-bar"
 import { HostsDataTable } from "./components/hosts-data-table"
 import { HostsRightSidebar } from "./components/hosts-right-sidebar"
 import { AdminOrderApprovalQueue } from "./components/admin-order-approval-queue"
+import { AdminPayoutRequestsTable } from "./components/admin-payout-requests-table"
 import { CreateHostModal } from "./components/create-host-modal"
 
 import type { ModalSubTab } from "./components/create-host-modal"
@@ -33,12 +34,13 @@ export function StayeaAdminHostsPage({
 }: StayeaAdminHostsPageProps) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [adminSection, setAdminSection] = useState<"hosts" | "approval_queue">("hosts")
+  const [adminSection, setAdminSection] = useState<"hosts" | "approval_queue" | "payout_requests">("hosts")
   const [activeSegment, setActiveSegment] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(initialModalOpen)
   const [livePartners, setLivePartners] = useState<HostPartnerItem[]>([])
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0)
+  const [pendingPayoutsCount, setPendingPayoutsCount] = useState(0)
 
   useEffect(() => {
     stayeaApi
@@ -49,6 +51,15 @@ export function StayeaAdminHostsPage({
             (o: any) => o.status === "pending_admin" || o.status === "sent_to_partner"
           ).length
           setPendingOrdersCount(pending)
+        }
+      })
+      .catch(() => {})
+
+    stayeaApi
+      .getAdminPayouts("pending")
+      .then((payouts) => {
+        if (Array.isArray(payouts)) {
+          setPendingPayoutsCount(payouts.length)
         }
       })
       .catch(() => {})
@@ -278,12 +289,30 @@ export function StayeaAdminHostsPage({
                   </span>
                 )}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminSection("payout_requests")}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${adminSection === "payout_requests"
+                  ? "bg-purple-700 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+              >
+                <span>Yêu Cầu Quyết Toán / Rút Tiền</span>
+                {pendingPayoutsCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                    {pendingPayoutsCount} mới
+                  </span>
+                )}
+              </button>
             </div>
 
             {adminSection === "approval_queue" ? (
               <AdminOrderApprovalQueue
                 onNavigatePartnerHub={() => router.push("/hub")}
               />
+            ) : adminSection === "payout_requests" ? (
+              <AdminPayoutRequestsTable />
             ) : (
               /* Main Content Grid: 8 cols left, 4 cols right */
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -84,3 +84,43 @@ export const stayeaPaymentTransactionsTable = pgTable(
 export type StayeaPaymentTransaction = typeof stayeaPaymentTransactionsTable.$inferSelect
 export type InsertStayeaPaymentTransaction =
   typeof stayeaPaymentTransactionsTable.$inferInsert
+
+/**
+ * Partner Payout Requests Table
+ */
+export const partnerPayoutRequestsTable = pgTable(
+  "stayea_partner_payout_requests",
+  {
+    id: text("id").primaryKey(),
+    payoutCode: text("payout_code").notNull().unique(),
+    partnerId: text("partner_id").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("VND"),
+    bankName: text("bank_name").notNull(),
+    bankAccount: text("bank_account").notNull(),
+    bankAccountHolder: text("bank_account_holder").notNull(),
+    status: text("status", {
+      enum: ["pending", "approved", "processing", "paid", "rejected"],
+    })
+      .notNull()
+      .default("pending"),
+    adminNotes: text("admin_notes"),
+    transactionRef: text("transaction_ref"),
+    requestedAt: timestamp("requested_at", { withTimezone: true }).notNull().defaultNow(),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("stayea_payout_code_idx").on(table.payoutCode),
+    index("stayea_payout_partner_idx").on(table.partnerId),
+    index("stayea_payout_status_idx").on(table.status),
+  ]
+)
+
+export type PartnerPayoutRequest = typeof partnerPayoutRequestsTable.$inferSelect
+export type InsertPartnerPayoutRequest = typeof partnerPayoutRequestsTable.$inferInsert
+

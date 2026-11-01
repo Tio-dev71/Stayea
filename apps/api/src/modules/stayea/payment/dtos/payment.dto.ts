@@ -113,3 +113,46 @@ export class PaymentWebhookDto {
   @IsString()
   signature?: string
 }
+
+export class RequestPayoutDto {
+  @ApiProperty({ example: 2000000, description: "Payout withdrawal amount in VND (minimum 100,000 VND)" })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number
+
+  @ApiPropertyOptional({ example: "MB Bank" })
+  @IsOptional()
+  @IsString()
+  bankName?: string
+
+  @ApiPropertyOptional({ example: "0988776655" })
+  @IsOptional()
+  @IsString()
+  bankAccount?: string
+
+  @ApiPropertyOptional({ example: "NGUYEN VAN PHAT" })
+  @IsOptional()
+  @IsString()
+  bankAccountHolder?: string
+}
+
+export class AdminUpdatePayoutStatusDto {
+  @ApiProperty({
+    enum: ["approved", "processing", "paid", "rejected"],
+    example: "paid",
+  })
+  @IsEnum(["approved", "processing", "paid", "rejected"])
+  @IsNotEmpty()
+  status: "approved" | "processing" | "paid" | "rejected"
+
+  @ApiPropertyOptional({ example: "Đã chuyển khoản qua Internet Banking" })
+  @IsOptional()
+  @IsString()
+  adminNotes?: string
+
+  @ApiPropertyOptional({ example: "FT261102983719" })
+  @IsOptional()
+  @IsString()
+  transactionRef?: string
+}
+

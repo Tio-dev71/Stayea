@@ -1,6 +1,6 @@
 import crypto from "node:crypto"
 import { describe, expect, it, vi } from "vitest"
-import { BadRequestException, UnauthorizedException } from "@nestjs/common"
+import { BadRequestException, ForbiddenException, UnauthorizedException } from "@nestjs/common"
 
 import { StayeaPaymentService } from "@/modules/stayea/payment/stayea-payment.service"
 
@@ -148,5 +148,242 @@ describe("stayea payment service", () => {
 
     expect(res.success).toBe(true)
     expect(res.replayed).toBe(true)
+  })
+
+  it("handles webhook with STAYEA prefix in transfer description and dispatches order to partner", async () => {
+    const mockPendingBooking = {
+      id: "bk-200",
+      bookingCode: "STA-202611-1001",
+      userId: "user-2",
+      finalAmount: "4500000",
+      currency: "VND",
+      paymentStatus: "unpaid",
+      title: "Sunset Villa Phu Quoc",
+    }
+
+    const mockTx = {
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ id: "tx-2" }]),
+      }),
+      update: vi.fn().mockImplementation(() => ({
+        set: vi.fn().mockImplementation(() => ({
+          where: vi.fn().mockImplementation(() => ({
+            returning: vi.fn().mockResolvedValue([{ ...mockPendingBooking, paymentStatus: "paid", status: "confirmed" }]),
+          })),
+        })),
+      })),
+    }
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([mockPendingBooking]),
+      transaction: vi.fn().mockImplementation(async (cb) => cb(mockTx)),
+    }
+
+    const service = new StayeaPaymentService(mockDb as any)
+    const validSignature = computeSignature("STAYEA STA-202611-1001", 4_500_000, "PAID")
+
+    const res = await service.handlePaymentWebhook(
+      {
+        orderCode: "STAYEA STA-202611-1001",
+        transactionRef: "TX-20261102-001",
+        amount: 4_500_000,
+        status: "PAID",
+      },
+      validSignature
+    )
+
+    expect(res.success).toBe(true)
+    expect(res.replayed).toBe(false)
+    if ("booking" in res && res.booking) {
+      expect(res.booking.status).toBe("confirmed")
+    }
+    expect(mockTx.update).toHaveBeenCalled()
+  })
+
+  it("rejects payout request if user has no partner profile", async () => {
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([]),
+    }
+
+    const service = new StayeaPaymentService(mockDb as any)
+
+    await expect(
+      service.requestPartnerPayout("user-without-partner", {
+        amount: 1_000_000,
+      })
+    ).rejects.toThrow(ForbiddenException)
+  })
+
+  it("rejects payout request if amount is less than 100,000 VND", async () => {
+    const mockPartner = {
+      id: "ptn-1",
+      userId: "user-1",
+      bankName: "MB Bank",
+      bankAccount: "0988776655",
+      bankAccountHolder: "NGUYEN VAN A",
+    }
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([mockPartner]),
+    }
+
+    const service = new StayeaPaymentService(mockDb as any)
+
+    await expect(
+      service.requestPartnerPayout("user-1", {
+        amount: 50_000,
+      })
+    ).rejects.toThrow(BadRequestException)
+  })
+
+  it("rejects payout request if amount exceeds available balance", async () => {
+    const mockPartner = {
+      id: "ptn-1",
+      userId: "user-1",
+      bankName: "MB Bank",
+      bankAccount: "0988776655",
+      bankAccountHolder: "NGUYEN VAN A",
+    }
+
+    // Orders earned: 2,000,000; already requested: 1,500,000 -> Available: 500,000
+    const mockOrders = [
+      { partnerPayoutAmount: "2000000", status: "completed" },
+    ]
+    const mockPayouts = [
+      { amount: "1500000", status: "paid" },
+    ]
+
+    let selectCount = 0
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockImplementation(() => {
+        selectCount++
+        if (selectCount === 1) {
+          // partner profile query
+          return { limit: vi.fn().mockResolvedValue([mockPartner]) }
+        }
+        if (selectCount === 2) {
+          // partner orders query
+          return Promise.resolve(mockOrders)
+        }
+        // existing payouts query
+        return Promise.resolve(mockPayouts)
+      }),
+    }
+
+    const service = new StayeaPaymentService(mockDb as any)
+
+    await expect(
+      service.requestPartnerPayout("user-1", {
+        amount: 1_000_000, // exceeds available 500,000
+      })
+    ).rejects.toThrow(BadRequestException)
+  })
+
+  it("successfully processes valid payout request and calculates remaining balance", async () => {
+    const mockPartner = {
+      id: "ptn-1",
+      userId: "user-1",
+      bankName: "MB Bank",
+      bankAccount: "0988776655",
+      bankAccountHolder: "NGUYEN VAN A",
+    }
+
+    const mockOrders = [
+      { partnerPayoutAmount: "5000000", status: "completed" },
+    ]
+    const mockPayouts: any[] = []
+
+    let selectCount = 0
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockImplementation(() => {
+        selectCount++
+        if (selectCount === 1) {
+          return { limit: vi.fn().mockResolvedValue([mockPartner]) }
+        }
+        if (selectCount === 2) {
+          return Promise.resolve(mockOrders)
+        }
+        return Promise.resolve(mockPayouts)
+      }),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([
+            {
+              id: "pay-1",
+              payoutCode: "PAY-202611-1234",
+              amount: "2000000",
+              status: "pending",
+            },
+          ]),
+        }),
+      }),
+    }
+
+    const service = new StayeaPaymentService(mockDb as any)
+
+    const res = await service.requestPartnerPayout("user-1", {
+      amount: 2_000_000,
+    })
+
+    expect(res.success).toBe(true)
+    expect(res.availableBalance).toBe(3_000_000)
+    expect(res.payoutRequest?.status).toBe("pending")
+  })
+
+  it("admin updates payout status successfully", async () => {
+    const mockExistingPayout = {
+      id: "pay-1",
+      payoutCode: "PAY-202611-1234",
+      amount: "2000000",
+      status: "pending",
+      adminNotes: null,
+      transactionRef: null,
+    }
+
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([mockExistingPayout]),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([
+              {
+                ...mockExistingPayout,
+                status: "paid",
+                adminNotes: "Đã giải ngân qua VCB",
+                transactionRef: "FT123456",
+              },
+            ]),
+          }),
+        }),
+      }),
+    }
+
+    const service = new StayeaPaymentService(mockDb as any)
+
+    const updated = await service.updatePayoutStatus("pay-1", {
+      status: "paid",
+      adminNotes: "Đã giải ngân qua VCB",
+      transactionRef: "FT123456",
+    })
+
+    expect(updated?.status).toBe("paid")
+    expect(updated?.adminNotes).toBe("Đã giải ngân qua VCB")
+    expect(updated?.transactionRef).toBe("FT123456")
   })
 })

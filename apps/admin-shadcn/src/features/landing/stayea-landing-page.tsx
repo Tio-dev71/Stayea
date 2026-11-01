@@ -65,7 +65,7 @@ import { TransportationSection } from "./components/transportation-section"
 import { PromosAndPartnersSection } from "./components/promos-and-partners-section"
 import { StayeaFooter } from "./components/stayea-footer"
 import { AdminLoginPage } from "@/features/auth/components/admin-login-page"
-import { getUser } from "@/lib/token"
+import { getUser, clearAllAuth } from "@/lib/token"
 
 export type StayeaPageType =
     | "about" | "account-info" | "add-payment" | "admin" | "admin-bookings" | "admin-customers"
@@ -1327,9 +1327,13 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         onNavigateAdmin={() => {
           window.open("https://admin.stayea.com", "_blank")
         }}
-        onLogout={() => {
+        onLogout={async () => {
+          try {
+            await stayeaApi.logout()
+          } catch {}
+          clearAllAuth()
           if (isDetectedPartner) {
-            window.location.reload()
+            window.location.href = "/login"
           } else {
             setCurrentPage("partner")
           }

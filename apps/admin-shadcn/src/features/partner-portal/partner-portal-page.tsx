@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { clearAllAuth } from "@/lib/token"
 import { PartnerHeader } from "./components/partner-header"
 import { PartnerInventoryCalendar } from "./components/partner-inventory-calendar"
 import { PartnerKpiCards } from "./components/partner-kpi-cards"
@@ -295,6 +296,34 @@ export function PartnerPortalPage({
     setCurrentProfile(newProfile)
   }
 
+  const handleLogout = async () => {
+    if (onLogout) {
+      onLogout()
+      return
+    }
+    try {
+      await stayeaApi.logout()
+    } catch {}
+    clearAllAuth()
+    window.location.href = "/login"
+  }
+
+  const handleNavigateHome = () => {
+    if (onNavigateHome) {
+      onNavigateHome()
+      return
+    }
+    window.open("https://stayea.com", "_blank")
+  }
+
+  const handleNavigateAdmin = () => {
+    if (onNavigateAdmin) {
+      onNavigateAdmin()
+      return
+    }
+    window.open("https://admin.stayea.com/stayea", "_blank")
+  }
+
   return (
     <div className="min-h-screen bg-[#070e0d] text-slate-100 flex flex-col font-sans">
       {/* 1. Header */}
@@ -305,9 +334,9 @@ export function PartnerPortalPage({
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         pendingOrdersCount={pendingOrdersCount}
-        onNavigateHome={onNavigateHome}
-        onNavigateAdmin={onNavigateAdmin}
-        onLogout={onLogout}
+        onNavigateHome={handleNavigateHome}
+        onNavigateAdmin={handleNavigateAdmin}
+        onLogout={handleLogout}
         onAddPartner={() => setIsCreateProfileOpen(true)}
       />
 

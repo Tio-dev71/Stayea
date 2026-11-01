@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import {
   Bell,
@@ -16,6 +17,8 @@ import {
   Sparkles,
   User,
 } from "lucide-react"
+import { getUser, clearAllAuth, type StoredUser } from "@/lib/token"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import type { PartnerProfileData } from "../types"
 
 interface PartnerHeaderProps {
@@ -43,6 +46,34 @@ export function PartnerHeader({
   onLogout,
   onAddPartner,
 }: PartnerHeaderProps) {
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+
+  useEffect(() => {
+    setCurrentUser(getUser())
+  }, [])
+
+  const handleInternalLogout = async () => {
+    if (onLogout) {
+      onLogout()
+      return
+    }
+    try {
+      await stayeaApi.logout()
+    } catch {}
+    clearAllAuth()
+    window.location.href = "/login"
+  }
+
+  const displayName =
+    currentUser?.displayName ||
+    currentUser?.name ||
+    (currentUser?.email ? currentUser.email.split("@")[0] : null) ||
+    currentProfile?.contactName ||
+    "Đối tác STAYEA"
+
+  const displayEmail = currentUser?.email || currentProfile?.email || ""
+  const isAdmin = currentUser?.role === "ADMIN"
   const getServiceTypeIcon = (type?: string) => {
     switch (type) {
       case "homestay":
@@ -157,10 +188,10 @@ export function PartnerHeader({
           </div>
 
           {/* Right Area: Status Badge & Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Status Pill */}
             {currentProfile ? (
-              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>
                   {currentProfile.status === "approved"
@@ -171,7 +202,7 @@ export function PartnerHeader({
                 </span>
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs">
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs">
                 <span>Chưa có cơ sở</span>
               </div>
             )}
@@ -192,11 +223,12 @@ export function PartnerHeader({
             </button>
 
             {/* Jump to Admin Portal */}
-            {onNavigateAdmin && (
+            {(onNavigateAdmin || isAdmin) && (
               <button
                 type="button"
-                onClick={onNavigateAdmin}
-                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-xs text-slate-200 border border-slate-700 transition-colors"
+                onClick={onNavigateAdmin || (() => window.open("https://admin.stayea.com/stayea", "_blank"))}
+                className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-xs text-slate-200 border border-slate-700 transition-colors"
+                title="Truy cập cổng quản trị STAYEA"
               >
                 <Shield className="w-3.5 h-3.5 text-amber-400" />
                 <span>Cổng Quản Trị Admin</span>
@@ -204,28 +236,137 @@ export function PartnerHeader({
             )}
 
             {/* Jump to Customer View */}
-            {onNavigateHome && (
-              <button
-                type="button"
-                onClick={onNavigateHome}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-900/30 hover:bg-emerald-900/60 text-xs text-emerald-300 border border-emerald-800/40 transition-colors"
-              >
-                <span>Xem Trang Khách</span>
-                <ExternalLink className="w-3 h-3" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onNavigateHome || (() => window.open("https://stayea.com", "_blank"))}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-900/30 hover:bg-emerald-900/60 text-xs text-emerald-300 border border-emerald-800/40 transition-colors"
+              title="Xem trang khách hàng Stayea.com"
+            >
+              <span>Xem Trang Khách</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
 
-            {/* Logout / Exit */}
-            {onLogout && (
+            {/* User Profile Pill & Dropdown */}
+            <div className="relative">
               <button
                 type="button"
-                onClick={onLogout}
-                className="p-2 rounded-lg bg-slate-800/60 hover:bg-rose-950/50 hover:text-rose-400 text-slate-400 border border-slate-700/50 transition-colors"
-                title="Đăng xuất"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-slate-800/70 hover:bg-slate-700/80 border border-slate-700/60 text-xs text-slate-200 transition-colors"
+                title="Menu tài khoản"
               >
-                <LogOut className="w-4 h-4" />
+                <div className="w-6 h-6 rounded-full bg-emerald-600/30 border border-emerald-500/40 flex items-center justify-center text-emerald-300 font-bold text-xs overflow-hidden shrink-0">
+                  {currentUser?.avatarUrl ? (
+                    <Image
+                      src={currentUser.avatarUrl}
+                      alt={displayName}
+                      width={24}
+                      height={24}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{displayName.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="hidden sm:flex flex-col text-left max-w-[120px]">
+                  <span className="font-semibold text-slate-200 text-xs leading-none truncate">
+                    {displayName}
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-medium leading-tight mt-0.5 truncate">
+                    {isAdmin ? "Quản trị viên" : "Đối tác"}
+                  </span>
+                </div>
+                <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
               </button>
-            )}
+
+              {/* Profile Dropdown */}
+              {isUserMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="p-3 bg-slate-800/60 rounded-lg mb-1.5 border border-slate-700/40">
+                      <p className="text-xs font-bold text-white leading-tight truncate">
+                        {displayName}
+                      </p>
+                      <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                        {displayEmail}
+                      </p>
+                      <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-950 text-emerald-400 text-[10px] font-bold rounded border border-emerald-800/40">
+                        <Shield className="w-3 h-3 text-emerald-400" />
+                        <span>{isAdmin ? "Quyền Quản trị viên (ADMIN)" : "Tài khoản Đối tác"}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        onSelectTab("settings")
+                      }}
+                      className="w-full px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg flex items-center gap-2 transition-colors text-left"
+                    >
+                      <User className="w-4 h-4 text-slate-400" />
+                      <span>Thông tin & Cài đặt đối tác</span>
+                    </button>
+
+                    {(onNavigateAdmin || isAdmin) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsUserMenuOpen(false)
+                          if (onNavigateAdmin) onNavigateAdmin()
+                          else window.open("https://admin.stayea.com/stayea", "_blank")
+                        }}
+                        className="w-full px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg flex items-center gap-2 transition-colors text-left"
+                      >
+                        <Shield className="w-4 h-4 text-amber-400" />
+                        <span>Cổng Quản trị Admin</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        if (onNavigateHome) onNavigateHome()
+                        else window.open("https://stayea.com", "_blank")
+                      }}
+                      className="w-full px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg flex items-center gap-2 transition-colors text-left"
+                    >
+                      <ExternalLink className="w-4 h-4 text-emerald-400" />
+                      <span>Xem trang khách StayEA</span>
+                    </button>
+
+                    <div className="my-1.5 border-t border-slate-800" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        handleInternalLogout()
+                      }}
+                      className="w-full px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-950/50 hover:text-rose-300 rounded-lg flex items-center gap-2 transition-colors text-left"
+                    >
+                      <LogOut className="w-4 h-4 text-rose-400" />
+                      <span>Đăng xuất tài khoản</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Standalone Quick Logout Button */}
+            <button
+              type="button"
+              onClick={handleInternalLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-white border border-rose-800/50 text-xs font-semibold transition-all shadow-xs cursor-pointer"
+              title="Đăng xuất khỏi hệ thống"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-400" />
+              <span>Đăng xuất</span>
+            </button>
           </div>
         </div>
       </div>

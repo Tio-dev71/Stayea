@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Plus } from "lucide-react"
 import { toast } from "sonner"
+import { stayeaApi } from "@/lib/stayea-api-service"
 import { StayeaAdminHeader } from "@/features/admin-dashboard/components/stayea-admin-header"
 import { StayeaAdminSidebar } from "@/features/admin-dashboard/components/stayea-admin-sidebar"
 import { StayeaAdminFooter } from "@/features/admin-dashboard/components/stayea-admin-footer"
@@ -13,7 +14,6 @@ import type {
   CustomerNoteItem,
 } from "./stayea-admin-messages-mock-data"
 import {
-  MOCK_CONVERSATIONS,
   MOCK_BOOKING_HISTORY,
   MOCK_CUSTOMER_NOTES,
   MOCK_MESSAGE_QUICK_ACTIONS,
@@ -34,12 +34,8 @@ export function StayeaAdminMessagesPage({
   onNavigateTab,
 }: StayeaAdminMessagesPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [conversations, setConversations] = useState<ConversationItem[]>([
-    ...MOCK_CONVERSATIONS,
-  ])
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(
-    MOCK_CONVERSATIONS[0]?.id || null
-  )
+  const [conversations, setConversations] = useState<ConversationItem[]>([])
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<ConversationTabType>("all")
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -55,12 +51,131 @@ export function StayeaAdminMessagesPage({
   const [isComposeOpen, setIsComposeOpen] = useState(false)
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
 
+  // Fetch conversations from API
+  const fetchConversations = useCallback(async () => {
+    try {
+      const res = await stayeaApi.getChatConversations()
+      if (Array.isArray(res)) {
+        const mapped: ConversationItem[] = res.map((c: any) => ({
+          id: c.id,
+          type: (c.type === "partner" ? "partner" : c.type === "host" ? "host" : "customer") as ConversationTabType,
+          name: c.participantName || "Hội thoại",
+          avatar:
+            c.participantAvatar ||
+            (c.type === "partner" ? "/avatars/avatar-1.jpg" : "/profile/profile-avatar.jpg"),
+          lastMessage: c.lastMessage || "Chưa có tin nhắn",
+          lastTime: c.lastMessageAt
+            ? new Date(c.lastMessageAt).toLocaleTimeString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Vừa xong",
+          unreadCount: c.unreadAdminCount || 0,
+          isOnline: true,
+          phone: c.participantPhone || "0921 724 444",
+          email: c.participantEmail || "Chưa cập nhật",
+          location: c.metadata?.city || "Phú Quốc, Việt Nam",
+          joinDate: c.createdAt
+            ? new Date(c.createdAt).toLocaleDateString("vi-VN")
+            : "Hôm nay",
+          roleBadge:
+            c.type === "partner"
+              ? "Đối tác cơ sở"
+              : c.type === "host"
+                ? "Chủ nhà"
+                : "Khách hàng",
+        }))
+
+        setConversations(mapped)
+
+        // If no active conversation yet, pick the first
+        setActiveConversationId((current) => current || mapped[0]?.id || null)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // Initial load & check URL parameters
+  useEffect(() => {
+    fetchConversations()
+
+    // Check if URL has partnerId to preselect or initiate partner chat
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search)
+      const partnerIdParam = sp.get("partnerId")
+      if (partnerIdParam) {
+        stayeaApi.getPartnerChat(partnerIdParam).then((res) => {
+          if (res?.conversation) {
+            setActiveConversationId(res.conversation.id)
+            fetchConversations()
+          }
+        }).catch(() => {})
+      }
+      const convParam = sp.get("conversationId")
+      if (convParam) {
+        setActiveConversationId(convParam)
+      }
+    }
+
+    const interval = setInterval(fetchConversations, 5000)
+    return () => clearInterval(interval)
+  }, [fetchConversations])
+
+  // Fetch messages for active conversation
+  const fetchActiveMessages = useCallback(async (convId: string) => {
+    try {
+      const res = await stayeaApi.getChatMessages(convId, "admin")
+      if (res?.messages) {
+        const mapped: ChatMessage[] = res.messages.map((m: any) => ({
+          id: m.id,
+          senderId: m.senderType === "admin" ? "admin" : "customer",
+          senderName: m.senderName,
+          senderAvatar:
+            m.senderAvatar ||
+            (m.senderType === "admin"
+              ? "/profile/profile-avatar.jpg"
+              : "/avatars/avatar-1.jpg"),
+          content: m.content,
+          time: m.createdAt
+            ? new Date(m.createdAt).toLocaleTimeString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Vừa xong",
+          status: "sent",
+        }))
+
+        setMessagesMap((prev) => ({
+          ...prev,
+          [convId]: mapped,
+        }))
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!activeConversationId) return
+    fetchActiveMessages(activeConversationId)
+
+    const interval = setInterval(() => {
+      fetchActiveMessages(activeConversationId)
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [activeConversationId, fetchActiveMessages])
+
   // Current active conversation
   const activeConversation = useMemo(() => {
     if (!activeConversationId) {
       return conversations.length > 0 ? conversations[0] : null
     }
-    return conversations.find((c) => c.id === activeConversationId) || (conversations.length > 0 ? conversations[0] : null)
+    return (
+      conversations.find((c) => c.id === activeConversationId) ||
+      (conversations.length > 0 ? conversations[0] : null)
+    )
   }, [conversations, activeConversationId])
 
   // Dynamic Tabs with live computed counts
@@ -112,13 +227,13 @@ export function StayeaAdminMessagesPage({
   }, [conversations, activeTab, searchQuery])
 
   // Handlers
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!activeConversation) return
 
-    const newMessage: ChatMessage = {
+    const tempMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       senderId: "admin",
-      senderName: "Nguyễn Minh",
+      senderName: "STAYEA CSKH",
       senderAvatar: "/profile/profile-avatar.jpg",
       content: text,
       time: "Vừa xong",
@@ -129,7 +244,7 @@ export function StayeaAdminMessagesPage({
       ...prev,
       [activeConversation.id]: [
         ...(prev[activeConversation.id] || []),
-        newMessage,
+        tempMsg,
       ],
     }))
 
@@ -146,49 +261,54 @@ export function StayeaAdminMessagesPage({
           : c
       )
     )
+
+    try {
+      await stayeaApi.sendChatMessage(activeConversation.id, {
+        content: text,
+        senderType: "admin",
+        senderName: "STAYEA CSKH VIP",
+      })
+    } catch (err: any) {
+      toast.error(err?.message || "Lỗi khi gửi tin nhắn")
+    }
   }
 
-  const handleComposeNewMessage = (
+  const handleComposeNewMessage = async (
     contactId: string,
     messageText: string,
     newContact?: { name: string; phone: string; email: string }
   ) => {
     if (newContact) {
-      const createdConv: ConversationItem = {
-        id: contactId,
-        type: "customer",
-        name: newContact.name,
-        avatar: "/profile/profile-avatar.jpg",
-        lastMessage: messageText,
-        lastTime: "Vừa xong",
-        unreadCount: 0,
-        isOnline: true,
-        phone: newContact.phone,
-        email: newContact.email,
-        location: "Việt Nam",
-        joinDate: "Hôm nay",
-        roleBadge: "Khách hàng",
+      try {
+        const res = await stayeaApi.startCustomerChat({
+          customerName: newContact.name,
+          customerPhone: newContact.phone,
+          customerEmail: newContact.email,
+          initialMessage: messageText,
+        })
+        if (res?.conversation) {
+          setActiveConversationId(res.conversation.id)
+          await fetchConversations()
+          await fetchActiveMessages(res.conversation.id)
+        }
+        toast.success("Đã khởi tạo cuộc hội thoại thành công!")
+      } catch (err: any) {
+        toast.error(err?.message || "Lỗi khi tạo cuộc hội thoại")
       }
-      setConversations((prev) => [createdConv, ...prev])
+    } else {
+      try {
+        await stayeaApi.sendChatMessage(contactId, {
+          content: messageText,
+          senderType: "admin",
+          senderName: "STAYEA CSKH VIP",
+        })
+        setActiveConversationId(contactId)
+        await fetchActiveMessages(contactId)
+        toast.success("Đã gửi tin nhắn thành công!")
+      } catch (err: any) {
+        toast.error(err?.message || "Lỗi khi gửi tin nhắn")
+      }
     }
-
-    setActiveConversationId(contactId)
-    const newMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      senderId: "admin",
-      senderName: "Nguyễn Minh",
-      senderAvatar: "/profile/profile-avatar.jpg",
-      content: messageText,
-      time: "Vừa xong",
-      status: "sent",
-    }
-
-    setMessagesMap((prev) => ({
-      ...prev,
-      [contactId]: [...(prev[contactId] || []), newMessage],
-    }))
-
-    toast.success("Đã gửi tin nhắn thành công!")
   }
 
   const handleAddNote = (noteContent: string) => {

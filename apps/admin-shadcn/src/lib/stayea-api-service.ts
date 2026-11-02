@@ -1033,15 +1033,14 @@ class StayeaApiService {
       const searchParams = new URLSearchParams()
       if (params?.search) searchParams.set("search", params.search)
       if (params?.page) searchParams.set("page", String(params.page))
-      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize || 20))
-      const res = await fetch(`/api/users?${searchParams.toString()}`, {
-        headers: this.getAuthHeader(),
-      })
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize || 50))
+      searchParams.set("_t", Date.now().toString())
+      const res = await this.fetchWithAuth(`/api/users?${searchParams.toString()}`)
       if (res.ok) {
         const json = await res.json()
         const data = json.data || json
         return {
-          items: Array.isArray(data) ? data : data.data || [],
+          items: Array.isArray(data) ? data : data.items || data.data || [],
           total: data.total || (Array.isArray(data) ? data.length : 0),
         }
       }
@@ -1881,6 +1880,117 @@ class StayeaApiService {
     if (!res.ok) {
       throw new Error(json.message || "Không thể cập nhật trạng thái đối tác")
     }
+    return json.data || json
+  }
+
+  // ==========================================
+  // Chat & Messaging API
+  // ==========================================
+
+  async getChatConversations(type?: string, search?: string): Promise<any[]> {
+    try {
+      const sp = new URLSearchParams()
+      if (type && type !== "all") sp.set("type", type)
+      if (search?.trim()) sp.set("search", search.trim())
+      sp.set("_t", Date.now().toString())
+      const qs = sp.toString() ? `?${sp.toString()}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/chat/conversations${qs}`)
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  }
+
+  async getChatMessages(conversationId: string, markReadBy?: "admin" | "participant"): Promise<{ conversation: any; messages: any[] }> {
+    try {
+      const qs = markReadBy ? `?markReadBy=${markReadBy}&_t=${Date.now()}` : `?_t=${Date.now()}`
+      const res = await this.fetchWithAuth(`/api/stayea/chat/conversations/${conversationId}/messages${qs}`)
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return {
+          conversation: data.conversation || null,
+          messages: Array.isArray(data.messages) ? data.messages : [],
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return { conversation: null, messages: [] }
+  }
+
+  async sendChatMessage(conversationId: string, payload: {
+    content: string
+    senderType?: "customer" | "partner" | "admin" | "ai"
+    senderName?: string
+    senderAvatar?: string
+    senderId?: string
+    metadata?: any
+  }): Promise<any> {
+    const res = await this.fetchWithAuth(`/api/stayea/chat/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể gửi tin nhắn")
+    return json.data || json
+  }
+
+  async startCustomerChat(payload: {
+    sessionId?: string
+    customerName?: string
+    customerPhone?: string
+    customerEmail?: string
+    initialMessage?: string
+    metadata?: any
+  }): Promise<{ conversation: any; messages: any[] }> {
+    const res = await fetch(`/api/stayea/chat/customer/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể khởi tạo cuộc hội thoại")
+    const data = json.data || json
+    return {
+      conversation: data.conversation || null,
+      messages: Array.isArray(data.messages) ? data.messages : [],
+    }
+  }
+
+  async getPartnerChat(partnerId: string): Promise<{ conversation: any; messages: any[] }> {
+    try {
+      const res = await this.fetchWithAuth(`/api/stayea/chat/partner/${partnerId}?_t=${Date.now()}`)
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return {
+          conversation: data.conversation || null,
+          messages: Array.isArray(data.messages) ? data.messages : [],
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return { conversation: null, messages: [] }
+  }
+
+  async sendPartnerChatMessage(partnerId: string, payload: {
+    content: string
+    senderType?: "partner" | "admin"
+    senderName?: string
+  }): Promise<any> {
+    const res = await this.fetchWithAuth(`/api/stayea/chat/partner/${partnerId}/messages`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể gửi tin nhắn đối tác")
     return json.data || json
   }
 }

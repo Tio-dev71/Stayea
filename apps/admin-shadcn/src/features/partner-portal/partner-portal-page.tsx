@@ -21,6 +21,7 @@ import { PartnerOrdersManager } from "./components/partner-orders-manager"
 import { PartnerPayoutSettings } from "./components/partner-payout-settings"
 import { PartnerServicesManager } from "./components/partner-services-manager"
 import { PartnerCreateProfileModal } from "./components/partner-create-profile-modal"
+import { PartnerAdminChat } from "./components/partner-admin-chat"
 import type {
   PartnerOrderData,
   PartnerProfileData,
@@ -28,7 +29,7 @@ import type {
 } from "./types"
 
 interface PartnerPortalPageProps {
-  initialTab?: "overview" | "services" | "inventory" | "orders" | "settings"
+  initialTab?: "overview" | "services" | "inventory" | "orders" | "messages" | "settings"
   onNavigateHome?: () => void
   onLogout?: () => void
 }
@@ -73,27 +74,27 @@ export function PartnerPortalPage({
 
   // Tab State with URL param & localStorage persistence across F5 refreshes
   const [activeTab, setActiveTabState] = useState<
-    "overview" | "services" | "inventory" | "orders" | "settings"
+    "overview" | "services" | "inventory" | "orders" | "messages" | "settings"
   >(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
       const tabParam = params.get("tab")
-      if (tabParam && ["overview", "services", "inventory", "orders", "settings"].includes(tabParam)) {
+      if (tabParam && ["overview", "services", "inventory", "orders", "messages", "settings"].includes(tabParam)) {
         return tabParam as any
       }
       const hash = window.location.hash.replace("#", "")
-      if (hash && ["overview", "services", "inventory", "orders", "settings"].includes(hash)) {
+      if (hash && ["overview", "services", "inventory", "orders", "messages", "settings"].includes(hash)) {
         return hash as any
       }
       const saved = localStorage.getItem("stayea_hub_active_tab")
-      if (saved && ["overview", "services", "inventory", "orders", "settings"].includes(saved)) {
+      if (saved && ["overview", "services", "inventory", "orders", "messages", "settings"].includes(saved)) {
         return saved as any
       }
     }
     return initialTab || "overview"
   })
 
-  const setActiveTab = (tab: "overview" | "services" | "inventory" | "orders" | "settings") => {
+  const setActiveTab = (tab: "overview" | "services" | "inventory" | "orders" | "messages" | "settings") => {
     setActiveTabState(tab)
     if (typeof window !== "undefined") {
       localStorage.setItem("stayea_hub_active_tab", tab)
@@ -734,7 +735,12 @@ export function PartnerPortalPage({
               />
             )}
 
-            {/* TAB 5: SETTINGS & PAYOUT */}
+            {/* TAB 5: MESSAGES WITH ADMIN */}
+            {activeTab === "messages" && (
+              <PartnerAdminChat profile={currentProfile} />
+            )}
+
+            {/* TAB 6: SETTINGS & PAYOUT */}
             {activeTab === "settings" && (
               <PartnerPayoutSettings
                 profile={currentProfile}

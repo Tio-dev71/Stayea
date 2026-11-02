@@ -37,39 +37,111 @@ export function StayeaAdminCustomersPage({
   const [customersList, setCustomersList] = useState<CustomerItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  // Fetch real users from backend API
+  // Fetch real users and real bookings from backend API
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const realUsers = await stayeaApi.getUsers()
-      if (Array.isArray(realUsers) && realUsers.length > 0) {
-        const mapped: CustomerItem[] = realUsers.map((u: any, idx: number) => {
-          const roleUpper = (u.role || "USER").toUpperCase()
-          const badge = roleUpper === "ADMIN" ? ("vip" as const) : undefined
-          const badgeLabel =
-            roleUpper === "ADMIN" ? "Quản trị" : roleUpper === "PARTNER" ? "Đối tác" : undefined
+      const [usersRes, bookingsRes] = await Promise.all([
+        stayeaApi.getUsers().catch(() => ({ items: [], total: 0 })),
+        stayeaApi.getAllBookingsForAdmin().catch(() => []),
+      ])
 
-          return {
-            id: u.id || `user-real-${idx}`,
-            name: u.name || u.displayName || u.email.split("@")[0],
-            badge,
-            badgeLabel,
-            avatar: "/about/team-1.jpg",
+      const rawUsers = Array.isArray(usersRes)
+        ? usersRes
+        : (usersRes as any)?.items || (usersRes as any)?.data || []
+      const rawBookings: any[] = Array.isArray(bookingsRes) ? bookingsRes : []
+
+      // Aggregate bookings by email, phone, or userId
+      const bookingsByEmail = new Map<
+        string,
+        { count: number; totalSpent: number; phone?: string; name?: string }
+      >()
+
+      for (const b of rawBookings) {
+        const contact = b.details?.contactInfo || {}
+        const email = (b.customerEmail || contact.email || "").toLowerCase().trim()
+        const phone = b.customerPhone || contact.phone || ""
+        const name = b.customerName || contact.fullName || ""
+        const amount = Number(b.finalAmount || b.totalAmount || 0)
+
+        const key = email || phone || b.userId || b.id
+        if (!key) continue
+
+        const existing = bookingsByEmail.get(key) || { count: 0, totalSpent: 0, phone, name }
+        existing.count += 1
+        existing.totalSpent += amount
+        if (phone && !existing.phone) existing.phone = phone
+        if (name && !existing.name) existing.name = name
+        bookingsByEmail.set(key, existing)
+      }
+
+      // Map registered users
+      const seenKeys = new Set<string>()
+      const mapped: CustomerItem[] = []
+
+      for (let idx = 0; idx < rawUsers.length; idx++) {
+        const u = rawUsers[idx]
+        const email = (u.email || "").toLowerCase().trim()
+        const roleUpper = (u.role || "USER").toUpperCase()
+        const bookingStats = bookingsByEmail.get(email) || { count: 0, totalSpent: 0 }
+        seenKeys.add(email)
+
+        const badge =
+          bookingStats.count >= 2 || roleUpper === "ADMIN"
+            ? ("vip" as const)
+            : bookingStats.count === 1
+              ? ("loyal" as const)
+              : undefined
+        const badgeLabel =
+          roleUpper === "ADMIN"
+            ? "Quản trị VIP"
+            : roleUpper === "PARTNER"
+              ? "Đối tác"
+              : bookingStats.count >= 2
+                ? "Khách VIP"
+                : bookingStats.count === 1
+                  ? "Đã đặt phòng"
+                  : "Khách mới"
+
+        mapped.push({
+          id: u.id || `user-real-${idx}`,
+          name: u.displayName || u.name || u.email?.split("@")[0] || "Khách hàng",
+          badge,
+          badgeLabel,
+          avatar: u.image || "/about/team-1.jpg",
+          nationality: "Việt Nam",
+          flag: "🇻🇳",
+          phoneNumber: (u as any).phone || (u as any).phoneNumber || bookingStats.phone || "0921 724 444",
+          email: u.email,
+          bookingsCount: bookingStats.count,
+          totalSpent: `${bookingStats.totalSpent.toLocaleString("vi-VN")} ₫`,
+          status: (u.banned ? "blocked" : "active") as any,
+          statusLabel: u.banned ? "Tạm khóa" : "Đang hoạt động",
+        })
+      }
+
+      // Add guest customers who booked directly but haven't registered an account
+      for (const [key, bData] of bookingsByEmail.entries()) {
+        if (!seenKeys.has(key)) {
+          mapped.push({
+            id: `guest-${key}`,
+            name: bData.name || key.split("@")[0] || "Khách đặt phòng",
+            badge: bData.count >= 2 ? ("vip" as const) : ("loyal" as const),
+            badgeLabel: bData.count >= 2 ? "Khách VIP" : "Đã đặt phòng",
+            avatar: "/avatars/avatar-1.jpg",
             nationality: "Việt Nam",
             flag: "🇻🇳",
-            phoneNumber: u.phoneNumber || "0908 123 456",
-            email: u.email,
-            bookingsCount: 0,
-            totalSpent: "0 ₫",
+            phoneNumber: bData.phone || "0921 724 444",
+            email: key.includes("@") ? key : "guest@stayea.com",
+            bookingsCount: bData.count,
+            totalSpent: `${bData.totalSpent.toLocaleString("vi-VN")} ₫`,
             status: "active" as const,
-            statusLabel: "Đang hoạt động",
-          }
-        })
-
-        setCustomersList(mapped)
-      } else {
-        setCustomersList([])
+            statusLabel: "Khách trực tuyến",
+          })
+        }
       }
+
+      setCustomersList(mapped)
     } catch {
       setCustomersList([])
     } finally {
@@ -119,7 +191,11 @@ export function StayeaAdminCustomersPage({
   // Dynamic KPIs
   const dynamicKpis: CustomerKpiItem[] = useMemo(() => {
     const total = customersList.length
-    const loyal = customersList.filter((c) => c.badge === "vip" || c.badge === "loyal").length
+    const loyal = customersList.filter((c) => c.badge === "vip" || c.badge === "loyal" || c.bookingsCount >= 1).length
+    const totalSpentNumber = customersList.reduce((sum, c) => {
+      const num = Number(c.totalSpent.replace(/[^\d]/g, "")) || 0
+      return sum + num
+    }, 0)
 
     return [
       {
@@ -152,10 +228,10 @@ export function StayeaAdminCustomersPage({
       {
         id: "avg-revenue",
         title: "Doanh thu từ khách hàng",
-        value: "0 ₫",
-        change: "0%",
-        comparisonText: "chưa phát sinh chi tiêu",
-        isPositive: true,
+        value: `${totalSpentNumber.toLocaleString("vi-VN")} ₫`,
+        change: totalSpentNumber > 0 ? "100%" : "0%",
+        comparisonText: totalSpentNumber > 0 ? "tổng chi tiêu từ đơn đặt dịch vụ" : "chưa phát sinh chi tiêu",
+        isPositive: totalSpentNumber > 0,
         iconType: "revenue",
       },
     ]
@@ -168,9 +244,12 @@ export function StayeaAdminCustomersPage({
         description: `Email: ${customer.email} • SĐT: ${customer.phoneNumber} • Tổng chi: ${customer.totalSpent}`,
       })
     } else if (action === "message") {
-      toast.info(`Soạn tin nhắn gửi ${customer.name}`, {
-        description: `Địa chỉ người nhận: ${customer.email}`,
-      })
+      toast.info(`Mở hội thoại chăm sóc khách hàng: ${customer.name}`)
+      if (onNavigateTab) {
+        onNavigateTab("messages")
+      } else {
+        window.location.href = `/stayea/messages`
+      }
     } else if (action === "edit") {
       toast.info(`Cập nhật thông tin: ${customer.name}`)
     } else if (action === "suspend") {

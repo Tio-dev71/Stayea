@@ -420,6 +420,20 @@ export function StayeaAdminHostsPage({
                   <HostsDataTable
                     hosts={filteredPartners}
                     onHostAction={async (action, host) => {
+                      if (action === "chat") {
+                        toast.info(`Mở kênh chat với chủ nhà: ${host.raw?.businessName || host.name}`)
+                        if (typeof window !== "undefined") {
+                          const url = new URL("/stayea/messages", window.location.origin)
+                          url.searchParams.set("partnerId", host.id)
+                          if (onNavigateTab) {
+                            window.history.pushState(null, "", url.toString())
+                            onNavigateTab("messages")
+                          } else {
+                            window.location.href = url.toString()
+                          }
+                        }
+                        return
+                      }
                       if (action === "view" || action === "contract" || action === "commission") {
                         handleOpenKycModal(host)
                       } else if (action === "suspend") {

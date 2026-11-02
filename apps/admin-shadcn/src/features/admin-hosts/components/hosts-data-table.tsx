@@ -10,6 +10,8 @@ import {
   FileText,
   Percent,
   UserX,
+  MessageSquare,
+  Phone,
 } from "lucide-react"
 import type { HostPartnerItem, PartnerType, PartnerStatus } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 import { HOSTS_MOCK_LIST } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
@@ -147,10 +149,10 @@ export function HostsDataTable({
                     />
                   </td>
 
-                  {/* Host Name + Avatar + Email */}
+                  {/* Host Name + Avatar + Email + Phone */}
                   <td className="py-3 px-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 ring-1 ring-slate-200/70">
+                      <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-100 shrink-0 ring-1 ring-slate-200/70">
                         <Image
                           src={host.avatar}
                           alt={host.name}
@@ -160,9 +162,22 @@ export function HostsDataTable({
                       </div>
                       <div className="min-w-0">
                         <span className="font-semibold text-slate-800 hover:text-emerald-700 cursor-pointer block truncate text-xs">
-                          {host.name}
+                          {host.raw?.businessName || host.name}
                         </span>
-                        <span className="text-[11px] text-slate-400 block truncate">
+                        <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                          {host.raw?.contactName && (
+                            <span className="text-slate-600 font-medium">
+                              LH: {host.raw.contactName}
+                            </span>
+                          )}
+                          {host.raw?.phone && (
+                            <span className="text-emerald-700 font-medium flex items-center gap-0.5">
+                              <Phone className="w-2.5 h-2.5" />
+                              {host.raw.phone}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 block truncate">
                           {host.email}
                         </span>
                       </div>
@@ -204,19 +219,42 @@ export function HostsDataTable({
                     {renderHostStatusBadge(host.status, host.statusLabel)}
                   </td>
 
-                  {/* Action Button */}
-                  <td className="py-3 pr-4 pl-3 text-center relative">
-                    <button
-                      type="button"
-                      aria-label="Thao tác"
-                      onClick={() => setActiveMenuId(isMenuOpen ? null : host.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
+                  {/* Action Button & Chat Button */}
+                  <td className="py-3 pr-4 pl-3 text-center relative whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1.5 justify-center">
+                      <button
+                        type="button"
+                        onClick={() => onHostAction?.("chat", host)}
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300/70 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Nhắn tin trực tiếp với Chủ nhà / Đối tác"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Nhắn tin</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        aria-label="Thao tác"
+                        onClick={() => setActiveMenuId(isMenuOpen ? null : host.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </div>
 
                     {isMenuOpen && (
                       <div className="absolute right-4 top-10 w-48 bg-white rounded-xl shadow-lg border border-slate-200/80 py-1.5 z-20 text-left text-xs animate-in fade-in zoom-in-95 duration-150">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveMenuId(null)
+                            onHostAction?.("chat", host)
+                          }}
+                          className="w-full px-3 py-2 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 font-medium"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Chat với Chủ nhà</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => {

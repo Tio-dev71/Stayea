@@ -55,12 +55,19 @@ export function BookingsPage({ onNavigate }: BookingsPageProps) {
               ? `${new Date(start).toLocaleDateString("vi-VN")} - ${new Date(end).toLocaleDateString("vi-VN")}`
               : "Thời gian linh hoạt"
 
+            let statusLabel = "Chờ xác nhận"
+            const bst = (b.status || "").toLowerCase()
+            if (bst === "confirmed" || bst === "đã xác nhận") statusLabel = "Đã xác nhận"
+            else if (bst === "completed" || bst === "đã hoàn tất") statusLabel = "Đã hoàn tất"
+            else if (bst === "cancelled" || bst === "đã hủy") statusLabel = "Đã hủy"
+            else if (bst === "active" || bst === "đang lưu trú") statusLabel = "Đang lưu trú"
+
             return {
               id: b.id,
               code: b.bookingCode || b.id,
               category: (cat === "flight" ? "transport" : cat) as any,
-              status: b.status === "cancelled" ? "cancelled" : "upcoming",
-              statusLabel: b.status === "cancelled" ? "Đã hủy" : "Sắp diễn ra",
+              status: bst === "cancelled" ? "cancelled" : (bst === "completed" ? "completed" : "upcoming"),
+              statusLabel,
               title: b.title || "Dịch vụ tuyển chọn STAYEA",
               dates: b.dates || dateStr,
               location: b.destination || b.details?.location || "Phú Quốc, Kiên Giang",

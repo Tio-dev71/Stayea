@@ -522,6 +522,7 @@ export class StayeaBookingService {
 
   /**
    * Update booking status (used by payment callback or admin)
+   * Automatically synchronizes status across stayeaBookingsTable and partnerOrdersTable
    */
   async updateStatus(id: string, status: "pending" | "confirmed" | "completed" | "cancelled" | "refunded") {
     const [updated] = await this.db
@@ -530,7 +531,12 @@ export class StayeaBookingService {
         status,
         updatedAt: new Date(),
       })
-      .where(eq(stayeaBookingsTable.id, id))
+      .where(
+        or(
+          eq(stayeaBookingsTable.id, id),
+          eq(stayeaBookingsTable.bookingCode, id)
+        )
+      )
       .returning()
 
     if (!updated) {
@@ -538,6 +544,36 @@ export class StayeaBookingService {
         code: ErrorCode.RESOURCE_NOT_FOUND,
         message: `Booking ${id} not found`,
       })
+    }
+
+    // Automatically synchronize status with partner orders table
+    try {
+      let partnerStatus: "pending_admin" | "admin_approved" | "sent_to_partner" | "partner_accepted" | "completed" | "cancelled" | null = null
+      if (status === "confirmed") {
+        partnerStatus = "sent_to_partner"
+      } else if (status === "completed") {
+        partnerStatus = "completed"
+      } else if (status === "cancelled" || status === "refunded") {
+        partnerStatus = "cancelled"
+      }
+
+      if (partnerStatus) {
+        await this.db
+          .update(partnerOrdersTable)
+          .set({
+            status: partnerStatus,
+            updatedAt: new Date(),
+            adminNotes: `Đơn đã được Quản trị viên STAYEA xác nhận chuyển sang trạng thái: "${status}"`,
+          })
+          .where(
+            or(
+              eq(partnerOrdersTable.bookingId, updated.id),
+              eq(partnerOrdersTable.orderCode, `ORD-${updated.bookingCode}`)
+            )
+          )
+      }
+    } catch (syncErr) {
+      this.logger.warn(`Failed to synchronize partner order for booking ${updated.id}: ${syncErr}`)
     }
 
     return updated

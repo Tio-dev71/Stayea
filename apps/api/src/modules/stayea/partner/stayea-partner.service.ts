@@ -12,6 +12,7 @@ import {
   partnerProfilesTable,
   partnerServicesTable,
   stayeaAccommodationsTable,
+  stayeaBookingsTable,
   stayeaExperiencesTable,
   usersTable,
 } from "@workspace/database"
@@ -791,6 +792,14 @@ export class StayeaPartnerService implements OnModuleInit {
       .where(eq(partnerOrdersTable.id, orderId))
       .returning()
 
+    if (order.bookingId) {
+      await this.db
+        .update(stayeaBookingsTable)
+        .set({ status: "confirmed", updatedAt: new Date() })
+        .where(eq(stayeaBookingsTable.id, order.bookingId))
+        .catch(() => {})
+    }
+
     return updated
   }
 
@@ -818,6 +827,14 @@ export class StayeaPartnerService implements OnModuleInit {
       })
       .where(eq(partnerOrdersTable.id, orderId))
       .returning()
+
+    if (order.bookingId) {
+      await this.db
+        .update(stayeaBookingsTable)
+        .set({ status: "cancelled", updatedAt: new Date() })
+        .where(eq(stayeaBookingsTable.id, order.bookingId))
+        .catch(() => {})
+    }
 
     return updated
   }
@@ -915,6 +932,14 @@ export class StayeaPartnerService implements OnModuleInit {
       })
       .where(eq(partnerProfilesTable.id, partnerId))
 
+    if (order.bookingId) {
+      await this.db
+        .update(stayeaBookingsTable)
+        .set({ status: "confirmed", updatedAt: new Date() })
+        .where(eq(stayeaBookingsTable.id, order.bookingId))
+        .catch(() => {})
+    }
+
     return updated
   }
 
@@ -939,6 +964,14 @@ export class StayeaPartnerService implements OnModuleInit {
       })
       .where(eq(partnerOrdersTable.id, orderId))
       .returning()
+
+    if (order.bookingId) {
+      await this.db
+        .update(stayeaBookingsTable)
+        .set({ status: "completed", updatedAt: new Date() })
+        .where(eq(stayeaBookingsTable.id, order.bookingId))
+        .catch(() => {})
+    }
 
     return updated
   }

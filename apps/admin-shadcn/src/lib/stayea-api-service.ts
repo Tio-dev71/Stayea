@@ -896,8 +896,10 @@ class StayeaApiService {
       const searchParams = new URLSearchParams()
       if (params?.search) searchParams.set("search", params.search)
       if (params?.status) searchParams.set("status", params.status)
+      searchParams.set("_t", Date.now().toString())
       const res = await fetch(`/api/stayea/bookings/admin/all?${searchParams.toString()}`, {
         headers: this.getAuthHeader(),
+        cache: "no-store",
       })
       if (res.ok) {
         const json = await res.json()
@@ -919,6 +921,7 @@ class StayeaApiService {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
         body: JSON.stringify({ status }),
+        cache: "no-store",
       })
       return res.ok
     } catch {

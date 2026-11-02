@@ -64,14 +64,30 @@ export function BookingCard({
           <div>
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                isUpcoming
+                item.statusLabel === "Đã xác nhận"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                  : item.statusLabel === "Chờ xác nhận"
+                  ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                  : item.statusLabel === "Đã hoàn tất"
+                  ? "bg-teal-50 text-teal-700 border border-teal-200/60"
+                  : item.statusLabel === "Đã hủy"
+                  ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                  : isUpcoming
                   ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
                   : "bg-slate-100 text-slate-700 border border-slate-200"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  isUpcoming ? "bg-emerald-500 animate-pulse" : "bg-slate-500"
+                  item.statusLabel === "Đã xác nhận"
+                    ? "bg-emerald-500"
+                    : item.statusLabel === "Chờ xác nhận"
+                    ? "bg-amber-500 animate-pulse"
+                    : item.statusLabel === "Đã hoàn tất"
+                    ? "bg-teal-500"
+                    : item.statusLabel === "Đã hủy"
+                    ? "bg-rose-500"
+                    : "bg-slate-500"
                 }`}
               />
               <span>{item.statusLabel}</span>

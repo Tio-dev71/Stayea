@@ -208,6 +208,8 @@ export function StayeaAdminBookingsPage({
       toast.success("Cập nhật trạng thái thành công!", {
         description: `Đơn đặt phòng đã được chuyển sang "${viStatus}".`,
       })
+      // Sync fresh data from backend
+      await fetchBookings()
     } catch {
       toast.error("Không thể cập nhật trạng thái đơn đặt phòng.")
     }
@@ -310,61 +312,56 @@ export function StayeaAdminBookingsPage({
               </div>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column (8 cols) */}
-              <div className="lg:col-span-8 space-y-6">
-                {/* 4 KPI Cards */}
-                <BookingsKpiCards kpis={dynamicKpis} />
+            {/* Main Content Layout */}
+            <div className="space-y-6">
+              {/* 4 KPI Cards */}
+              <BookingsKpiCards kpis={dynamicKpis} />
 
-                {/* Filter and Search Bar */}
-                <BookingsFilterBar
-                  onSearchChange={(val) => setSearchQuery(val)}
-                  onStatusChange={(st) => setStatusFilter(st)}
-                  onPaymentChange={(pt) => setPaymentFilter(pt)}
-                  statusValue={statusFilter}
-                  paymentValue={paymentFilter}
-                  onAdvancedFilter={() => {
-                    toast.info("Bộ lọc nâng cao", {
-                      description: "Lọc theo khoảng giá, số lượng phòng ngủ và tiện ích.",
-                    })
-                  }}
-                  onExport={handleExportCsv}
-                />
+              {/* Filter and Search Bar */}
+              <BookingsFilterBar
+                onSearchChange={(val) => setSearchQuery(val)}
+                onStatusChange={(st) => setStatusFilter(st)}
+                onPaymentChange={(pt) => setPaymentFilter(pt)}
+                statusValue={statusFilter}
+                paymentValue={paymentFilter}
+                onAdvancedFilter={() => {
+                  toast.info("Bộ lọc nâng cao", {
+                    description: "Lọc theo khoảng giá, số lượng phòng ngủ và tiện ích.",
+                  })
+                }}
+                onExport={handleExportCsv}
+              />
 
-                {/* Bookings Data Table */}
-                <BookingsDataTable
-                  bookings={filteredBookings}
-                  onStatusUpdate={handleStatusUpdate}
-                  onViewDetail={(b) => setDetailModalBooking(b)}
-                  onSortChange={() => {
-                    setBookingsList((prev) => [...prev].reverse())
-                    toast.info("Đã thay đổi thứ tự hiển thị danh sách.")
-                  }}
-                />
-              </div>
+              {/* Bookings Data Table - Full Width with Ample Space */}
+              <BookingsDataTable
+                bookings={filteredBookings}
+                onStatusUpdate={handleStatusUpdate}
+                onViewDetail={(b) => setDetailModalBooking(b)}
+                onSortChange={() => {
+                  setBookingsList((prev) => [...prev].reverse())
+                  toast.info("Đã thay đổi thứ tự hiển thị danh sách.")
+                }}
+              />
 
-              {/* Right Column (4 cols) */}
-              <div className="lg:col-span-4">
-                <BookingsRightSidebar
-                  bookings={bookingsList}
-                  onBannerAction={() => {
-                    toast.info("Chiến lược nâng cao công suất phòng", {
-                      description: "Các giải pháp tối ưu hóa tỷ lệ lấp đầy phòng tại Phú Quốc.",
-                    })
-                  }}
-                  onViewAllSchedule={() => {
-                    toast.info("Lịch check-in / check-out", {
-                      description: "Xem toàn bộ lịch đón tiễn khách hôm nay và tuần này.",
-                    })
-                  }}
-                  onViewChannelDetails={() => {
-                    toast.info("Chi tiết kênh phân phối OTA", {
-                      description: "Báo cáo doanh số và tỷ lệ chuyển đổi qua các kênh Website, Airbnb, Booking, Agoda.",
-                    })
-                  }}
-                />
-              </div>
+              {/* Additional Analytics & Schedule Cards (Full width 3 columns) */}
+              <BookingsRightSidebar
+                bookings={bookingsList}
+                onBannerAction={() => {
+                  toast.info("Chiến lược nâng cao công suất phòng", {
+                    description: "Các giải pháp tối ưu hóa tỷ lệ lấp đầy phòng tại Phú Quốc.",
+                  })
+                }}
+                onViewAllSchedule={() => {
+                  toast.info("Lịch check-in / check-out", {
+                    description: "Xem toàn bộ lịch đón tiễn khách hôm nay và tuần này.",
+                  })
+                }}
+                onViewChannelDetails={() => {
+                  toast.info("Chi tiết kênh phân phối OTA", {
+                    description: "Báo cáo doanh số và tỷ lệ chuyển đổi qua các kênh Website, Airbnb, Booking, Agoda.",
+                  })
+                }}
+              />
             </div>
 
             {/* Footer */}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { createPortal } from "react-dom"
 import Image from "next/image"
 import {
   MoreHorizontal,
@@ -171,12 +172,18 @@ export function BookingsDataTable({
 }: BookingsDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
-  const menuContainerRef = useRef<HTMLDivElement>(null)
+  const [activeMenuBooking, setActiveMenuBooking] = useState<BookingRecord | null>(null)
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const activeMenuRef = useRef<HTMLDivElement>(null)
 
   const pageSize = 10
   const totalCount = bookings.length
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     // Reset to page 1 if list length shrinks
@@ -186,14 +193,29 @@ export function BookingsDataTable({
   }, [totalPages, currentPage])
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuContainerRef.current && !menuContainerRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null)
+    const handleCloseMenu = (e: MouseEvent) => {
+      if (activeMenuRef.current && !activeMenuRef.current.contains(e.target as Node)) {
+        setActiveMenuBooking(null)
+        setMenuPos(null)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    const handleScrollOrResize = () => {
+      setActiveMenuBooking(null)
+      setMenuPos(null)
+    }
+
+    if (activeMenuBooking) {
+      document.addEventListener("mousedown", handleCloseMenu)
+      window.addEventListener("scroll", handleScrollOrResize, true)
+      window.addEventListener("resize", handleScrollOrResize)
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleCloseMenu)
+      window.removeEventListener("scroll", handleScrollOrResize, true)
+      window.removeEventListener("resize", handleScrollOrResize)
+    }
+  }, [activeMenuBooking])
 
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = Math.min(startIndex + pageSize, totalCount)
@@ -213,11 +235,26 @@ export function BookingsDataTable({
     )
   }
 
+  const handleToggleMenu = (e: React.MouseEvent<HTMLButtonElement>, booking: BookingRecord) => {
+    e.stopPropagation()
+    if (activeMenuBooking?.id === booking.id) {
+      setActiveMenuBooking(null)
+      setMenuPos(null)
+      return
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const menuHeight = 185
+    const spaceBelow = window.innerHeight - rect.bottom
+    const top = spaceBelow < menuHeight ? rect.top - menuHeight - 4 : rect.bottom + 6
+    const right = Math.max(12, window.innerWidth - rect.right)
+
+    setMenuPos({ top, right })
+    setActiveMenuBooking(booking)
+  }
+
   return (
-    <div
-      className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4"
-      ref={menuContainerRef}
-    >
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
       {/* 1. Header with Title & Sort */}
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
@@ -236,7 +273,7 @@ export function BookingsDataTable({
       </div>
 
       {/* 2. Responsive Table */}
-      <div className="overflow-x-auto -mx-5 px-5">
+      <div className="overflow-x-auto -mx-5 px-5 min-h-[260px]">
         <table className="w-full text-left border-collapse text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
@@ -272,7 +309,7 @@ export function BookingsDataTable({
             ) : (
               displayedBookings.map((b) => {
                 const isSelected = selectedIds.includes(b.id)
-                const isMenuOpen = openMenuId === b.id
+                const isMenuOpen = activeMenuBooking?.id === b.id
 
                 return (
                   <tr
@@ -356,71 +393,19 @@ export function BookingsDataTable({
                     </td>
 
                     {/* Thao tác */}
-                    <td className="py-3.5 pl-3 text-right whitespace-nowrap relative">
+                    <td className="py-3.5 pl-3 text-right whitespace-nowrap">
                       <button
                         type="button"
                         aria-label="Thao tác"
-                        onClick={() => setOpenMenuId(isMenuOpen ? null : b.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        onClick={(e) => handleToggleMenu(e, b)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isMenuOpen
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                        }`}
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
-
-                      {isMenuOpen && (
-                        <div className="absolute right-2 top-10 w-52 bg-white rounded-xl shadow-xl border border-slate-200/80 py-1.5 z-50 text-left text-xs animate-in fade-in duration-100">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null)
-                              onViewDetail?.(b)
-                            }}
-                            className="w-full px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Xem chi tiết đơn</span>
-                          </button>
-
-                          <div className="my-1 border-t border-slate-100" />
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null)
-                              onStatusUpdate?.(b.id, "confirmed")
-                            }}
-                            className="w-full px-3 py-2 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition-colors font-medium"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Xác nhận đặt phòng</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null)
-                              onStatusUpdate?.(b.id, "completed")
-                            }}
-                            className="w-full px-3 py-2 text-teal-700 hover:bg-teal-50 flex items-center gap-2 transition-colors font-medium"
-                          >
-                            <CheckCheck className="w-3.5 h-3.5 text-teal-600" />
-                            <span>Hoàn tất trả phòng</span>
-                          </button>
-
-                          <div className="my-1 border-t border-slate-100" />
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null)
-                              onStatusUpdate?.(b.id, "cancelled")
-                            }}
-                            className="w-full px-3 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors font-medium"
-                          >
-                            <XCircle className="w-3.5 h-3.5 text-rose-500" />
-                            <span>Hủy đơn đặt</span>
-                          </button>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 )
@@ -480,6 +465,85 @@ export function BookingsDataTable({
           </button>
         </div>
       </div>
+
+      {/* 4. Portal Dropdown Menu - Rendered directly to document.body (Never clipped by table overflow!) */}
+      {mounted && activeMenuBooking && menuPos && createPortal(
+        <div
+          ref={activeMenuRef}
+          style={{
+            position: "fixed",
+            top: `${menuPos.top}px`,
+            right: `${menuPos.right}px`,
+            zIndex: 9999,
+          }}
+          className="w-56 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 text-left text-xs animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md"
+        >
+          <div className="px-3.5 py-1.5 border-b border-slate-100 text-[11px] font-semibold text-slate-400">
+            Mã: <span className="text-slate-800 font-bold">{activeMenuBooking.code}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const target = activeMenuBooking
+              setActiveMenuBooking(null)
+              setMenuPos(null)
+              onViewDetail?.(target)
+            }}
+            className="w-full px-3.5 py-2.5 text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-slate-500" />
+            <span>Xem chi tiết đơn</span>
+          </button>
+
+          <div className="my-1 border-t border-slate-100" />
+
+          <button
+            type="button"
+            onClick={() => {
+              const target = activeMenuBooking
+              setActiveMenuBooking(null)
+              setMenuPos(null)
+              onStatusUpdate?.(target.id, "confirmed")
+            }}
+            className="w-full px-3.5 py-2.5 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2.5 transition-colors font-medium cursor-pointer"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Xác nhận đặt phòng</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const target = activeMenuBooking
+              setActiveMenuBooking(null)
+              setMenuPos(null)
+              onStatusUpdate?.(target.id, "completed")
+            }}
+            className="w-full px-3.5 py-2.5 text-teal-700 hover:bg-teal-50 flex items-center gap-2.5 transition-colors font-medium cursor-pointer"
+          >
+            <CheckCheck className="w-3.5 h-3.5 text-teal-600" />
+            <span>Hoàn tất trả phòng</span>
+          </button>
+
+          <div className="my-1 border-t border-slate-100" />
+
+          <button
+            type="button"
+            onClick={() => {
+              const target = activeMenuBooking
+              setActiveMenuBooking(null)
+              setMenuPos(null)
+              onStatusUpdate?.(target.id, "cancelled")
+            }}
+            className="w-full px-3.5 py-2.5 text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors font-medium cursor-pointer"
+          >
+            <XCircle className="w-3.5 h-3.5 text-rose-500" />
+            <span>Hủy đơn đặt</span>
+          </button>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

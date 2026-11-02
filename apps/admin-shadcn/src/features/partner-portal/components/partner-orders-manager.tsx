@@ -3,14 +3,18 @@
 import { useState } from "react"
 import {
   AlertCircle,
+  BedDouble,
   Bot,
+  Building,
   Calendar,
   CheckCircle2,
   Clock,
+  MapPin,
   MessageSquare,
   Phone,
   Search,
   User,
+  Users,
   XCircle,
 } from "lucide-react"
 import type { PartnerOrderData } from "../types"
@@ -329,23 +333,66 @@ export function PartnerOrdersManager({
 
                 {/* Main Content Grid: Customer & Service Info */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs">
-                  {/* Col 1: Service & Timing */}
-                  <div>
-                    <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">
-                      Dịch vụ yêu cầu
-                    </span>
-                    <div className="font-bold text-white text-sm mt-1">
-                      {order.serviceTitle}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-300 mt-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>
-                        {order.startDate}
-                        {order.endDate ? ` → ${order.endDate}` : ""}
+                  {/* Col 1: Service, Room & Property Info */}
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wider font-semibold text-emerald-400/90 flex items-center gap-1">
+                        <Building className="w-3 h-3" />
+                        Cơ sở & Hạng phòng
                       </span>
+                      <div className="font-bold text-white text-sm mt-0.5">
+                        {order.propertyName || order.serviceTitle}
+                      </div>
+                      <div className="text-emerald-300 font-medium text-xs mt-1 flex items-center gap-1">
+                        <BedDouble className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        <span>Hạng phòng: <span className="text-white font-semibold">{order.roomType || order.serviceTitle}</span></span>
+                      </div>
+                      {order.propertyLocation && (
+                        <div className="flex items-center gap-1 text-slate-400 text-[11px] mt-1">
+                          <MapPin className="w-3 h-3 shrink-0 text-slate-400" />
+                          <span>{order.propertyLocation}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-slate-400 mt-1">
-                      Số lượng: <span className="text-white font-semibold">{order.quantity}</span>
+
+                    <div className="pt-2 border-t border-slate-800/80 space-y-1">
+                      <div className="flex items-center gap-1.5 text-slate-200">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>
+                          {order.startDate}
+                          {order.endDate ? ` → ${order.endDate}` : ""}
+                        </span>
+                        {order.nightCount && (
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">
+                            {order.nightCount} đêm
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-slate-300 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Users className="w-3 h-3 text-slate-400" />
+                          <span>Khách: <strong className="text-white">{order.guestCount || order.quantity}</strong></span>
+                        </span>
+                        {order.roomAttributes?.bedrooms && (
+                          <span className="text-slate-400 text-[11px]">
+                            · {order.roomAttributes.bedrooms} phòng ngủ (Tối đa {order.roomAttributes.maxGuests || 4} khách)
+                          </span>
+                        )}
+                      </div>
+
+                      {order.roomAttributes?.amenities && order.roomAttributes.amenities.length > 0 && (
+                        <div className="flex items-center gap-1 flex-wrap pt-1">
+                          {order.roomAttributes.amenities.slice(0, 3).map((a, idx) => (
+                            <span
+                              key={idx}
+                              className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px]"
+                            >
+                              {a}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

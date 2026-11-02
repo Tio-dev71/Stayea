@@ -559,6 +559,21 @@ export class StayeaBookingService {
       }
 
       if (partnerStatus) {
+        // If transitioning to sent_to_partner, ONLY update orders that are still pending_admin or admin_approved.
+        // DO NOT downgrade orders that are already partner_accepted, in_progress, or completed!
+        const whereClause = partnerStatus === "sent_to_partner"
+          ? and(
+              or(
+                eq(partnerOrdersTable.bookingId, updated.id),
+                eq(partnerOrdersTable.orderCode, `ORD-${updated.bookingCode}`)
+              ),
+              inArray(partnerOrdersTable.status, ["pending_admin", "admin_approved"])
+            )
+          : or(
+              eq(partnerOrdersTable.bookingId, updated.id),
+              eq(partnerOrdersTable.orderCode, `ORD-${updated.bookingCode}`)
+            )
+
         await this.db
           .update(partnerOrdersTable)
           .set({
@@ -566,12 +581,7 @@ export class StayeaBookingService {
             updatedAt: new Date(),
             adminNotes: `Đơn đã được Quản trị viên STAYEA xác nhận chuyển sang trạng thái: "${status}"`,
           })
-          .where(
-            or(
-              eq(partnerOrdersTable.bookingId, updated.id),
-              eq(partnerOrdersTable.orderCode, `ORD-${updated.bookingCode}`)
-            )
-          )
+          .where(whereClause)
       }
     } catch (syncErr) {
       this.logger.warn(`Failed to synchronize partner order for booking ${updated.id}: ${syncErr}`)

@@ -187,10 +187,11 @@ export class StayeaPaymentService {
 
     // Generate VietQR dynamic payment URL
     // Format: https://img.vietqr.io/image/<BANK_ID>-<ACCOUNT_NO>-compact2.png?amount=<AMOUNT>&addInfo=<CONTENT>
-    const bankId = "MB" // MB Bank / Vietcombank partner
-    const accountNo = "0988776655"
-    const description = `Stayea ${booking.bookingCode}`
-    const qrCodeUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=CONG%20TY%20CP%20STAYEA`
+    const bankId = process.env.VIETQR_BANK_ID || "MB" // MB Bank
+    const accountNo = process.env.VIETQR_ACCOUNT_NO || "292222288888"
+    const accountName = process.env.VIETQR_ACCOUNT_NAME || "CTY TNHH TOP CN VA NOI DUNG SO"
+    const description = `STAYEA ${booking.bookingCode}`
+    const qrCodeUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`
 
     // Insert pending payment transaction
     const [transaction] = await this.db
@@ -211,7 +212,7 @@ export class StayeaPaymentService {
             bankId,
             bankName: "MB Bank - Ngân hàng TMCP Quân Đội",
             accountNo,
-            accountName: "CÔNG TY CỔ PHẦN DU LỊCH STAYEA",
+            accountName,
           },
           transferContent: description,
           returnUrl: dto.returnUrl,

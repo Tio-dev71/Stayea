@@ -962,10 +962,7 @@ class StayeaApiService {
       if (params?.search) searchParams.set("search", params.search)
       if (params?.status) searchParams.set("status", params.status)
       searchParams.set("_t", Date.now().toString())
-      const res = await fetch(`/api/stayea/bookings/admin/all?${searchParams.toString()}`, {
-        headers: this.getAuthHeader(),
-        cache: "no-store",
-      })
+      const res = await this.fetchWithAuth(`/api/stayea/bookings/admin/all?${searchParams.toString()}`)
       if (res.ok) {
         const json = await res.json()
         const data = json.data || json
@@ -1807,9 +1804,7 @@ class StayeaApiService {
    */
   async getAdminRevenueAnalytics(days: number = 7): Promise<any> {
     try {
-      const res = await fetch(`/api/stayea/bookings/admin/analytics/revenue?days=${days}`, {
-        headers: this.getAuthHeader(),
-      })
+      const res = await this.fetchWithAuth(`/api/stayea/bookings/admin/analytics/revenue?days=${days}&_t=${Date.now()}`)
       if (res.ok) {
         const json = await res.json()
         return json.data || json
@@ -1835,11 +1830,10 @@ class StayeaApiService {
       if (params?.partnerId) sp.set("partnerId", params.partnerId)
       if (params?.type) sp.set("type", params.type)
       if (params?.search) sp.set("search", params.search)
+      sp.set("_t", Date.now().toString())
       const qs = sp.toString() ? `?${sp.toString()}` : ""
 
-      const res = await fetch(`/api/stayea/admin/partners/catalog/services${qs}`, {
-        headers: this.getAuthHeader(),
-      })
+      const res = await this.fetchWithAuth(`/api/stayea/admin/partners/catalog/services${qs}`)
       if (res.ok) {
         const json = await res.json()
         const data = json.data || json

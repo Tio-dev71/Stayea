@@ -784,17 +784,39 @@ export class StayeaPartnerService implements OnModuleInit {
     const rows = await this.db
       .select({
         order: partnerOrdersTable,
+        bookingTitle: stayeaBookingsTable.title,
+        bookingDestination: stayeaBookingsTable.destination,
+        bookingGuestCount: stayeaBookingsTable.guestCount,
         bookingDetails: stayeaBookingsTable.details,
+        serviceDbTitle: partnerServicesTable.title,
+        serviceLocation: partnerServicesTable.location,
+        serviceAttributes: partnerServicesTable.attributes,
+        serviceImages: partnerServicesTable.images,
+        partnerFacilityName: partnerProfilesTable.businessName,
+        partnerFacilityAddress: partnerProfilesTable.address,
       })
       .from(partnerOrdersTable)
       .leftJoin(stayeaBookingsTable, eq(partnerOrdersTable.bookingId, stayeaBookingsTable.id))
+      .leftJoin(partnerServicesTable, eq(partnerOrdersTable.serviceId, partnerServicesTable.id))
+      .leftJoin(partnerProfilesTable, eq(partnerOrdersTable.partnerId, partnerProfilesTable.id))
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(partnerOrdersTable.createdAt))
 
-    return rows.map((r) => ({
-      ...r.order,
-      customerNote: r.order.customerNote || (r.bookingDetails as any)?.contactInfo?.note || "",
-    }))
+    return rows.map((r) => {
+      const details = (r.bookingDetails as any) || {}
+      return {
+        ...r.order,
+        customerNote: r.order.customerNote || details?.contactInfo?.note || "",
+        propertyName: r.bookingTitle || r.partnerFacilityName || r.serviceDbTitle || r.order.serviceTitle,
+        facilityName: r.partnerFacilityName || "",
+        propertyLocation: r.serviceLocation || r.bookingDestination || r.partnerFacilityAddress || "Phú Quốc",
+        roomType: details?.roomType || r.serviceDbTitle || r.order.serviceTitle,
+        nightCount: details?.nightCount || null,
+        guestCount: r.bookingGuestCount || r.order.quantity || 1,
+        roomAttributes: r.serviceAttributes || null,
+        serviceImages: r.serviceImages || [],
+      }
+    })
   }
 
   /**
@@ -899,17 +921,39 @@ export class StayeaPartnerService implements OnModuleInit {
     const rows = await this.db
       .select({
         order: partnerOrdersTable,
+        bookingTitle: stayeaBookingsTable.title,
+        bookingDestination: stayeaBookingsTable.destination,
+        bookingGuestCount: stayeaBookingsTable.guestCount,
         bookingDetails: stayeaBookingsTable.details,
+        serviceDbTitle: partnerServicesTable.title,
+        serviceLocation: partnerServicesTable.location,
+        serviceAttributes: partnerServicesTable.attributes,
+        serviceImages: partnerServicesTable.images,
+        partnerFacilityName: partnerProfilesTable.businessName,
+        partnerFacilityAddress: partnerProfilesTable.address,
       })
       .from(partnerOrdersTable)
       .leftJoin(stayeaBookingsTable, eq(partnerOrdersTable.bookingId, stayeaBookingsTable.id))
+      .leftJoin(partnerServicesTable, eq(partnerOrdersTable.serviceId, partnerServicesTable.id))
+      .leftJoin(partnerProfilesTable, eq(partnerOrdersTable.partnerId, partnerProfilesTable.id))
       .where(and(...conditions))
       .orderBy(desc(partnerOrdersTable.createdAt))
 
-    return rows.map((r) => ({
-      ...r.order,
-      customerNote: r.order.customerNote || (r.bookingDetails as any)?.contactInfo?.note || "",
-    }))
+    return rows.map((r) => {
+      const details = (r.bookingDetails as any) || {}
+      return {
+        ...r.order,
+        customerNote: r.order.customerNote || details?.contactInfo?.note || "",
+        propertyName: r.bookingTitle || r.partnerFacilityName || r.serviceDbTitle || r.order.serviceTitle,
+        facilityName: r.partnerFacilityName || "",
+        propertyLocation: r.serviceLocation || r.bookingDestination || r.partnerFacilityAddress || "Phú Quốc",
+        roomType: details?.roomType || r.serviceDbTitle || r.order.serviceTitle,
+        nightCount: details?.nightCount || null,
+        guestCount: r.bookingGuestCount || r.order.quantity || 1,
+        roomAttributes: r.serviceAttributes || null,
+        serviceImages: r.serviceImages || [],
+      }
+    })
   }
 
   /**

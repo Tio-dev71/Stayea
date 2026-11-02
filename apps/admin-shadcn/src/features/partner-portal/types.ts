@@ -75,6 +75,18 @@ export interface PartnerOrderData {
   partnerNotes?: string | null
   rejectionReason?: string | null
   customerNote?: string | null
+  propertyName?: string | null
+  facilityName?: string | null
+  propertyLocation?: string | null
+  roomType?: string | null
+  nightCount?: number | null
+  guestCount?: number | null
+  roomAttributes?: {
+    bedrooms?: number
+    maxGuests?: number
+    amenities?: string[]
+  } | null
+  serviceImages?: string[] | null
   createdAt: string
 }
 

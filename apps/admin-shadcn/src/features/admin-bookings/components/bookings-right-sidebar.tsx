@@ -37,6 +37,32 @@ export function BookingsRightSidebar({
     }))
   }, [bookings])
 
+  const checkInItems = useMemo(() => {
+    return bookings
+      .filter((b) => b.bookingStatus === "Đã xác nhận" || b.bookingStatus === "Đang lưu trú")
+      .map((b) => ({
+        id: b.id,
+        guestName: b.guestName,
+        guestAvatar: b.guestAvatar || "/about/team-1.jpg",
+        propertyName: b.propertyName,
+        guestsCountText: `${b.guestsCount} khách`,
+        time: b.checkIn,
+      }))
+  }, [bookings])
+
+  const checkOutItems = useMemo(() => {
+    return bookings
+      .filter((b) => b.bookingStatus === "Đã hoàn tất" || b.bookingStatus === "Đang lưu trú")
+      .map((b) => ({
+        id: b.id,
+        guestName: b.guestName,
+        guestAvatar: b.guestAvatar || "/about/team-1.jpg",
+        propertyName: b.propertyName,
+        guestsCountText: `${b.guestsCount} khách`,
+        time: b.checkOut,
+      }))
+  }, [bookings])
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
       {/* 1. Top Banner */}
@@ -68,7 +94,11 @@ export function BookingsRightSidebar({
       </div>
 
       {/* 2. Lịch check-in / check-out hôm nay */}
-      <BookingsScheduleCard onViewAll={onViewAllSchedule} />
+      <BookingsScheduleCard
+        checkInItems={checkInItems}
+        checkOutItems={checkOutItems}
+        onViewAll={onViewAllSchedule}
+      />
 
       {/* 3. Tình trạng đặt phòng theo kênh */}
       <BookingsChannelChart

@@ -18,7 +18,7 @@ module.exports = {
       kill_timeout: 5000,
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3088,
       },
       error_file: '../../logs/pm2/api-error.log',
       out_file: '../../logs/pm2/api-out.log',
@@ -29,7 +29,7 @@ module.exports = {
       name: 'stayea-web',
       cwd: './apps/admin-shadcn',
       script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 8080',
+      args: 'start -p 8088',
       instances: 2,
       exec_mode: 'cluster',
       autorestart: true,
@@ -39,7 +39,7 @@ module.exports = {
       kill_timeout: 5000,
       env: {
         NODE_ENV: 'production',
-        PORT: 8080,
+        PORT: 8088,
       },
       error_file: '../../logs/pm2/web-error.log',
       out_file: '../../logs/pm2/web-out.log',

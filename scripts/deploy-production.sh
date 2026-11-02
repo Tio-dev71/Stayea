@@ -7,7 +7,7 @@
 set -euo pipefail
 
 DEPLOY_DIR="${DEPLOY_DIR:-/var/www/stayea}"
-HEALTH_CHECK_URL="${HEALTH_CHECK_URL:-http://127.0.0.1:3000/health}"
+HEALTH_CHECK_URL="${HEALTH_CHECK_URL:-http://127.0.0.1:3088/health}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 log() {

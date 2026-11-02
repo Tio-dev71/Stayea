@@ -98,6 +98,14 @@ export class StayeaPartnerController {
   }
 
   @ApiBearerAuth()
+  @Get("my-profiles")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Get all partner facilities/branches for current user" })
+  async getMyProfiles(@Request() req: { user: { id: string } }) {
+    return this.partnerService.getAllProfilesByUserId(req.user.id)
+  }
+
+  @ApiBearerAuth()
   @Patch("profile")
   @UseEnvelope()
   @ApiOperation({ summary: "Update partner profile" })

@@ -201,9 +201,18 @@ export class StayeaPartnerService implements OnModuleInit {
       .select()
       .from(partnerProfilesTable)
       .where(eq(partnerProfilesTable.userId, userId))
+      .orderBy(desc(partnerProfilesTable.createdAt))
       .limit(1)
 
     return profile || null
+  }
+
+  async getAllProfilesByUserId(userId: string) {
+    return this.db
+      .select()
+      .from(partnerProfilesTable)
+      .where(eq(partnerProfilesTable.userId, userId))
+      .orderBy(desc(partnerProfilesTable.createdAt))
   }
 
   async getProfileById(id: string) {
@@ -220,11 +229,6 @@ export class StayeaPartnerService implements OnModuleInit {
   }
 
   async registerPartner(userId: string, dto: RegisterPartnerDto) {
-    const existing = await this.getProfileByUserId(userId)
-    if (existing) {
-      throw new BadRequestException("Tài khoản này đã đăng ký đối tác STAYEA")
-    }
-
     const partnerId = generateUid("ptn")
 
     const [newProfile] = await this.db
@@ -243,7 +247,7 @@ export class StayeaPartnerService implements OnModuleInit {
         bankName: dto.bankName,
         bankAccount: dto.bankAccount,
         bankAccountHolder: dto.bankAccountHolder,
-        status: "pending",
+        status: "approved",
         commissionRate: "10.00",
         rating: "0.00",
         totalOrders: 0,

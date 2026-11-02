@@ -38,10 +38,37 @@ export function PartnerPortalPage({
   onNavigateHome,
   onLogout,
 }: PartnerPortalPageProps) {
-  // Profiles State
-  const [profiles, setProfiles] = useState<PartnerProfileData[]>([])
-  const [currentProfile, setCurrentProfile] = useState<PartnerProfileData | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Profiles State (pre-populated from localStorage so page loads instantly without flashing empty)
+  const [profiles, setProfiles] = useState<PartnerProfileData[]>(() => {
+    if (typeof window === "undefined") return []
+    try {
+      const cached = localStorage.getItem("stayea_cached_partner_profiles")
+      return cached ? JSON.parse(cached) : []
+    } catch {
+      return []
+    }
+  })
+  const [currentProfile, setCurrentProfile] = useState<PartnerProfileData | null>(() => {
+    if (typeof window === "undefined") return null
+    try {
+      const cachedActive = localStorage.getItem("stayea_cached_partner_profile")
+      if (cachedActive) return JSON.parse(cachedActive)
+      const cachedList = localStorage.getItem("stayea_cached_partner_profiles")
+      if (cachedList) {
+        const parsed = JSON.parse(cachedList)
+        return parsed[0] || null
+      }
+    } catch {}
+    return null
+  })
+  const [loading, setLoading] = useState(() => {
+    if (typeof window === "undefined") return true
+    try {
+      return !localStorage.getItem("stayea_cached_partner_profile")
+    } catch {
+      return true
+    }
+  })
   const [isCreateProfileOpen, setIsCreateProfileOpen] = useState(false)
 
   // Tab State
@@ -65,14 +92,25 @@ export function PartnerPortalPage({
       try {
         const currentUser = getUser()
         const isAdmin = currentUser?.role === "ADMIN"
-        const [selfPartner, adminPartners] = await Promise.all([
+        const [myProfiles, selfPartner, adminPartners] = await Promise.all([
+          stayeaApi.getMyPartnerProfiles().catch(() => []),
           stayeaApi.getPartnerProfile().catch(() => null),
           isAdmin ? stayeaApi.getAdminPartners().catch(() => []) : Promise.resolve([]),
         ])
 
-        const list: any[] = Array.isArray(adminPartners) ? [...adminPartners] : []
-        if (selfPartner && !list.some((p: any) => p.id === selfPartner.id)) {
+        const list: any[] = []
+        if (Array.isArray(myProfiles)) {
+          for (const p of myProfiles) {
+            if (p && !list.some((item) => item.id === p.id)) list.push(p)
+          }
+        }
+        if (selfPartner && !list.some((item) => item.id === selfPartner.id)) {
           list.unshift(selfPartner)
+        }
+        if (Array.isArray(adminPartners)) {
+          for (const p of adminPartners) {
+            if (p && !list.some((item) => item.id === p.id)) list.push(p)
+          }
         }
 
         const mapped: PartnerProfileData[] = list.map((p: any) => ({
@@ -95,15 +133,39 @@ export function PartnerPortalPage({
         }))
 
         if (isMounted) {
-          setProfiles(mapped)
-          const myProfile = selfPartner ? mapped.find((p) => p.id === selfPartner.id) : null
-          setCurrentProfile(myProfile || mapped[0] || null)
+          if (mapped.length > 0) {
+            setProfiles(mapped)
+            try {
+              localStorage.setItem("stayea_cached_partner_profiles", JSON.stringify(mapped))
+            } catch {}
+
+            const activeId = typeof window !== "undefined" ? localStorage.getItem("stayea_active_partner_id") : null
+            const found =
+              (activeId ? mapped.find((p) => p.id === activeId) : null) ||
+              (selfPartner ? mapped.find((p) => p.id === selfPartner.id) : null) ||
+              mapped[0]
+
+            if (found) {
+              setCurrentProfile(found)
+              try {
+                localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(found))
+                localStorage.setItem("stayea_active_partner_id", found.id)
+              } catch {}
+            }
+          } else {
+            // Only clear if list is actually empty and user is verified to have none
+            setProfiles([])
+            setCurrentProfile(null)
+            try {
+              localStorage.removeItem("stayea_cached_partner_profiles")
+              localStorage.removeItem("stayea_cached_partner_profile")
+              localStorage.removeItem("stayea_active_partner_id")
+            } catch {}
+          }
           setLoading(false)
         }
       } catch {
         if (isMounted) {
-          setProfiles([])
-          setCurrentProfile(null)
           setLoading(false)
         }
       }
@@ -303,14 +365,41 @@ export function PartnerPortalPage({
       toast.error("Không thể lưu thông tin đối tác.")
       return false
     }
-    setCurrentProfile((prev) => (prev ? { ...prev, ...updated, ...saved } : null))
+    setCurrentProfile((prev) => {
+      const next = prev ? { ...prev, ...updated, ...saved } : null
+      if (next) {
+        try {
+          localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(next))
+        } catch {}
+      }
+      return next
+    })
     return true
+  }
+
+  // Handle Select Profile / Branch Switch
+  const handleSelectProfile = (profile: PartnerProfileData) => {
+    setCurrentProfile(profile)
+    try {
+      localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(profile))
+      localStorage.setItem("stayea_active_partner_id", profile.id)
+    } catch {}
   }
 
   // Handle Partner Created
   const handlePartnerCreated = (newProfile: PartnerProfileData) => {
-    setProfiles((prev) => [newProfile, ...prev])
+    setProfiles((prev) => {
+      const next = [newProfile, ...prev.filter((p) => p.id !== newProfile.id)]
+      try {
+        localStorage.setItem("stayea_cached_partner_profiles", JSON.stringify(next))
+      } catch {}
+      return next
+    })
     setCurrentProfile(newProfile)
+    try {
+      localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(newProfile))
+      localStorage.setItem("stayea_active_partner_id", newProfile.id)
+    } catch {}
   }
 
   const handleLogout = async () => {
@@ -320,6 +409,11 @@ export function PartnerPortalPage({
     }
     try {
       await stayeaApi.logout()
+    } catch {}
+    try {
+      localStorage.removeItem("stayea_cached_partner_profiles")
+      localStorage.removeItem("stayea_cached_partner_profile")
+      localStorage.removeItem("stayea_active_partner_id")
     } catch {}
     clearAllAuth()
     window.location.href = "/login"
@@ -339,7 +433,7 @@ export function PartnerPortalPage({
       <PartnerHeader
         currentProfile={currentProfile}
         profiles={profiles}
-        onSelectProfile={setCurrentProfile}
+        onSelectProfile={handleSelectProfile}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         pendingOrdersCount={pendingOrdersCount}

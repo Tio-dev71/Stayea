@@ -343,6 +343,61 @@ class StayeaApiService {
     )
   }
 
+  private refreshPromise: Promise<boolean> | null = null
+
+  async refreshAuthToken(): Promise<boolean> {
+    const refreshToken = getRefreshToken()
+    if (!refreshToken) return false
+
+    try {
+      const res = await fetch(`/api/auth/refresh-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      })
+
+      if (!res.ok) return false
+
+      const data = (await res.json()) as { accessToken?: string; refreshToken?: string; data?: { accessToken?: string; refreshToken?: string } }
+      const accessToken = data.accessToken || data.data?.accessToken
+      const newRefreshToken = data.refreshToken || data.data?.refreshToken
+
+      if (accessToken) setToken(accessToken)
+      if (newRefreshToken) setRefreshToken(newRefreshToken)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+    const token = getToken()
+    const headers = new Headers(init?.headers || {})
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`)
+    }
+
+    let res = await fetch(input, { ...init, headers })
+
+    if (res.status === 401) {
+      if (!this.refreshPromise) {
+        this.refreshPromise = this.refreshAuthToken().finally(() => {
+          this.refreshPromise = null
+        })
+      }
+      const refreshed = await this.refreshPromise
+      if (refreshed) {
+        const newToken = getToken()
+        if (newToken) {
+          headers.set("Authorization", `Bearer ${newToken}`)
+        }
+        res = await fetch(input, { ...init, headers })
+      }
+    }
+
+    return res
+  }
+
   /**
    * Helper to get Authorization headers from token
    */
@@ -573,9 +628,9 @@ class StayeaApiService {
    */
   async getProfile(): Promise<any | null> {
     try {
-      const headers = this.getAuthHeader()
-      if (!headers.Authorization) return null
-      const res = await fetch("/api/profile", { headers })
+      const token = getToken()
+      if (!token) return null
+      const res = await this.fetchWithAuth("/api/profile")
       if (res.ok) {
         const data = await res.json()
         const profile = data.data || data
@@ -593,7 +648,7 @@ class StayeaApiService {
         return profile
       }
       // Fallback to /api/auth/session
-      const sessionRes = await fetch("/api/auth/session", { headers })
+      const sessionRes = await this.fetchWithAuth("/api/auth/session")
       if (sessionRes.ok) {
         const sessionData = await sessionRes.json()
         const u = sessionData.user || {}
@@ -1167,9 +1222,9 @@ class StayeaApiService {
    */
   async registerPartner(dto: any): Promise<any> {
     try {
-      const res = await fetch(`/api/stayea/partner/register`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dto),
       })
       if (res.ok) {
@@ -1188,9 +1243,9 @@ class StayeaApiService {
    */
   async adminCreatePartner(dto: any): Promise<any> {
     try {
-      const res = await fetch(`/api/stayea/admin/partners`, {
+      const res = await this.fetchWithAuth(`/api/stayea/admin/partners`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dto),
       })
       if (res.ok) {
@@ -1208,9 +1263,9 @@ class StayeaApiService {
    */
   async adminUpdatePartnerStatus(id: string, status: string, commissionRate?: number): Promise<boolean> {
     try {
-      const res = await fetch(`/api/stayea/admin/partners/${id}/status`, {
+      const res = await this.fetchWithAuth(`/api/stayea/admin/partners/${id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, commissionRate }),
       })
       return res.ok
@@ -1226,9 +1281,7 @@ class StayeaApiService {
     try {
       const searchParams = new URLSearchParams()
       if (params?.status) searchParams.set("status", params.status)
-      const res = await fetch(`/api/stayea/partner/orders?${searchParams.toString()}`, {
-        headers: this.getAuthHeader(),
-      })
+      const res = await this.fetchWithAuth(`/api/stayea/partner/orders?${searchParams.toString()}`)
       if (res.ok) {
         const json = await res.json()
         const data = json.data || json
@@ -1245,9 +1298,9 @@ class StayeaApiService {
    */
   async partnerRespondOrder(orderId: string, action: "accept" | "reject", reason?: string): Promise<boolean> {
     try {
-      const res = await fetch(`/api/stayea/partner/orders/${orderId}/respond`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/orders/${orderId}/respond`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, note: reason }),
       })
       return res.ok
@@ -1276,9 +1329,9 @@ class StayeaApiService {
         cleanPayload.attributes = payload.attributes
       }
 
-      const res = await fetch(`/api/stayea/partner/services`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/services`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cleanPayload),
       })
       if (!res.ok) {
@@ -1296,9 +1349,9 @@ class StayeaApiService {
 
   async updatePartnerProfile(payload: Record<string, unknown>): Promise<any | null> {
     try {
-      const res = await fetch(`/api/stayea/partner/profile`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/profile`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
       if (!res.ok) return null
@@ -1311,9 +1364,9 @@ class StayeaApiService {
 
   async updatePartnerService(id: string, payload: Record<string, unknown>): Promise<boolean> {
     try {
-      const res = await fetch(`/api/stayea/partner/services/${id}`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/services/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
       return res.ok
@@ -1324,9 +1377,8 @@ class StayeaApiService {
 
   async deletePartnerService(id: string): Promise<boolean> {
     try {
-      const res = await fetch(`/api/stayea/partner/services/${id}`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/services/${id}`, {
         method: "DELETE",
-        headers: this.getAuthHeader(),
       })
       return res.ok
     } catch {
@@ -1339,9 +1391,7 @@ class StayeaApiService {
       const params = new URLSearchParams({ serviceId })
       if (startDate) params.append("startDate", startDate)
       if (endDate) params.append("endDate", endDate)
-      const res = await fetch(`/api/stayea/partner/catalog/inventory?${params.toString()}`, {
-        headers: this.getAuthHeader(),
-      })
+      const res = await this.fetchWithAuth(`/api/stayea/partner/catalog/inventory?${params.toString()}`)
       if (!res.ok) return []
       const json = await res.json()
       return json.data || json || []
@@ -1355,9 +1405,9 @@ class StayeaApiService {
     dates: { date: string; isAvailable?: boolean; priceOverride?: number; totalSlots?: number; note?: string }[]
   }): Promise<boolean> {
     try {
-      const res = await fetch(`/api/stayea/partner/inventory/bulk`, {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/inventory/bulk`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
       return res.ok
@@ -1371,9 +1421,7 @@ class StayeaApiService {
    */
   async getPartnerProfile(): Promise<any | null> {
     try {
-      const res = await fetch(`/api/stayea/partner/profile`, {
-        headers: this.getAuthHeader(),
-      })
+      const res = await this.fetchWithAuth(`/api/stayea/partner/profile`)
       if (res.ok) {
         const json = await res.json()
         return json.data || json
@@ -1382,6 +1430,23 @@ class StayeaApiService {
       // ignore
     }
     return null
+  }
+
+  /**
+   * Partner Hub: Get all partner facilities/branches for currently logged-in user
+   */
+  async getMyPartnerProfiles(): Promise<any[]> {
+    try {
+      const res = await this.fetchWithAuth(`/api/stayea/partner/my-profiles`)
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data || json
+        return Array.isArray(data) ? data : []
+      }
+    } catch {
+      // ignore
+    }
+    return []
   }
 
   /**

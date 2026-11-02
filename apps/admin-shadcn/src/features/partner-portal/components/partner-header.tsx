@@ -46,6 +46,7 @@ export function PartnerHeader({
 }: PartnerHeaderProps) {
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isBranchMenuOpen, setIsBranchMenuOpen] = useState(false)
 
   useEffect(() => {
     setCurrentUser(getUser())
@@ -126,57 +127,84 @@ export function PartnerHeader({
 
             {/* Profile Switcher or Add Partner Button */}
             {currentProfile ? (
-              <div className="relative group hidden sm:block">
+              <div className="relative">
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 hover:border-emerald-500/50 text-xs text-slate-200 transition-all"
+                  onClick={() => setIsBranchMenuOpen(!isBranchMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 hover:border-emerald-500/50 text-xs text-slate-200 transition-all cursor-pointer"
+                  title="Chuyển đổi hoặc thêm chi nhánh"
                 >
                   {getServiceTypeIcon(currentProfile.businessType)}
-                  <span className="font-medium max-w-[200px] truncate">
+                  <span className="font-medium max-w-[140px] sm:max-w-[220px] truncate">
                     {currentProfile.businessName}
                   </span>
-                  {profiles.length > 1 && (
-                    <ChevronDown className="w-3.5 h-3.5 text-emerald-400 group-hover:rotate-180 transition-transform" />
-                  )}
+                  <ChevronDown className={`w-3.5 h-3.5 text-emerald-400 transition-transform ${isBranchMenuOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Dropdown Menu (only if multiple partners) */}
-                {profiles.length > 1 && (
-                  <div className="absolute left-0 mt-1 w-72 bg-slate-900 border border-slate-700/80 rounded-xl shadow-xl py-2 hidden group-hover:block z-50">
-                    <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                      Chuyển đổi cơ sở đối tác:
+                {/* Dropdown Menu */}
+                {isBranchMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsBranchMenuOpen(false)}
+                    />
+                    <div className="absolute left-0 mt-1.5 w-72 sm:w-80 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl py-2 z-50">
+                      <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-slate-800/80 mb-1">
+                        <span>Cơ sở đối tác ({profiles.length})</span>
+                        <span className="text-emerald-400 font-normal">Đang hoạt động</span>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {profiles.map((p) => (
+                          <button
+                            type="button"
+                            key={p.id}
+                            onClick={() => {
+                              onSelectProfile(p)
+                              setIsBranchMenuOpen(false)
+                            }}
+                            className={`w-full text-left px-3 py-2.5 flex items-start gap-2.5 text-xs hover:bg-emerald-950/80 transition-colors ${
+                              p.id === currentProfile.id
+                                ? "bg-emerald-900/40 text-emerald-300 font-semibold"
+                                : "text-slate-300"
+                            }`}
+                          >
+                            <span className="mt-0.5">{getServiceTypeIcon(p.businessType)}</span>
+                            <div className="flex-1 truncate">
+                              <div className="truncate text-xs">{p.businessName}</div>
+                              <div className="text-[10px] text-slate-400 mt-0.5">
+                                {getServiceTypeBadge(p.businessType)}
+                              </div>
+                            </div>
+                            {p.id === currentProfile.id && (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Add Branch Button inside Dropdown */}
+                      <div className="pt-2 mt-1 border-t border-slate-800/80 px-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsBranchMenuOpen(false)
+                            if (onAddPartner) onAddPartner()
+                          }}
+                          className="w-full text-left px-3 py-2 flex items-center gap-2 text-xs text-emerald-400 hover:bg-emerald-950/60 rounded-lg transition-colors font-medium border border-dashed border-emerald-800/60 hover:border-emerald-500/60"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>+ Thêm cơ sở / chi nhánh mới</span>
+                        </button>
+                      </div>
                     </div>
-                    {profiles.map((p) => (
-                      <button
-                        type="button"
-                        key={p.id}
-                        onClick={() => onSelectProfile(p)}
-                        className={`w-full text-left px-3 py-2 flex items-start gap-2.5 text-xs hover:bg-emerald-950/80 transition-colors ${
-                          p.id === currentProfile.id
-                            ? "bg-emerald-900/40 text-emerald-300 font-semibold"
-                            : "text-slate-300"
-                        }`}
-                      >
-                        <span className="mt-0.5">{getServiceTypeIcon(p.businessType)}</span>
-                        <div className="flex-1 truncate">
-                          <div className="truncate">{p.businessName}</div>
-                          <div className="text-[10px] text-slate-400">
-                            {getServiceTypeBadge(p.businessType)}
-                          </div>
-                        </div>
-                        {p.id === currentProfile.id && (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  </>
                 )}
               </div>
             ) : (
               <button
                 type="button"
                 onClick={onAddPartner}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-xs text-emerald-300 hover:bg-emerald-900/60 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-xs text-emerald-300 hover:bg-emerald-900/60 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Đăng ký cơ sở đối tác</span>

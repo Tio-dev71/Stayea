@@ -58,6 +58,10 @@ export interface BookingRecord {
   guestName: string
   guestAvatar: string
   guestFlag: string
+  guestPhone?: string
+  guestEmail?: string
+  specialRequests?: string
+  paymentMethod?: string
   propertyName: string
   checkIn: string
   checkOut: string

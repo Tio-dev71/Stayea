@@ -77,6 +77,15 @@ export function StayeaAdminBookingsPage({
               "Khách hàng STAYEA",
             guestAvatar: "/about/team-1.jpg",
             guestFlag: "🇻🇳",
+            guestPhone: item.details?.contactInfo?.phone || item.contactPhone || "",
+            guestEmail: item.details?.contactInfo?.email || item.contactEmail || "",
+            specialRequests:
+              item.details?.contactInfo?.note ||
+              item.details?.note ||
+              item.details?.specialRequests ||
+              item.customerNote ||
+              "",
+            paymentMethod: item.paymentMethod || "",
             propertyName: item.title || item.metadata?.propertyName || "",
             checkIn:
               item.startDate || item.checkInDate

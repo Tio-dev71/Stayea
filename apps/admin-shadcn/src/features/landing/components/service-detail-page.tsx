@@ -886,49 +886,96 @@ export function ServiceDetailPage({
                     <span className="text-slate-400">Tổng thanh toán:</span>
                     <span className="font-extrabold text-[#0c3b40]">{formatCurrency(totalAmount)}</span>
                   </div>
+                  {customerNotes && (
+                    <div className="flex justify-between items-start pt-1.5 border-t border-slate-200/60">
+                      <span className="text-slate-400 shrink-0">Yêu cầu đặc biệt:</span>
+                      <span className="font-medium text-slate-800 text-right italic ml-2">"{customerNotes}"</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Dynamic VietQR Payment Card (SEC-004 & Phase 2 UX) */}
-                <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 text-center space-y-3">
-                  <div className="flex items-center justify-between text-xs text-emerald-900 font-semibold px-1">
-                    <span>Quét mã VietQR chuyển khoản</span>
-                    <span className="text-[11px] bg-emerald-200/80 text-emerald-800 px-2 py-0.5 rounded-full font-mono font-bold">
-                      Giữ phòng 15 phút
-                    </span>
-                  </div>
+                {paymentMethod === "checkin" ? (
+                  <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-left space-y-3">
+                    <div className="flex items-center gap-2.5 text-xs text-amber-950 font-bold px-1">
+                      <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800 shrink-0">
+                        <FileCheck className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="block text-amber-950 font-bold text-sm">Thanh toán khi nhận phòng (Check-in)</span>
+                        <span className="text-[11px] font-normal text-amber-800">Thanh toán trực tiếp bằng Tiền mặt hoặc Quẹt thẻ tại quầy tiếp đón</span>
+                      </div>
+                    </div>
 
-                  <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-sm inline-block mx-auto">
-                    <img
-                      src={`https://img.vietqr.io/image/MB-0988776655-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(
-                        `STAYEA ${bookingCode}`
-                      )}&accountName=CONG%20TY%20CP%20STAYEA`}
-                      alt="VietQR thanh toán đặt chỗ STAYEA"
-                      className="w-48 h-auto mx-auto object-contain rounded-lg"
-                    />
-                  </div>
+                    <div className="text-[11px] text-slate-700 space-y-2 bg-white/90 p-3.5 rounded-xl border border-amber-200/70">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Hình thức thanh toán:</span>
+                        <span className="font-bold text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-md text-[11px]">
+                          💵 Trực tiếp tại quầy lễ tân
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Thời gian nhận phòng dự kiến:</span>
+                        <span className="font-semibold text-slate-900">{checkInDate} (từ 14:00)</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Số tiền cần thanh toán:</span>
+                        <span className="font-extrabold text-emerald-800 text-xs">{formatCurrency(totalAmount)}</span>
+                      </div>
+                      {customerNotes && (
+                        <div className="pt-2 border-t border-slate-100">
+                          <span className="text-slate-500 block mb-0.5">Yêu cầu đặc biệt đã ghi nhận:</span>
+                          <span className="font-semibold text-amber-900 italic">"{customerNotes}"</span>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="text-[11px] text-slate-600 space-y-1 text-left bg-white/80 p-3 rounded-xl border border-emerald-100 font-mono">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Ngân hàng:</span>
-                      <span className="font-bold text-slate-800">MB Bank (Quân Đội)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Số tài khoản:</span>
-                      <span className="font-bold text-slate-800 font-mono">0988776655</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Chủ tài khoản:</span>
-                      <span className="font-bold text-slate-800">CÔNG TY CP DU LỊCH STAYEA</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Nội dung CK:</span>
-                      <span className="font-bold text-emerald-700 font-mono">STAYEA {bookingCode}</span>
-                    </div>
+                    <p className="text-[11px] text-amber-950/80 leading-relaxed px-1">
+                      💡 <strong>Lưu ý:</strong> Vui lòng giữ mã đặt phòng <span className="font-mono font-bold text-slate-900">#{bookingCode}</span> để đối soát với nhân viên lễ tân khi nhận phòng. Đơn đặt phòng đã được hệ thống gửi ngay tới đối tác STAYEA.
+                    </p>
                   </div>
-                  <p className="text-[10px] text-slate-500 italic">
-                    * Hệ thống tự động xác nhận đơn ngay khi nhận được thông báo chuyển khoản thành công.
-                  </p>
-                </div>
+                ) : (
+                  /* Dynamic VietQR Payment Card (SEC-004 & SePay Integration) */
+                  <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 text-center space-y-3">
+                    <div className="flex items-center justify-between text-xs text-emerald-900 font-semibold px-1">
+                      <span>Quét mã VietQR chuyển khoản</span>
+                      <span className="text-[11px] bg-emerald-200/80 text-emerald-800 px-2 py-0.5 rounded-full font-mono font-bold">
+                        Giữ phòng 15 phút
+                      </span>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-sm inline-block mx-auto">
+                      <img
+                        src={`https://img.vietqr.io/image/MB-292222288888-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(
+                          `STAYEA ${bookingCode}`
+                        )}&accountName=${encodeURIComponent("CTY TNHH TOP CN VA NOI DUNG SO")}`}
+                        alt="VietQR thanh toán đặt chỗ STAYEA"
+                        className="w-48 h-auto mx-auto object-contain rounded-lg"
+                      />
+                    </div>
+
+                    <div className="text-[11px] text-slate-600 space-y-1 text-left bg-white/80 p-3 rounded-xl border border-emerald-100 font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Ngân hàng:</span>
+                        <span className="font-bold text-slate-800">MB Bank (Quân Đội)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Số tài khoản:</span>
+                        <span className="font-bold text-slate-800 font-mono">292222288888</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Chủ tài khoản:</span>
+                        <span className="font-bold text-slate-800">CTY TNHH TOP CN VA NOI DUNG SO</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Nội dung CK:</span>
+                        <span className="font-bold text-emerald-700 font-mono">STAYEA {bookingCode}</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-500 italic">
+                      * Hệ thống tự động xác nhận đơn ngay khi nhận được thông báo chuyển khoản thành công từ SePay.
+                    </p>
+                  </div>
+                )}
 
                 <div className="pt-2 flex flex-col sm:flex-row gap-2">
                   <button

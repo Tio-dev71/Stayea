@@ -1424,7 +1424,8 @@ class StayeaApiService {
       const res = await this.fetchWithAuth(`/api/stayea/partner/profile`)
       if (res.ok) {
         const json = await res.json()
-        return json.data || json
+        const data = json.data !== undefined ? json.data : json
+        return data && typeof data === "object" && data.id ? data : null
       }
     } catch {
       // ignore
@@ -1440,8 +1441,14 @@ class StayeaApiService {
       const res = await this.fetchWithAuth(`/api/stayea/partner/my-profiles`)
       if (res.ok) {
         const json = await res.json()
-        const data = json.data || json
-        return Array.isArray(data) ? data : []
+        const data = json.data !== undefined ? json.data : json
+        if (Array.isArray(data)) {
+          return data.filter((p) => p && p.id)
+        }
+        if (data && typeof data === "object" && data.id) {
+          return [data]
+        }
+        return []
       }
     } catch {
       // ignore

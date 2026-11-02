@@ -74,6 +74,7 @@ export interface PartnerOrderData {
   adminNotes?: string | null
   partnerNotes?: string | null
   rejectionReason?: string | null
+  customerNote?: string | null
   createdAt: string
 }
 

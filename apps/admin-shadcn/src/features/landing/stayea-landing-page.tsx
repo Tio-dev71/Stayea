@@ -167,6 +167,23 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       const pathname = window.location.pathname.replace(/^\//, "").toLowerCase()
       const pathSegment = pathname.split("/")[0]
       if (pathSegment && pathSegment !== "") {
+        if (pathSegment.startsWith("admin-")) return pathSegment as PageType
+        if (pathSegment === "dashboard") return "dashboard"
+        if (pathSegment === "admin") return "admin-bookings"
+        if (pathSegment === "stayea") {
+          const secondSegment = pathname.split("/")[1]
+          if (secondSegment === "properties") return "admin-properties"
+          if (secondSegment === "experiences") return "admin-experiences"
+          if (secondSegment === "customers") return "admin-customers"
+          if (secondSegment === "hosts" || secondSegment === "partners") return "admin-hosts"
+          if (secondSegment === "deals") return "admin-deals"
+          if (secondSegment === "revenue") return "admin-revenue"
+          if (secondSegment === "messages") return "admin-messages"
+          if (secondSegment === "marketing") return "admin-marketing"
+          if (secondSegment === "reports") return "admin-reports"
+          if (secondSegment === "overview" || secondSegment === "dashboard") return "dashboard"
+          return "admin-bookings"
+        }
         if (pathSegment === "stay" || pathSegment === "luu-tru") return "stay"
         if (pathSegment === "experience" || pathSegment === "trai-nghiem") return "experience"
         if (pathSegment === "packages" || pathSegment === "goi") return "packages"
@@ -194,12 +211,14 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         if (pathSegment === "service-detail" || pathSegment === "chi-tiet") return "service-detail"
         if (pathSegment === "login" || pathSegment === "dang-nhap") return "login"
         if (pathSegment === "register" || pathSegment === "dang-ky") return "register"
-        if (pathSegment === "admin" || pathSegment === "dashboard" || pathSegment === "stayea") return "admin-bookings"
       }
       const params = new URLSearchParams(window.location.search)
       const pageParam = params.get("page")
       if (pageParam) return pageParam as PageType
+      const tabParam = params.get("tab")
+      if (tabParam && tabParam.startsWith("admin-")) return tabParam as PageType
       const hash = window.location.hash.replace("#", "").toLowerCase()
+      if (hash && hash.startsWith("admin-")) return hash as PageType
       if (hash === "host" || hash === "chu-nha") return "host"
       if (hash === "partner" || hash === "doi-tac") return "partner"
       if (hash === "partner-portal" || hash === "partner-hub" || hash === "hub" || hash === "portal") return "partner-portal"
@@ -211,6 +230,9 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
       if (hash === "transport" || hash === "di-chuyen") return "transport"
       if (hash === "deals" || hash === "uu-dai") return "deals"
       if (hash === "phu-quoc" || hash === "explore") return "phu-quoc"
+
+      const savedPage = localStorage.getItem("stayea_active_page")
+      if (savedPage && savedPage !== "home") return savedPage as PageType
     }
     return "home"
   })
@@ -227,6 +249,10 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
   React.useEffect(() => {
     if (typeof window === "undefined") return
     try {
+      try {
+        localStorage.setItem("stayea_active_page", pageState)
+      } catch {}
+
       if (pageState === "service-detail") {
         const itemType = selectedServiceItem?.type || "stay"
         const itemId = selectedServiceItem?.item?.id

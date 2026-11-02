@@ -71,10 +71,37 @@ export function PartnerPortalPage({
   })
   const [isCreateProfileOpen, setIsCreateProfileOpen] = useState(false)
 
-  // Tab State
-  const [activeTab, setActiveTab] = useState<
+  // Tab State with URL param & localStorage persistence across F5 refreshes
+  const [activeTab, setActiveTabState] = useState<
     "overview" | "services" | "inventory" | "orders" | "settings"
-  >(initialTab)
+  >(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const tabParam = params.get("tab")
+      if (tabParam && ["overview", "services", "inventory", "orders", "settings"].includes(tabParam)) {
+        return tabParam as any
+      }
+      const hash = window.location.hash.replace("#", "")
+      if (hash && ["overview", "services", "inventory", "orders", "settings"].includes(hash)) {
+        return hash as any
+      }
+      const saved = localStorage.getItem("stayea_hub_active_tab")
+      if (saved && ["overview", "services", "inventory", "orders", "settings"].includes(saved)) {
+        return saved as any
+      }
+    }
+    return initialTab || "overview"
+  })
+
+  const setActiveTab = (tab: "overview" | "services" | "inventory" | "orders" | "settings") => {
+    setActiveTabState(tab)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("stayea_hub_active_tab", tab)
+      const url = new URL(window.location.href)
+      url.searchParams.set("tab", tab)
+      window.history.replaceState(null, "", url.toString())
+    }
+  }
 
   // Services State (filtered to current partner)
   const [allServices, setAllServices] = useState<PartnerServiceData[]>([])
@@ -101,36 +128,42 @@ export function PartnerPortalPage({
         const list: any[] = []
         if (Array.isArray(myProfiles)) {
           for (const p of myProfiles) {
-            if (p && !list.some((item) => item.id === p.id)) list.push(p)
+            if (p && p.id && typeof p.id === "string" && !list.some((item) => item.id === p.id)) {
+              list.push(p)
+            }
           }
         }
-        if (selfPartner && !list.some((item) => item.id === selfPartner.id)) {
+        if (selfPartner && selfPartner.id && typeof selfPartner.id === "string" && !list.some((item) => item.id === selfPartner.id)) {
           list.unshift(selfPartner)
         }
         if (Array.isArray(adminPartners)) {
           for (const p of adminPartners) {
-            if (p && !list.some((item) => item.id === p.id)) list.push(p)
+            if (p && p.id && typeof p.id === "string" && !list.some((item) => item.id === p.id)) {
+              list.push(p)
+            }
           }
         }
 
-        const mapped: PartnerProfileData[] = list.map((p: any) => ({
-          id: p.id,
-          userId: p.userId || p.user_id || "",
-          businessName: p.businessName || p.business_name || "Cơ sở đối tác",
-          businessType: p.businessType || p.business_type || "homestay",
-          contactName: p.contactName || p.contact_name || "Chủ cơ sở",
-          phone: p.phone || "",
-          email: p.email || "",
-          address: p.address || "",
-          city: p.city || "Phú Quốc",
-          bankName: p.bankName || p.bank_name || "",
-          bankAccount: p.bankAccount || p.bank_account || "",
-          bankAccountHolder: p.bankAccountHolder || p.bank_account_holder || "",
-          status: p.status || "approved",
-          commissionRate: p.commissionRate ? String(p.commissionRate) : "10.00",
-          rating: p.rating ? String(p.rating) : "0.00",
-          totalOrders: Number(p.totalOrders || p.total_orders || 0),
-        }))
+        const mapped: PartnerProfileData[] = list
+          .filter((p) => p && p.id && typeof p.id === "string")
+          .map((p: any) => ({
+            id: p.id,
+            userId: p.userId || p.user_id || "",
+            businessName: p.businessName || p.business_name || "Cơ sở đối tác",
+            businessType: p.businessType || p.business_type || "homestay",
+            contactName: p.contactName || p.contact_name || "Chủ cơ sở",
+            phone: p.phone || "",
+            email: p.email || "",
+            address: p.address || "",
+            city: p.city || "Phú Quốc",
+            bankName: p.bankName || p.bank_name || "",
+            bankAccount: p.bankAccount || p.bank_account || "",
+            bankAccountHolder: p.bankAccountHolder || p.bank_account_holder || "",
+            status: p.status || "approved",
+            commissionRate: p.commissionRate ? String(p.commissionRate) : "10.00",
+            rating: p.rating ? String(p.rating) : "0.00",
+            totalOrders: Number(p.totalOrders || p.total_orders || 0),
+          }))
 
         if (isMounted) {
           if (mapped.length > 0) {
@@ -142,7 +175,7 @@ export function PartnerPortalPage({
             const activeId = typeof window !== "undefined" ? localStorage.getItem("stayea_active_partner_id") : null
             const found =
               (activeId ? mapped.find((p) => p.id === activeId) : null) ||
-              (selfPartner ? mapped.find((p) => p.id === selfPartner.id) : null) ||
+              (selfPartner?.id ? mapped.find((p) => p.id === selfPartner.id) : null) ||
               mapped[0]
 
             if (found) {
@@ -152,15 +185,6 @@ export function PartnerPortalPage({
                 localStorage.setItem("stayea_active_partner_id", found.id)
               } catch {}
             }
-          } else {
-            // Only clear if list is actually empty and user is verified to have none
-            setProfiles([])
-            setCurrentProfile(null)
-            try {
-              localStorage.removeItem("stayea_cached_partner_profiles")
-              localStorage.removeItem("stayea_cached_partner_profile")
-              localStorage.removeItem("stayea_active_partner_id")
-            } catch {}
           }
           setLoading(false)
         }
@@ -239,6 +263,7 @@ export function PartnerPortalPage({
             status: o.status,
             adminNotes: o.adminNotes,
             partnerNotes: o.partnerNotes,
+            customerNote: o.customerNote || o.details?.contactInfo?.note || null,
             source: o.source,
             createdAt: o.createdAt,
           }))

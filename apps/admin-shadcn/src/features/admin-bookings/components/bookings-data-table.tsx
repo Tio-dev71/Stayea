@@ -345,10 +345,22 @@ export function BookingsDataTable({
                             className="object-cover"
                           />
                         </div>
-                        <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
-                          {b.guestName}
-                        </span>
-                        <span className="text-xs">{b.guestFlag || "🇻🇳"}</span>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
+                              {b.guestName}
+                            </span>
+                            <span className="text-xs">{b.guestFlag || "🇻🇳"}</span>
+                          </div>
+                          {b.specialRequests && (
+                            <span
+                              className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1 mt-0.5 max-w-[180px] truncate"
+                              title={`Yêu cầu: ${b.specialRequests}`}
+                            >
+                              <span>💬 {b.specialRequests}</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
 

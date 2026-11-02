@@ -73,7 +73,12 @@ function safeLocalStorageRemove(key: string): void {
 
 export function getToken(): string | null {
   if (!isBrowser()) return null
-  return safeLocalStorageGet('stayea_token') || getCookie(ACCESS_TOKEN_KEY)
+  return (
+    safeLocalStorageGet('stayea_token') ||
+    safeLocalStorageGet('token') ||
+    safeLocalStorageGet('accessToken') ||
+    getCookie(ACCESS_TOKEN_KEY)
+  )
 }
 
 export function setToken(token: string): void {
@@ -117,7 +122,7 @@ export type StoredUser = {
 export function getUser(): StoredUser | null {
   if (!isBrowser()) return null
   try {
-    const local = safeLocalStorageGet('stayea_user')
+    const local = safeLocalStorageGet('stayea_user') || safeLocalStorageGet('user')
     if (local) {
       return JSON.parse(local) as StoredUser
     }

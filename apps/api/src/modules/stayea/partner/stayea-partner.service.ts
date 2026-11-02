@@ -197,10 +197,21 @@ export class StayeaPartnerService implements OnModuleInit {
   // ==========================================
 
   async getProfileByUserId(userId: string) {
+    let userEmail: string | undefined
+    try {
+      const [u] = await this.db.select({ email: usersTable.email }).from(usersTable).where(eq(usersTable.id, userId)).limit(1)
+      if (u) userEmail = u.email
+    } catch {}
+
+    const conditions = [eq(partnerProfilesTable.userId, userId)]
+    if (userEmail) {
+      conditions.push(ilike(partnerProfilesTable.email, userEmail))
+    }
+
     const [profile] = await this.db
       .select()
       .from(partnerProfilesTable)
-      .where(eq(partnerProfilesTable.userId, userId))
+      .where(or(...conditions))
       .orderBy(desc(partnerProfilesTable.createdAt))
       .limit(1)
 
@@ -208,10 +219,21 @@ export class StayeaPartnerService implements OnModuleInit {
   }
 
   async getAllProfilesByUserId(userId: string) {
+    let userEmail: string | undefined
+    try {
+      const [u] = await this.db.select({ email: usersTable.email }).from(usersTable).where(eq(usersTable.id, userId)).limit(1)
+      if (u) userEmail = u.email
+    } catch {}
+
+    const conditions = [eq(partnerProfilesTable.userId, userId)]
+    if (userEmail) {
+      conditions.push(ilike(partnerProfilesTable.email, userEmail))
+    }
+
     return this.db
       .select()
       .from(partnerProfilesTable)
-      .where(eq(partnerProfilesTable.userId, userId))
+      .where(or(...conditions))
       .orderBy(desc(partnerProfilesTable.createdAt))
   }
 
@@ -759,11 +781,20 @@ export class StayeaPartnerService implements OnModuleInit {
       )
     }
 
-    return this.db
-      .select()
+    const rows = await this.db
+      .select({
+        order: partnerOrdersTable,
+        bookingDetails: stayeaBookingsTable.details,
+      })
       .from(partnerOrdersTable)
+      .leftJoin(stayeaBookingsTable, eq(partnerOrdersTable.bookingId, stayeaBookingsTable.id))
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(partnerOrdersTable.createdAt))
+
+    return rows.map((r) => ({
+      ...r.order,
+      customerNote: r.order.customerNote || (r.bookingDetails as any)?.contactInfo?.note || "",
+    }))
   }
 
   /**
@@ -865,11 +896,20 @@ export class StayeaPartnerService implements OnModuleInit {
       conditions.push(eq(partnerOrdersTable.status, status as any))
     }
 
-    return this.db
-      .select()
+    const rows = await this.db
+      .select({
+        order: partnerOrdersTable,
+        bookingDetails: stayeaBookingsTable.details,
+      })
       .from(partnerOrdersTable)
+      .leftJoin(stayeaBookingsTable, eq(partnerOrdersTable.bookingId, stayeaBookingsTable.id))
       .where(and(...conditions))
       .orderBy(desc(partnerOrdersTable.createdAt))
+
+    return rows.map((r) => ({
+      ...r.order,
+      customerNote: r.order.customerNote || (r.bookingDetails as any)?.contactInfo?.note || "",
+    }))
   }
 
   /**

@@ -20,7 +20,7 @@ import {
 } from "@workspace/database"
 import crypto from "node:crypto"
 import dayjs from "dayjs"
-import { and, desc, eq, inArray, or } from "drizzle-orm"
+import { and, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
@@ -398,6 +398,203 @@ export class StayeaPaymentService {
 
     if (result.success && !result.replayed && result.booking) {
       this.dispatchNotifications(result.booking, dto.gateway || "VietQR").catch((err) => {
+        this.logger.warn(`Failed to dispatch booking notification: ${err.message}`)
+      })
+    }
+
+    return result
+  }
+
+  /**
+   * Handle Webhook Notification from SePay (Automated VietQR MBBank Payment Processing)
+   */
+  async handleSepayWebhook(payload: any, authHeader?: string) {
+    this.logger.log(`[SePay Webhook] Incoming notification: ${JSON.stringify(payload)}`)
+
+    // 1. Verify API Key if configured
+    const configuredApiKey = process.env["SEPAY_API_KEY"]
+    if (configuredApiKey) {
+      const auth = authHeader || ""
+      const cleanToken = auth.replace(/^(Apikey|Bearer)\s+/i, "").trim()
+      if (cleanToken !== configuredApiKey) {
+        throw new UnauthorizedException({
+          code: ErrorCode.UNAUTHORIZED,
+          message: "SePay API Key không hợp lệ (Unauthorized SePay Webhook)",
+        })
+      }
+    }
+
+    // 2. Filter out outgoing transactions (chỉ xử lý tiền vào)
+    const transferType = String(payload.transferType || "").toLowerCase()
+    if (transferType === "out") {
+      return {
+        success: true,
+        message: "Giao dịch chuyển tiền ra - bỏ qua xử lý đơn đặt",
+      }
+    }
+
+    const transferAmount = Number(payload.transferAmount || payload.amount || 0)
+    const rawContent = `${payload.content || ""} ${payload.description || ""} ${payload.code || ""}`.trim()
+
+    // 3. Extract Booking Code from transfer content (e.g., "STAYEA STA-202611-6171", "STA 202611 6171", "STA2026116171")
+    let extractedCode: string | null = null
+    const staMatch = rawContent.match(/STA[-_\s]?(\d{6})[-_\s]?(\d{4})/i)
+    if (staMatch && staMatch[1] && staMatch[2]) {
+      extractedCode = `STA-${staMatch[1]}-${staMatch[2]}`
+    } else {
+      const simpleMatch = rawContent.match(/STA\s*([A-Z0-9-]+)/i)
+      if (simpleMatch && simpleMatch[1]) {
+        extractedCode = `STA-${simpleMatch[1].trim().replace(/^STA[-_]?/i, "")}`
+      }
+    }
+
+    // 4. Lookup booking in stayeaBookingsTable
+    let booking: any = null
+    if (extractedCode) {
+      const [found] = await this.db
+        .select()
+        .from(stayeaBookingsTable)
+        .where(
+          or(
+            eq(stayeaBookingsTable.bookingCode, extractedCode),
+            ilike(stayeaBookingsTable.bookingCode, `%${extractedCode}%`),
+            eq(stayeaBookingsTable.id, extractedCode)
+          )
+        )
+        .limit(1)
+      booking = found
+    }
+
+    // Fallback: search among recent unpaid bookings by content keyword
+    if (!booking) {
+      const recentUnpaid = await this.db
+        .select()
+        .from(stayeaBookingsTable)
+        .where(
+          and(
+            ne(stayeaBookingsTable.status, "cancelled"),
+            ne(stayeaBookingsTable.paymentStatus, "paid")
+          )
+        )
+        .orderBy(desc(stayeaBookingsTable.createdAt))
+        .limit(20)
+
+      for (const b of recentUnpaid) {
+        const cleanBookingSuffix = b.bookingCode.replace(/^STA-/, "").replace(/-/g, "")
+        if (
+          rawContent.includes(b.bookingCode) ||
+          rawContent.includes(cleanBookingSuffix) ||
+          ((b.details as any)?.contactInfo?.phone && rawContent.includes((b.details as any).contactInfo.phone))
+        ) {
+          booking = b
+          break
+        }
+      }
+    }
+
+    if (!booking) {
+      this.logger.warn(`[SePay Webhook] No matching booking found for content: "${rawContent}"`)
+      return {
+        success: false,
+        message: `Không tìm thấy đơn đặt phòng cho nội dung giao dịch: "${rawContent}"`,
+      }
+    }
+
+    // 5. Idempotency Check
+    if (booking.paymentStatus === "paid") {
+      return {
+        success: true,
+        replayed: true,
+        message: "Đơn đặt chỗ đã được xác nhận thanh toán trước đó",
+        bookingCode: booking.bookingCode,
+      }
+    }
+
+    // 6. Execute atomic database update
+    const result = await this.db.transaction(async (tx) => {
+      // Insert payment transaction record
+      await tx.insert(stayeaPaymentTransactionsTable).values({
+        id: `tx-${crypto.randomUUID()}`,
+        bookingId: booking.id,
+        userId: booking.userId,
+        amount: transferAmount > 0 ? transferAmount.toString() : booking.finalAmount,
+        currency: booking.currency || "VND",
+        paymentMethod: "sepay_vietqr",
+        status: "success",
+        transactionRef: String(payload.referenceCode || payload.id || `sepay-${Date.now()}`),
+        gatewayResponse: {
+          webhookReceivedAt: new Date().toISOString(),
+          gateway: payload.gateway || "MBBank",
+          accountNumber: payload.accountNumber,
+          transferAmount,
+          content: payload.content,
+          referenceCode: payload.referenceCode,
+        },
+      })
+
+      // Update booking to paid & confirmed
+      const [updatedBooking] = await tx
+        .update(stayeaBookingsTable)
+        .set({
+          paymentStatus: "paid",
+          status: "confirmed",
+          updatedAt: new Date(),
+        })
+        .where(eq(stayeaBookingsTable.id, booking.id))
+        .returning()
+
+      // Automatically dispatch or update partner order to sent_to_partner
+      await tx
+        .update(partnerOrdersTable)
+        .set({
+          status: "sent_to_partner",
+          customerNote: sql`COALESCE(${partnerOrdersTable.customerNote}, ${((booking.details as any)?.contactInfo?.note || "")})`,
+          updatedAt: new Date(),
+        })
+        .where(eq(partnerOrdersTable.bookingId, booking.id))
+
+      // Award loyalty points
+      let awardedPoints = 0
+      if (booking.pointsEarned && booking.pointsEarned > 0) {
+        awardedPoints = booking.pointsEarned
+        const [clubProfile] = await tx
+          .select()
+          .from(stayeaClubProfilesTable)
+          .where(eq(stayeaClubProfilesTable.userId, booking.userId))
+          .limit(1)
+
+        if (clubProfile) {
+          await tx
+            .update(stayeaClubProfilesTable)
+            .set({
+              pointsBalance: clubProfile.pointsBalance + awardedPoints,
+              updatedAt: new Date(),
+            })
+            .where(eq(stayeaClubProfilesTable.userId, booking.userId))
+
+          await tx.insert(stayeaClubPointsTransactionsTable).values({
+            id: `ptx-${crypto.randomUUID()}`,
+            userId: booking.userId,
+            points: awardedPoints,
+            type: "earned",
+            title: `Tích điểm thanh toán SePay: ${booking.title}`,
+            description: `Thanh toán thành công ${Number(booking.finalAmount).toLocaleString("vi-VN")} VND qua SePay/VietQR`,
+            bookingId: booking.id,
+          })
+        }
+      }
+
+      return {
+        success: true,
+        replayed: false,
+        booking: updatedBooking,
+        awardedPoints,
+        message: `Thanh toán SePay thành công cho đơn đặt phòng ${booking.bookingCode}`,
+      }
+    })
+
+    if (result.success && !result.replayed && result.booking) {
+      this.dispatchNotifications(result.booking, "SePay VietQR").catch((err) => {
         this.logger.warn(`Failed to dispatch booking notification: ${err.message}`)
       })
     }

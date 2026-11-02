@@ -204,6 +204,7 @@ export const partnerOrdersTable = pgTable(
     })
       .notNull()
       .default("direct_customer"),
+    customerNote: text("customer_note"),
     adminNotes: text("admin_notes"),
     partnerNotes: text("partner_notes"),
     rejectionReason: text("rejection_reason"),

@@ -334,6 +334,7 @@ export class StayeaBookingService {
             partnerPayoutAmount: partnerPayoutAmount.toString(),
             status: "pending_admin",
             source: "direct_customer",
+            customerNote: dto.details?.contactInfo?.note || "",
             adminNotes: `Đơn đặt dịch vụ trực tuyến từ website (Mã booking: ${bookingCode})`,
           })
         }

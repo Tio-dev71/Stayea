@@ -1,6 +1,6 @@
 "use client"
 
-import { X, Calendar, MapPin, User, Phone, Mail, CheckCircle2 } from "lucide-react"
+import { X, Calendar, MapPin, User, Phone, Mail, CheckCircle2, MessageSquare } from "lucide-react"
 import type { BookingRecord } from "../stayea-admin-bookings-mock-data"
 
 interface BookingDetailModalProps {
@@ -75,13 +75,26 @@ export function BookingDetailModal({
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-slate-400" />
-                <span>khachhang@stayea.com</span>
+                <span>{booking.guestEmail || "khachhang@stayea.com"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-slate-400" />
-                <span>0908 123 456 (Zalo sẵn sàng)</span>
+                <span>{booking.guestPhone || "Chưa cập nhật SĐT"}</span>
               </div>
             </div>
+
+            {/* Special Request */}
+            {booking.specialRequests && (
+              <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-xs space-y-1">
+                <div className="font-bold text-amber-900 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                  <span>Yêu cầu đặc biệt của khách hàng:</span>
+                </div>
+                <p className="text-amber-800 italic pl-5 font-medium">
+                  "{booking.specialRequests}"
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Payment Info */}
@@ -91,6 +104,11 @@ export function BookingDetailModal({
               <p className="text-lg font-bold text-emerald-900 leading-tight">
                 {booking.totalAmount}
               </p>
+              {booking.paymentMethod && (
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  Hình thức: <span className="font-semibold text-slate-700">{booking.paymentMethod === "checkin" ? "Thanh toán khi nhận phòng" : booking.paymentMethod}</span>
+                </div>
+              )}
             </div>
             <div className="text-right">
               <span className="text-[11px] text-slate-500">Trạng thái cọc:</span>

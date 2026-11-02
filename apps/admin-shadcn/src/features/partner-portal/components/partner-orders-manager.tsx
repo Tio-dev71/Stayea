@@ -59,6 +59,18 @@ export function PartnerOrdersManager({
     (o) => o.status === "sent_to_partner" || o.status === "pending_admin"
   ).length
 
+  const inProgressCount = orders.filter(
+    (o) => o.status === "partner_accepted" || o.status === "in_progress"
+  ).length
+
+  const completedCount = orders.filter(
+    (o) => o.status === "completed"
+  ).length
+
+  const rejectedCount = orders.filter(
+    (o) => o.status === "partner_rejected" || o.status === "cancelled"
+  ).length
+
   const handleOpenReject = (orderId: string) => {
     setRejectionModalOrderId(orderId)
     setRejectionReason("")
@@ -158,7 +170,7 @@ export function PartnerOrdersManager({
         >
           <span>Chờ xác nhận</span>
           {pendingCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px]">
+            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
               {pendingCount}
             </span>
           )}
@@ -166,46 +178,64 @@ export function PartnerOrdersManager({
 
         <button
           onClick={() => setActiveTab("partner_accepted")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
             activeTab === "partner_accepted"
               ? "bg-blue-950/80 text-blue-300 border border-blue-800/60 font-semibold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Đang phục vụ
+          <span>Đang phục vụ</span>
+          {inProgressCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-bold">
+              {inProgressCount}
+            </span>
+          )}
         </button>
 
         <button
           onClick={() => setActiveTab("completed")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
             activeTab === "completed"
               ? "bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 font-semibold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Đã hoàn thành
+          <span>Đã hoàn thành</span>
+          {completedCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">
+              {completedCount}
+            </span>
+          )}
         </button>
 
         <button
           onClick={() => setActiveTab("rejected")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
             activeTab === "rejected"
               ? "bg-slate-800 text-slate-300 border border-slate-700 font-semibold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Đã từ chối / Hủy
+          <span>Đã từ chối / Hủy</span>
+          {rejectedCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-slate-600 text-slate-200 text-[10px] font-bold">
+              {rejectedCount}
+            </span>
+          )}
         </button>
 
         <button
           onClick={() => setActiveTab("all")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
             activeTab === "all"
               ? "bg-slate-800 text-white font-semibold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Tất cả ({orders.length})
+          <span>Tất cả</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold">
+            {orders.length}
+          </span>
         </button>
       </div>
 
@@ -315,6 +345,15 @@ export function PartnerOrdersManager({
                     <p className="text-slate-300 mt-1 text-[11px] leading-relaxed">
                       {order.adminNotes || "Không có ghi chú thêm từ Admin."}
                     </p>
+                    {order.customerNote && (
+                      <div className="mt-2.5 p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-200 text-[11px] leading-relaxed">
+                        <strong className="text-amber-300 flex items-center gap-1 mb-1">
+                          <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                          Yêu cầu đặc biệt của khách:
+                        </strong>
+                        <span className="italic font-medium">"{order.customerNote}"</span>
+                      </div>
+                    )}
                     {order.partnerNotes && (
                       <div className="mt-2 pt-2 border-t border-slate-700 text-emerald-300 text-[11px]">
                         <strong>Ghi chú của bạn:</strong> {order.partnerNotes}

@@ -90,6 +90,16 @@ export class StayeaPaymentController {
     return this.paymentService.handlePaymentWebhook(dto, signatureHeader)
   }
 
+  @Post("sepay-webhook")
+  @Public()
+  @ApiOperation({ summary: "SePay Banking Webhook Notification (Automatic Order Confirmation)" })
+  async sepayWebhook(
+    @Body() payload: any,
+    @Headers("authorization") authHeader?: string
+  ) {
+    return this.paymentService.handleSepayWebhook(payload, authHeader)
+  }
+
   @Post("checkout")
   @ApiOperation({ summary: "Process sandbox checkout for a booking" })
   async checkout(

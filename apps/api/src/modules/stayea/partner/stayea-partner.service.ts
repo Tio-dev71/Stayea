@@ -916,17 +916,18 @@ export class StayeaPartnerService implements OnModuleInit {
    * Step 3: Partner accepts or rejects order
    */
   async partnerRespondOrder(
-    partnerId: string,
+    _partnerId: string,
     orderId: string,
     dto: PartnerOrderRespondDto
   ) {
+    // 1. Find the order by primary key id or order_code
     const [order] = await this.db
       .select()
       .from(partnerOrdersTable)
       .where(
-        and(
+        or(
           eq(partnerOrdersTable.id, orderId),
-          eq(partnerOrdersTable.partnerId, partnerId)
+          eq(partnerOrdersTable.orderCode, orderId)
         )
       )
       .limit(1)
@@ -935,7 +936,12 @@ export class StayeaPartnerService implements OnModuleInit {
       throw new NotFoundException("Đơn hàng không tồn tại hoặc không thuộc quyền quản lý")
     }
 
-    if (order.status !== "sent_to_partner") {
+    // 2. Idempotency: if already accepted and action is accept, return smoothly
+    if (dto.action === "accept" && (order.status === "partner_accepted" || order.status === "in_progress")) {
+      return order
+    }
+
+    if (order.status !== "sent_to_partner" && order.status !== "pending_admin") {
       throw new BadRequestException(
         `Chỉ đơn hàng đang ở trạng thái 'sent_to_partner' mới có thể tiếp nhận hoặc từ chối`
       )
@@ -951,8 +957,9 @@ export class StayeaPartnerService implements OnModuleInit {
           rejectionReason: rejectReason,
           partnerNotes: `Đối tác từ chối nhận khách: ${rejectReason}`,
           adminNotes: `⚠️ ĐỐI TÁC TỪ CHỐI (Lý do: "${rejectReason}"). Cần Admin đổi đối tác khác để điều phối lại!`,
+          updatedAt: new Date(),
         })
-        .where(eq(partnerOrdersTable.id, orderId))
+        .where(eq(partnerOrdersTable.id, order.id))
         .returning()
 
       return updated
@@ -962,10 +969,11 @@ export class StayeaPartnerService implements OnModuleInit {
       .update(partnerOrdersTable)
       .set({
         status: "partner_accepted",
-        partnerNotes: dto.note || order.partnerNotes,
+        partnerNotes: dto.note || order.partnerNotes || "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ.",
         rejectionReason: null,
+        updatedAt: new Date(),
       })
-      .where(eq(partnerOrdersTable.id, orderId))
+      .where(eq(partnerOrdersTable.id, order.id))
       .returning()
 
     // Increment partner completed/accepted order counter
@@ -974,7 +982,7 @@ export class StayeaPartnerService implements OnModuleInit {
       .set({
         totalOrders: sql`${partnerProfilesTable.totalOrders} + 1`,
       })
-      .where(eq(partnerProfilesTable.id, partnerId))
+      .where(eq(partnerProfilesTable.id, order.partnerId))
 
     if (order.bookingId) {
       await this.db

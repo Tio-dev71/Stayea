@@ -289,13 +289,26 @@ export function PartnerPortalPage({
     try {
       const saved = await stayeaApi.partnerRespondOrder(
         orderId,
-        "accept"
+        "accept",
+        undefined,
+        currentProfile.id
       )
       if (!saved) {
         toast.error("Không thể xác nhận đơn hàng.")
         return
       }
-      setAllOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "partner_accepted", partnerNotes: "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ." } : o))
+      setAllOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                status: "partner_accepted",
+                partnerNotes: "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ.",
+              }
+            : o
+        )
+      )
+      toast.success("Tiếp nhận đơn thành công! Đơn đã chuyển sang mục 'Đang phục vụ'.")
     } catch {
       toast.error("Không thể xác nhận đơn hàng.")
     }
@@ -308,13 +321,21 @@ export function PartnerPortalPage({
       const saved = await stayeaApi.partnerRespondOrder(
         orderId,
         "reject",
-        reason
+        reason,
+        currentProfile.id
       )
       if (!saved) {
         toast.error("Không thể từ chối đơn hàng.")
         return
       }
-      setAllOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "partner_rejected", rejectionReason: reason } : o))
+      setAllOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? { ...o, status: "partner_rejected", rejectionReason: reason }
+            : o
+        )
+      )
+      toast.info("Đã từ chối đơn hàng và báo lại Admin điều phối.")
     } catch {
       toast.error("Không thể từ chối đơn hàng.")
     }

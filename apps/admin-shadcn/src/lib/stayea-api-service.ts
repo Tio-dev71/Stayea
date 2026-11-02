@@ -376,8 +376,18 @@ class StayeaApiService {
     if (token && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${token}`)
     }
+    if (!headers.has("Cache-Control")) {
+      headers.set("Cache-Control", "no-cache, no-store")
+    }
 
-    let res = await fetch(input, { ...init, headers })
+    let url = input
+    const isGet = !init?.method || init.method.toUpperCase() === "GET"
+    if (typeof input === "string" && isGet) {
+      const sep = input.includes("?") ? "&" : "?"
+      url = `${input}${sep}_t=${Date.now()}`
+    }
+
+    let res = await fetch(url, { ...init, headers, cache: "no-store" })
 
     if (res.status === 401) {
       if (!this.refreshPromise) {
@@ -391,7 +401,7 @@ class StayeaApiService {
         if (newToken) {
           headers.set("Authorization", `Bearer ${newToken}`)
         }
-        res = await fetch(input, { ...init, headers })
+        res = await fetch(url, { ...init, headers, cache: "no-store" })
       }
     }
 
@@ -972,11 +982,10 @@ class StayeaApiService {
    */
   async updateBookingStatus(id: string, status: string): Promise<boolean> {
     try {
-      const res = await fetch(`/api/stayea/bookings/${id}/status`, {
+      const res = await this.fetchWithAuth(`/api/stayea/bookings/${id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
-        cache: "no-store",
       })
       return res.ok
     } catch {
@@ -1296,9 +1305,15 @@ class StayeaApiService {
   /**
    * Partner Hub: Respond to order
    */
-  async partnerRespondOrder(orderId: string, action: "accept" | "reject", reason?: string): Promise<boolean> {
+  async partnerRespondOrder(
+    orderId: string,
+    action: "accept" | "reject",
+    reason?: string,
+    partnerId?: string
+  ): Promise<boolean> {
     try {
-      const res = await this.fetchWithAuth(`/api/stayea/partner/orders/${orderId}/respond`, {
+      const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/partner/orders/${orderId}/respond${q}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, note: reason }),

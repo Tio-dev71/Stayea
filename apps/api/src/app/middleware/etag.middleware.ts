@@ -85,9 +85,11 @@ export class ETagMiddleware implements NestMiddleware {
       res.setHeader('ETag', etag)
     }
 
-    // Set Cache-Control header (adjust as needed)
+    // Set Cache-Control header (prevent stale browser caching of dynamic API responses)
     if (!res.getHeader('Cache-Control')) {
-      res.setHeader('Cache-Control', 'max-age=3600') // 1 hour
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
     }
 
     // Check If-None-Match header

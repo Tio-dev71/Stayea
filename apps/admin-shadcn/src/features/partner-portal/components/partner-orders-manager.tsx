@@ -26,9 +26,42 @@ export function PartnerOrdersManager({
   onAcceptOrder,
   onRejectOrder,
 }: PartnerOrdersManagerProps) {
-  const [activeTab, setActiveTab] = useState<
+  const [activeTab, setActiveTabState] = useState<
     "all" | "sent_to_partner" | "partner_accepted" | "completed" | "rejected"
-  >("sent_to_partner")
+  >(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search)
+      const orderSub = urlParams.get("orderTab") as any
+      if (
+        ["all", "sent_to_partner", "partner_accepted", "completed", "rejected"].includes(
+          orderSub
+        )
+      ) {
+        return orderSub
+      }
+      const saved = localStorage.getItem("stayea_hub_order_subtab") as any
+      if (
+        ["all", "sent_to_partner", "partner_accepted", "completed", "rejected"].includes(
+          saved
+        )
+      ) {
+        return saved
+      }
+    }
+    return "sent_to_partner"
+  })
+
+  const setActiveTab = (
+    tab: "all" | "sent_to_partner" | "partner_accepted" | "completed" | "rejected"
+  ) => {
+    setActiveTabState(tab)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("stayea_hub_order_subtab", tab)
+      const url = new URL(window.location.href)
+      url.searchParams.set("orderTab", tab)
+      window.history.replaceState(null, "", url.toString())
+    }
+  }
 
   const [searchTerm, setSearchTerm] = useState("")
   const [rejectionModalOrderId, setRejectionModalOrderId] = useState<string | null>(null)

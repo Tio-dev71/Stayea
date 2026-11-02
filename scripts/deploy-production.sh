@@ -50,8 +50,9 @@ pnpm build
 
 # 7. Zero-Downtime Rolling Reload via PM2
 log "🔄 Executing zero-downtime rolling reload in PM2..."
+mkdir -p logs/pm2
 if command -v pm2 >/dev/null 2>&1; then
-  pm2 reload ecosystem.config.cjs --update-env
+  pm2 startOrReload ecosystem.config.cjs --update-env || pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
   pm2 save
 else
   log "WARN: PM2 command not found in PATH. Skipping PM2 reload."

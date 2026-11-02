@@ -35,7 +35,7 @@ module.exports = {
       exec_mode: 'cluster',
       autorestart: true,
       watch: false,
-      max_memory_restart: '1.5G',
+      max_memory_restart: '1500M',
       listen_timeout: 10000,
       kill_timeout: 5000,
       env: {

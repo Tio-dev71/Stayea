@@ -90,6 +90,18 @@ export class StayeaPaymentController {
     return this.paymentService.handlePaymentWebhook(dto, signatureHeader)
   }
 
+  @Get("sepay-webhook")
+  @Public()
+  @ApiOperation({ summary: "Health check / ping for SePay Webhook endpoint" })
+  async sepayWebhookPing() {
+    return {
+      status: "ready",
+      gateway: "SePay MBBank",
+      endpoint: "https://stayea.com/api/stayea/payments/sepay-webhook",
+      timestamp: new Date().toISOString(),
+    }
+  }
+
   @Post("sepay-webhook")
   @Public()
   @ApiOperation({ summary: "SePay Banking Webhook Notification (Automatic Order Confirmation)" })

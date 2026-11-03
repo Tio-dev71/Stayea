@@ -19,6 +19,10 @@ export class ChatMessageDto {
   @IsOptional()
   @IsString()
   tool_call_id?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  tool_calls?: any[]
 }
 
 export class CustomerContextDto {

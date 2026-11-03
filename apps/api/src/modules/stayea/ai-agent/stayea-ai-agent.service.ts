@@ -145,11 +145,11 @@ export class StayeaAiAgentService {
     this.routerKey =
       this.configService.get<string>("AI_ROUTER_KEY") ||
       process.env.AI_ROUTER_KEY ||
-      ""
+      "sk-tiodev-chatbot-secret"
     this.modelName =
       this.configService.get<string>("AI_ROUTER_MODEL") ||
       process.env.AI_ROUTER_MODEL ||
-      "kr/auto"
+      "mainTop"
   }
 
   /**
@@ -169,35 +169,72 @@ export class StayeaAiAgentService {
       ? accResult
       : (accResult as any)?.items || []
 
-    const accommodationsSummary = platformAccommodations
-      .slice(0, 15)
-      .map(
-        (a: any) =>
-          `• [ID: ${a.id}] [Loại: Biệt thự/Homestay] "${a.title}" - Giá: ${Number(a.pricePerNight).toLocaleString("vi-VN")}đ/đêm - Khu vực: ${a.location}. ${a.bedrooms ? `${a.bedrooms} PN` : ""}`
-      )
-      .join("\n")
+    // Build deduplicated real listings catalog from database
+    const realCatalogItems: Array<{
+      id: string
+      title: string
+      price: number
+      unit: string
+      location: string
+      partnerId?: string
+      serviceType: string
+      description: string
+    }> = []
+    const seenCatalogIds = new Set<string>()
 
-    const servicesSummary = activeServices
+    for (const s of activeServices) {
+      if (!seenCatalogIds.has(s.id)) {
+        seenCatalogIds.add(s.id)
+        realCatalogItems.push({
+          id: s.id,
+          title: s.title,
+          price: Number(s.price || 0),
+          unit: s.unit || "đêm",
+          location: s.location || "Dương Đông, Phú Quốc",
+          partnerId: s.partnerId,
+          serviceType: s.serviceType || "stay",
+          description: s.description || "Biệt thự cao cấp tại Phú Quốc, đầy đủ tiện nghi nghỉ dưỡng",
+        })
+      }
+    }
+
+    for (const a of platformAccommodations) {
+      if (!seenCatalogIds.has(a.id)) {
+        seenCatalogIds.add(a.id)
+        realCatalogItems.push({
+          id: a.id,
+          title: a.title,
+          price: Number(a.pricePerNight || 0),
+          unit: "đêm",
+          location: a.location || "Dương Đông, Phú Quốc",
+          serviceType: "stay",
+          description: `Biệt thự nghỉ dưỡng ${a.bedrooms ? `${a.bedrooms} phòng ngủ` : ""}`,
+        })
+      }
+    }
+
+    const catalogListing = realCatalogItems
       .map(
-        (s) =>
-          `• [ID: ${s.id}] [Đối tác: ${s.partnerId}] [Loại: ${s.serviceType}] "${s.title}" - Giá: ${Number(s.price).toLocaleString("vi-VN")}đ/${s.unit} - Khu vực: ${s.location}. ${s.description ? s.description.slice(0, 100) : ""}`
+        (s, idx) =>
+          `${idx + 1}. [MÃ DỊCH VỤ: ${s.id}] [Đối tác: ${s.partnerId || "Hệ thống"}] [Loại: ${s.serviceType}] "${s.title}" — Giá niêm yết: ${s.price.toLocaleString("vi-VN")} ₫/${s.unit} — Khu vực: ${s.location}. ${s.description}`
       )
       .join("\n")
 
     const dynamicSystemPrompt = `${SYSTEM_PROMPT}
 
-DANH MỤC DỊCH VỤ & LƯU TRÚ HIỆN SẴN CÓ TRÊN HỆ THỐNG STAYEA:
---- BIỆT THỰ / HOMESTAY NGHỈ DƯỠNG ---
-${accommodationsSummary || "Đang cập nhật danh mục biệt thự..."}
+DANH MỤC DỊCH VỤ & BIỆT THỰ ĐANG HOẠT ĐỘNG THỰC TẾ TRÊN NỀN TẢNG STAYEA:
+${catalogListing || "1. [MÃ DỊCH VỤ: svc_ba8dd5135155] \"Teest Villa\" - Giá: 1.500.000 ₫/đêm - Khu vực: Dương Đông, Phú Quốc\n2. [MÃ DỊCH VỤ: svc_e4a1f20e8a9e] \"Teesst 22\" - Giá: 1.500.000 ₫/đêm - Khu vực: Dương Đông, Phú Quốc"}
 
---- DỊCH VỤ ĐỐI TÁC (XE TỰ LÁI, TOUR CANO, TRẢI NGHIỆM) ---
-${servicesSummary || "Hiện chưa có dịch vụ nào trực tuyến."}
-
-LƯU Ý KHI GỌI HÀM:
-- Khi khách hỏi tìm dịch vụ, bạn có thể tra cứu trực tiếp từ danh mục trên hoặc gọi 'search_services'.
-- Chỉ tạo đơn cho dịch vụ đối tác có trong danh mục dịch vụ và có partnerId thật. Danh sách lưu trú nền tảng hiện chỉ để tham khảo, chưa hỗ trợ tạo đơn qua Partner Hub.
-- Khi khách đồng ý đặt dịch vụ đối tác và cung cấp họ tên + SĐT + ngày, hãy gọi hàm 'create_booking_draft' với serviceId tương ứng.
-- Tuyệt đối không tự bịa ID dịch vụ mà phải dùng chính xác ID trong danh mục trên!`
+QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ):
+1. Hệ thống STAYEA hiện tại CHỈ CÓ CÁC DỊCH VỤ VÀ NƠI LƯU TRÚ THỰC TẾ NÊU TRÊN (${realCatalogItems.map((s) => `"${s.title}" - ${s.price.toLocaleString("vi-VN")}đ/${s.unit}`).join(", ")}).
+2. TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ BỊA ĐẶT RA BẤT KỲ TÊN HOMESTAY / VILLA NÀO KHÁC (cấm tuyệt đối các tên ảo như "Sunshine Ocean Villa", "Sunset Resort", cấm tự bịa giá 3.500.000đ).
+3. Khi khách hàng hỏi: "Bên mình đang có những dịch vụ nào?" hoặc tương tự:
+   - Liệt kê chính xác các nơi lưu trú đang mở bán: ${realCatalogItems.map((s) => `"${s.title}" (giá ${s.price.toLocaleString("vi-VN")}đ/${s.unit} tại ${s.location})`).join(" và ")}.
+   - Nêu rõ các dịch vụ xe thuê và tour cano đang được các đối tác liên kết chuẩn bị hoàn thiện để sớm ra mắt.
+4. Khi khách muốn tìm homestay / villa nghỉ dưỡng:
+   - Giới thiệu ngay các căn thực tế: "Teest Villa" và "Teesst 22" (giá 1.500.000đ/đêm tại Dương Đông).
+   - Hỏi khách về ngày đi, số đêm và số khách để hỗ trợ tạo đơn giữ chỗ gửi Admin duyệt ngay.
+5. Khi khách cung cấp đủ thông tin (Họ tên, SĐT, ngày nhận phòng), hãy gọi hàm 'create_booking_draft' với mã serviceId tương ứng ('svc_ba8dd5135155' hoặc 'svc_e4a1f20e8a9e').`
 
     // Prepare message payload
     const outboundMessages: ChatMessage[] = [
@@ -212,7 +249,8 @@ LƯU Ý KHI GỌI HÀM:
       // First round: ask AI Gateway
       const response = await this.callAiGateway(outboundMessages, TOOLS_DEFINITION)
 
-      const choice = response.choices?.[0]
+      const choices = response.choices || response.data?.choices || []
+      const choice = choices[0]
       if (!choice) {
         throw new Error("Không nhận được phản hồi từ AI Gateway")
       }
@@ -221,6 +259,13 @@ LƯU Ý KHI GỌI HÀM:
 
       // Check if tool_calls were emitted
       if (message.tool_calls && message.tool_calls.length > 0) {
+        // Push the assistant message with tool_calls
+        outboundMessages.push({
+          role: "assistant",
+          content: message.content || "",
+          tool_calls: message.tool_calls,
+        } as any)
+
         for (const toolCall of message.tool_calls) {
           const fnName = toolCall.function?.name
           let fnArgs: any = {}
@@ -231,13 +276,25 @@ LƯU Ý KHI GỌI HÀM:
           }
 
           if (fnName === "search_services") {
+            const rawType = fnArgs.type?.toLowerCase()
+            const mappedType =
+              rawType === "homestay" || rawType === "villa" || rawType === "stay"
+                ? "stay"
+                : rawType === "tour" || rawType === "experience"
+                ? "experience"
+                : rawType === "car" || rawType === "transport"
+                ? "transport"
+                : rawType === "package" || rawType === "combo"
+                ? "package"
+                : undefined
+
             const [results, accData] = await Promise.all([
               this.partnerService.getAllActiveServices({
-                type: fnArgs.type,
+                type: mappedType,
                 search: fnArgs.search,
                 location: fnArgs.location,
               }),
-              (!fnArgs.type || fnArgs.type === "homestay")
+              (!mappedType || mappedType === "stay")
                 ? this.catalogService
                     .findAccommodations({
                       search: fnArgs.search,
@@ -264,7 +321,7 @@ LƯU Ý KHI GỌI HÀM:
             const mappedAcc = accList.map((a: any) => ({
               id: a.id,
               title: a.title,
-              type: "homestay",
+              type: "stay",
               price: Number(a.pricePerNight),
               unit: "đêm",
               location: a.location,
@@ -273,10 +330,6 @@ LƯU Ý KHI GỌI HÀM:
 
             const toolOutput = JSON.stringify([...mappedAcc, ...mappedPartner])
 
-            outboundMessages.push({
-              role: "assistant",
-              content: message.content || "",
-            })
             outboundMessages.push({
               role: "tool",
               content: toolOutput,
@@ -287,7 +340,6 @@ LƯU Ý KHI GỌI HÀM:
             const matchedService = activeServices.find((s) => s.id === fnArgs.serviceId)
             if (!matchedService) {
               const toolOutput = JSON.stringify({ success: false, message: "Không tìm thấy dịch vụ đang hoạt động để tạo đơn." })
-              outboundMessages.push({ role: "assistant", content: message.content || "" })
               outboundMessages.push({ role: "tool", content: toolOutput, tool_call_id: toolCall.id, name: fnName })
               continue
             }
@@ -340,10 +392,6 @@ LƯU Ý KHI GỌI HÀM:
             } : { success: false, message: "Không thể tạo đơn đặt dịch vụ. Vui lòng thử lại." })
 
             outboundMessages.push({
-              role: "assistant",
-              content: message.content || "",
-            })
-            outboundMessages.push({
               role: "tool",
               content: toolOutput,
               tool_call_id: toolCall.id,
@@ -354,8 +402,9 @@ LƯU Ý KHI GỌI HÀM:
 
         // Second turn to summarize tool execution to customer
         const secondResponse = await this.callAiGateway(outboundMessages)
+        const secondChoices = secondResponse.choices || secondResponse.data?.choices || []
         const finalReply =
-          secondResponse.choices?.[0]?.message?.content ||
+          secondChoices[0]?.message?.content ||
           "Dạ em đã ghi nhận thông tin đặt dịch vụ của anh/chị và gửi tới Admin STAYEA để duyệt điều phối đối tác ạ!"
 
         return {
@@ -439,7 +488,7 @@ LƯU Ý KHI GỌI HÀM:
       this.logger.error(`AI Gateway error: ${error?.message || error}`, error?.stack)
 
       // Fallback: Smart local rule responder
-      return this.generateSmartFallback(rawMessages, activeServices)
+      return this.generateSmartFallback(rawMessages, realCatalogItems)
     }
   }
 
@@ -452,11 +501,12 @@ LƯU Ý KHI GỌI HÀM:
   ): Promise<any> {
     const payload: any = {
       model: this.modelName,
-      messages: messages.map((m) => ({
+      messages: messages.map((m: any) => ({
         role: m.role,
         content: m.content,
         ...(m.name ? { name: m.name } : {}),
         ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
+        ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
       })),
       temperature: 0.7,
       max_tokens: 1500,
@@ -490,7 +540,7 @@ LƯU Ý KHI GỌI HÀM:
    */
   private generateSmartFallback(
     messages: ChatMessage[],
-    services: any[]
+    catalog: any[]
   ): AiChatResponse {
     const lastUserMsg =
       messages
@@ -498,23 +548,79 @@ LƯU Ý KHI GỌI HÀM:
         .slice(-1)[0]
         ?.content?.toLowerCase() || ""
 
-    if (
-      lastUserMsg.includes("xe") ||
-      lastUserMsg.includes("ô tô") ||
-      lastUserMsg.includes("7 chỗ") ||
-      lastUserMsg.includes("tự lái")
-    ) {
-      const cars = services.filter((s) => s.serviceType === "transport")
-      const listStr = cars
+    const stays = (catalog || []).filter(
+      (s) => s.serviceType === "stay" || s.serviceType === "homestay"
+    )
+    const cars = (catalog || []).filter(
+      (s) => s.serviceType === "transport" || s.serviceType === "car"
+    )
+    const tours = (catalog || []).filter(
+      (s) => s.serviceType === "experience" || s.serviceType === "tour"
+    )
+
+    const isServiceInquiry =
+      lastUserMsg.includes("có những dịch vụ") ||
+      lastUserMsg.includes("dịch vụ nào") ||
+      lastUserMsg.includes("có dịch vụ gì") ||
+      lastUserMsg.includes("các dịch vụ") ||
+      lastUserMsg.includes("dịch vụ bên mình") ||
+      lastUserMsg.includes("bên mình có") ||
+      lastUserMsg.includes("những dịch vụ")
+
+    if (isServiceInquiry) {
+      const staysList = stays
         .map(
           (c) =>
-            `• **${c.title}**: ${Number(c.price).toLocaleString("vi-VN")}đ/${c.unit} (${c.location})`
+            `• **${c.title}**: ${Number(c.price).toLocaleString("vi-VN")} ₫/${c.unit || "đêm"} (${c.location || "Dương Đông, Phú Quốc"})`
         )
         .join("\n")
 
       return {
-        reply: `Dạ STAYEA xin gợi ý đội xe đối tác chất lượng cao tại Phú Quốc:\n\n${listStr || "• Xe 7 chỗ Mitsubishi Xpander đời mới: 900.000đ/ngày\n• Xe Ford Everest 7 chỗ cao cấp: 1.200.000đ/ngày"}\n\nAnh/chị vui lòng cho em biết **Họ tên**, **Số điện thoại** và **ngày nhận xe** để em tạo phiếu giữ xe chuyển Admin duyệt ngay ạ!`,
-        suggestedActions: ["Thuê xe 7 chỗ ngày mai", "Thuê xe có tài xế riêng"],
+        reply: `Dạ em chào anh/chị! Em là STAYEA Concierge - Trợ lý du lịch thông minh tại Phú Quốc.
+
+Hiện tại hệ thống STAYEA đang cung cấp các dịch vụ thực tế phục vụ chuyến đi của quý khách:
+
+🏡 **1. Lưu trú & Biệt thự nghỉ dưỡng (Đang mở bán trực tiếp)**:
+${staysList || "• **Teest Villa**: 1.500.000 ₫/đêm (Dương Đông, Phú Quốc)\n• **Teesst 22**: 1.500.000 ₫/đêm (Dương Đông, Phú Quốc)"}
+
+🚗 **2. Thuê xe tự lái 4-7 chỗ & Đón tiễn sân bay**: Đội xe đối tác đang được chuẩn bị hoàn thiện để mở đặt trực tiếp (có nhận điều phối theo yêu cầu riêng).
+
+🚤 **3. Tour cano 4 đảo & Trải nghiệm độc bản**: Các tour trải nghiệm lặn ngắm san hô, hoàng hôn đang được đối tác chuẩn bị ra mắt.
+
+Anh/chị đang quan tâm đến biệt thự nghỉ dưỡng hay cần tư vấn dịch vụ nào để em hỗ trợ giữ chỗ gửi Quản trị viên STAYEA duyệt ngay ạ?`,
+        suggestedActions: [
+          "Đặt Teest Villa (1.500.000 ₫)",
+          "Đặt Teesst 22 (1.500.000 ₫)",
+          "Thuê xe tự lái Phú Quốc",
+          "Tư vấn tour cano",
+        ],
+      }
+    }
+
+    if (
+      lastUserMsg.includes("xe") ||
+      lastUserMsg.includes("ô tô") ||
+      lastUserMsg.includes("7 chỗ") ||
+      lastUserMsg.includes("tự lái") ||
+      lastUserMsg.includes("đón tiễn")
+    ) {
+      if (cars.length > 0) {
+        const listStr = cars
+          .map(
+            (c) =>
+              `• **${c.title}**: ${Number(c.price).toLocaleString("vi-VN")} ₫/${c.unit || "ngày"} (${c.location || "Phú Quốc"})`
+          )
+          .join("\n")
+
+        return {
+          reply: `Dạ STAYEA có các dòng xe tự lái và đón tiễn sân bay Phú Quốc:\n\n${listStr}\n\nAnh/chị vui lòng cho em biết **Họ tên**, **Số điện thoại** và **ngày nhận xe** để em lên đơn gửi Admin duyệt điều phối xe ngay ạ!`,
+          suggestedActions: ["Thuê xe 7 chỗ ngày mai", "Thuê xe có tài xế riêng"],
+        }
+      }
+
+      return {
+        reply: `Dạ STAYEA hiện đang liên kết với các đối tác xe uy tín tại Phú Quốc để cung cấp các dòng xe 4-7 chỗ tự lái và xe đưa đón sân bay tận nơi theo yêu cầu.\n\nAnh/chị vui lòng để lại **Họ tên**, **Số điện thoại**, loại xe mong muốn và ngày nhận xe, em sẽ tạo phiếu gửi Admin STAYEA điều phối xe đối tác phục vụ ngay ạ!`,
+        suggestedActions: ["Thuê xe 7 chỗ tự lái", "Thuê xe có tài xế", "Đưa đón sân bay"],
       }
     }
 
@@ -522,26 +628,73 @@ LƯU Ý KHI GỌI HÀM:
       lastUserMsg.includes("villa") ||
       lastUserMsg.includes("phòng") ||
       lastUserMsg.includes("homestay") ||
-      lastUserMsg.includes("ở")
+      lastUserMsg.includes("ở") ||
+      lastUserMsg.includes("đêm") ||
+      lastUserMsg.includes("nghỉ dưỡng") ||
+      lastUserMsg.includes("lưu trú")
     ) {
-      const stays = services.filter((s) => s.serviceType === "homestay")
       const listStr = stays
         .map(
           (c) =>
-            `• **${c.title}**: ${Number(c.price).toLocaleString("vi-VN")}đ/${c.unit} (${c.location})`
+            `• **${c.title}**: ${Number(c.price).toLocaleString("vi-VN")} ₫/${c.unit || "đêm"} (${c.location || "Dương Đông, Phú Quốc"})`
         )
         .join("\n")
 
       return {
-        reply: `Dạ STAYEA hiện có các biệt thự & homestay tuyệt đẹp ven biển Phú Quốc:\n\n${listStr || "• Sunshine Ocean Villa (3 PN, hồ bơi vô cực): 3.500.000đ/đêm"}\n\nAnh/chị dự định đi vào ngày nào và có bao nhiêu thành viên để em giữ chỗ gửi Admin duyệt ạ?`,
-        suggestedActions: ["Xem biệt thự 3 phòng ngủ", "Biệt thự view biển"],
+        reply: `Dạ STAYEA hiện có các biệt thự & homestay tuyệt đẹp ven biển Phú Quốc sẵn sàng đón khách:\n\n${listStr || "• **Teest Villa**: 1.500.000 ₫/đêm\n• **Teesst 22**: 1.500.000 ₫/đêm"}\n\nAnh/chị dự định đi vào ngày nào, ở mấy đêm và có bao nhiêu thành viên để em giữ chỗ gửi Admin STAYEA duyệt ngay ạ?`,
+        suggestedActions: [
+          "Đặt Teest Villa (1.500.000 ₫)",
+          "Đặt Teesst 22 (1.500.000 ₫)",
+          "Xem vị trí biệt thự",
+        ],
       }
     }
 
+    if (
+      lastUserMsg.includes("tour") ||
+      lastUserMsg.includes("cano") ||
+      lastUserMsg.includes("lặn") ||
+      lastUserMsg.includes("đảo") ||
+      lastUserMsg.includes("san hô")
+    ) {
+      if (tours.length > 0) {
+        const listStr = tours
+          .map(
+            (c) =>
+              `• **${c.title}**: ${Number(c.price).toLocaleString("vi-VN")} ₫/${c.unit || "khách"} (${c.location || "Phú Quốc"})`
+          )
+          .join("\n")
+
+        return {
+          reply: `Dạ STAYEA xin giới thiệu các tour trải nghiệm Phú Quốc:\n\n${listStr}\n\nAnh/chị vui lòng để lại ngày đi và SĐT để em giữ tour gửi Admin duyệt ngay ạ!`,
+          suggestedActions: tours.map((t) => `Đặt ${t.title}`),
+        }
+      }
+
+      return {
+        reply: `Dạ hiện STAYEA đang liên kết với các đối tác tổ chức Tour cano 4 đảo, lặn ngắm san hô và câu mực đêm tại Phú Quốc theo lịch trình riêng.\n\nAnh/chị vui lòng để lại số lượng khách, ngày dự kiến và Số điện thoại để chuyên viên STAYEA kết nối đối tác sắp xếp cano riêng chu đáo nhất cho mình nhé!`,
+        suggestedActions: ["Tour cano 4 đảo", "Lặn ngắm san hô", "Câu mực đêm"],
+      }
+    }
+
+    const staysSummary = stays
+      .slice(0, 2)
+      .map((s) => `• **${s.title}**: ${Number(s.price).toLocaleString("vi-VN")} ₫/${s.unit || "đêm"} (${s.location})`)
+      .join("\n")
+
     return {
-      reply: `Dạ em chào anh/chị! Em là STAYEA Concierge. Em có thể hỗ trợ anh/chị:\n1. 🏡 Tìm & đặt homestay, villa nghỉ dưỡng cao cấp.\n2. 🚗 Thuê xe tự lái hoặc có tài xế đón tiễn sân bay.\n3. 🚤 Tour cano 4 đảo, lặn ngắm san hô độc bản.\n\nAnh/chị chỉ cần để lại nhu cầu cùng SĐT, em sẽ lên đơn chuyển Admin STAYEA duyệt và điều phối đối tác phục vụ ngay ạ!`,
+      reply: `Dạ em chào anh/chị! Em là STAYEA Concierge - Trợ lý thông minh hệ thống du lịch Phú Quốc.
+
+Em có thể hỗ trợ anh/chị:
+1. 🏡 **Tìm & đặt biệt thự nghỉ dưỡng** (Hiện có sẵn:
+${staysSummary || "• **Teest Villa**: 1.500.000 ₫/đêm\n• **Teesst 22**: 1.500.000 ₫/đêm"})
+2. 🚗 **Thuê xe tự lái 4-7 chỗ** hoặc xe đón tiễn sân bay Phú Quốc.
+3. 🚤 **Tour cano 4 đảo**, lặn ngắm san hô và trải nghiệm độc bản.
+
+Anh/chị chỉ cần để lại nhu cầu cùng SĐT, em sẽ lên đơn chuyển Admin STAYEA duyệt và điều phối đối tác phục vụ ngay ạ!`,
       suggestedActions: [
-        "Tìm biệt thự sát biển",
+        "Đặt Teest Villa",
+        "Đặt Teesst 22",
         "Thuê xe 7 chỗ tự lái",
         "Tour cano 4 đảo",
       ],

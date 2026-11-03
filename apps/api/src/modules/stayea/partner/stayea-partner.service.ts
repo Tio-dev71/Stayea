@@ -485,7 +485,16 @@ export class StayeaPartnerService implements OnModuleInit {
       conditions.push(eq(partnerServicesTable.partnerId, query.partnerId))
     }
     if (query?.type) {
-      conditions.push(eq(partnerServicesTable.serviceType, query.type as any))
+      const t = query.type.toLowerCase()
+      const mapped =
+        t === "homestay" || t === "villa" || t === "stay"
+          ? "stay"
+          : t === "tour" || t === "experience"
+            ? "experience"
+            : t === "car" || t === "transport"
+              ? "transport"
+              : t
+      conditions.push(eq(partnerServicesTable.serviceType, mapped as any))
     }
     if (query?.location) {
       conditions.push(ilike(partnerServicesTable.location, `%${query.location}%`))
@@ -1181,7 +1190,16 @@ export class StayeaPartnerService implements OnModuleInit {
       conditions.push(eq(partnerServicesTable.partnerId, query.partnerId))
     }
     if (query?.type) {
-      conditions.push(eq(partnerServicesTable.serviceType, query.type as any))
+      const t = query.type.toLowerCase()
+      const mapped =
+        t === "homestay" || t === "villa" || t === "stay"
+          ? "stay"
+          : t === "tour" || t === "experience"
+            ? "experience"
+            : t === "car" || t === "transport"
+              ? "transport"
+              : t
+      conditions.push(eq(partnerServicesTable.serviceType, mapped as any))
     }
     if (query?.search) {
       const s = `%${query.search.trim()}%`

@@ -2174,6 +2174,120 @@ class StayeaApiService {
     })
     return res.ok
   }
+
+  // -------------------------------------------------------------
+  // Notification Center APIs
+  // -------------------------------------------------------------
+
+  /**
+   * Broadcast or send notification (Admin)
+   */
+  async broadcastNotification(payload: {
+    recipientType: "all" | "all_partners" | "all_users" | "partner" | "user"
+    recipientId?: string
+    senderName?: string
+    title: string
+    message: string
+    type?: "system" | "order" | "payout" | "promotion" | "announcement"
+    priority?: "normal" | "high" | "urgent"
+    actionUrl?: string
+    metadata?: Record<string, unknown>
+  }): Promise<any> {
+    const res = await this.fetchWithAuth("/api/stayea/notifications/broadcast", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể phát thông báo")
+    return json.data || json
+  }
+
+  /**
+   * Get notifications for a reader (Partner, User, or Admin)
+   */
+  async getMyNotifications(
+    readerId: string,
+    role: "user" | "partner" | "admin" = "user",
+    limit = 30
+  ): Promise<{ items: any[]; unreadCount: number; total: number }> {
+    try {
+      const q = new URLSearchParams({
+        readerId,
+        role,
+        limit: String(limit),
+      })
+      const res = await this.fetchWithAuth(`/api/stayea/notifications/my?${q.toString()}`)
+      if (!res.ok) return { items: [], unreadCount: 0, total: 0 }
+      const json = await res.json()
+      return json.data || json || { items: [], unreadCount: 0, total: 0 }
+    } catch {
+      return { items: [], unreadCount: 0, total: 0 }
+    }
+  }
+
+  /**
+   * Mark a single notification as read
+   */
+  async markNotificationRead(
+    id: string,
+    readerId: string,
+    readerRole: "user" | "partner" | "admin" = "user"
+  ): Promise<boolean> {
+    try {
+      const res = await this.fetchWithAuth(`/api/stayea/notifications/${id}/read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ readerId, readerRole }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  async markAllNotificationsRead(
+    readerId: string,
+    readerRole: "user" | "partner" | "admin" = "user"
+  ): Promise<boolean> {
+    try {
+      const res = await this.fetchWithAuth(`/api/stayea/notifications/read-all`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ readerId, readerRole }),
+      })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Admin view: Get sent notifications broadcast history
+   */
+  async getAdminNotificationHistory(limit = 50): Promise<any[]> {
+    try {
+      const res = await this.fetchWithAuth(`/api/stayea/notifications/admin/history?limit=${limit}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  /**
+   * Admin delete notification
+   */
+  async deleteNotification(id: string): Promise<boolean> {
+    const res = await this.fetchWithAuth(`/api/stayea/notifications/admin/${id}`, {
+      method: "DELETE",
+    })
+    return res.ok
+  }
 }
 
 export const stayeaApi = new StayeaApiService()

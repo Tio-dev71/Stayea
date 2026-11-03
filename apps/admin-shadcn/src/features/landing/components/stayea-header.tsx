@@ -11,6 +11,7 @@ import { TransportMegaMenu } from "./transport-mega-menu"
 import { ExploreMegaMenu } from "./explore-mega-menu"
 import { DealsMegaMenu } from "./deals-mega-menu"
 import { PackageMegaMenu } from "./package-mega-menu"
+import { stayeaApi } from "@/lib/stayea-api-service"
 
 export interface NotificationItem {
   id: string
@@ -101,6 +102,10 @@ export function StayeaHeader({
     return `stayea_read_notifications_${identifier}`
   }, [currentUser?.email, currentUser?.name])
 
+  const [notifications, setNotifications] = React.useState<NotificationItem[]>([
+    ...DEFAULT_NOTIFICATIONS,
+  ])
+
   const [readNotifIds, setReadNotifIds] = React.useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set()
     try {
@@ -111,30 +116,69 @@ export function StayeaHeader({
     }
   })
 
-  // Synchronize when active user changes
+  // Synchronize when active user changes & fetch real backend notifications
   React.useEffect(() => {
     if (typeof window === "undefined") return
+    const identifier = currentUser?.email || currentUser?.name || "guest"
     try {
       const stored = localStorage.getItem(userStorageKey)
       setReadNotifIds(stored ? new Set(JSON.parse(stored)) : new Set())
     } catch {
       setReadNotifIds(new Set())
     }
-  }, [userStorageKey])
+
+    // Fetch dynamic notifications from backend
+    stayeaApi
+      .getMyNotifications(identifier, "user", 20)
+      .then((res) => {
+        if (res && Array.isArray(res.items) && res.items.length > 0) {
+          const remoteItems: NotificationItem[] = res.items.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            description: n.message,
+            time: "Mới đây",
+            target: n.actionUrl || "plans",
+            icon:
+              n.type === "promotion"
+                ? "gift"
+                : n.type === "order"
+                ? "check"
+                : "crown",
+          }))
+
+          setNotifications((prev) => {
+            const remoteIds = new Set(remoteItems.map((r) => r.id))
+            const remainingDefault = prev.filter(
+              (p) => !remoteIds.has(p.id) && !p.id.startsWith("notif_")
+            )
+            return [...remoteItems, ...remainingDefault]
+          })
+
+          // Mark already-read from server
+          const serverRead = res.items.filter((n: any) => n.isRead).map((n: any) => n.id)
+          if (serverRead.length > 0) {
+            setReadNotifIds((prev) => new Set([...prev, ...serverRead]))
+          }
+        }
+      })
+      .catch(() => {})
+  }, [userStorageKey, currentUser?.email, currentUser?.name])
 
   const unreadCount = React.useMemo(() => {
-    return DEFAULT_NOTIFICATIONS.filter((n) => !readNotifIds.has(n.id)).length
-  }, [readNotifIds])
+    return notifications.filter((n) => !readNotifIds.has(n.id)).length
+  }, [notifications, readNotifIds])
 
   const handleMarkAllAsRead = React.useCallback(() => {
-    const allIds = new Set(DEFAULT_NOTIFICATIONS.map((n) => n.id))
+    const allIds = new Set(notifications.map((n) => n.id))
     setReadNotifIds(allIds)
+    const identifier = currentUser?.email || currentUser?.name || "guest"
+    stayeaApi.markAllNotificationsRead(identifier, "user").catch(() => {})
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(userStorageKey, JSON.stringify(Array.from(allIds)))
       } catch {}
     }
-  }, [userStorageKey])
+  }, [userStorageKey, notifications, currentUser?.email, currentUser?.name])
 
   const handleNotificationClick = React.useCallback(
     (item: NotificationItem) => {
@@ -148,10 +192,12 @@ export function StayeaHeader({
         }
         return next
       })
+      const identifier = currentUser?.email || currentUser?.name || "guest"
+      stayeaApi.markNotificationRead(item.id, identifier, "user").catch(() => {})
       setNotificationOpen(false)
       onNavigate?.(item.target)
     },
-    [userStorageKey, onNavigate]
+    [userStorageKey, onNavigate, currentUser?.email, currentUser?.name]
   )
 
   React.useEffect(() => {

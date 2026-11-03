@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import {
   Search,
-  Bell,
   MessageSquare,
   Menu,
   LogOut,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react"
 import { getUser, clearAllAuth } from "@/lib/token"
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { AdminNotificationPopover } from "@/features/admin-notifications"
 
 interface StayeaAdminHeaderProps {
   searchPlaceholder?: string
@@ -140,20 +140,8 @@ export function StayeaAdminHeader({
 
       {/* 3. Right: Notifications, Messages & Profile */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Notification Bell with Badge */}
-        <button
-          type="button"
-          aria-label="Thông báo"
-          onClick={() => {
-            window.location.href = "/stayea/bookings"
-          }}
-          className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-xs">
-            2
-          </span>
-        </button>
+        {/* Dynamic Notification Bell & Broadcast Popover */}
+        <AdminNotificationPopover />
 
         {/* Message Bubble Icon */}
         <button

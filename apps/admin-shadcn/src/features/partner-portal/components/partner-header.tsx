@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { getUser, clearAllAuth, type StoredUser } from "@/lib/token"
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { PartnerNotificationPopover } from "./partner-notification-popover"
 import type { PartnerProfileData } from "../types"
 
 interface PartnerHeaderProps {
@@ -234,20 +235,11 @@ export function PartnerHeader({
               </div>
             )}
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              onClick={() => onSelectTab("orders")}
-              className="relative p-2 rounded-lg bg-emerald-950/50 border border-emerald-800/40 hover:bg-emerald-900/40 text-slate-300 transition-colors"
-              title="Đơn hàng chờ xử lý"
-            >
-              <Bell className="w-4 h-4 text-emerald-300" />
-              {pendingOrdersCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow">
-                  {pendingOrdersCount}
-                </span>
-              )}
-            </button>
+            {/* Dynamic Notification Bell & Popover */}
+            <PartnerNotificationPopover
+              partnerId={currentProfile?.id}
+              onSelectTab={onSelectTab}
+            />
 
             {/* Jump to Customer View */}
             <button

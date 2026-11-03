@@ -11,7 +11,32 @@ describe("StayeaNotificationService (Transactional Notifications & Partner Dispa
     }),
   } as unknown as ConfigService
 
-  const service = new StayeaNotificationService(mockConfigService)
+  const mockDb = {
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{
+          id: "notif-test",
+          recipientType: "partner",
+          recipientId: "ptn-phuquoc-01",
+          title: "Test",
+          message: "Test",
+          type: "order",
+          priority: "high",
+        }]),
+      }),
+    }),
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          orderBy: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([]),
+          }),
+        }),
+      }),
+    }),
+  } as any
+
+  const service = new StayeaNotificationService(mockConfigService, mockDb)
 
   it("successfully formats and drafts booking confirmation voucher for customer", async () => {
     const res = await service.sendBookingConfirmation({

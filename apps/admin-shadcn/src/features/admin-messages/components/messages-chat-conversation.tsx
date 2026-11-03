@@ -48,11 +48,23 @@ export function MessagesChatConversation({
   onComposeClick,
 }: MessagesChatConversationProps) {
   const [inputText, setInputText] = useState("")
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const prevMsgLengthRef = useRef(0)
+  const prevConvIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    const isNewConv = conversation?.id !== prevConvIdRef.current
+    const hasNewMessage = messages.length > prevMsgLengthRef.current
+    prevConvIdRef.current = conversation?.id || null
+    prevMsgLengthRef.current = messages.length
+
+    if (scrollContainerRef.current && (isNewConv || hasNewMessage)) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: isNewConv ? "auto" : "smooth",
+      })
+    }
+  }, [messages.length, conversation?.id])
 
   const handleSend = () => {
     if (!inputText.trim()) return
@@ -157,7 +169,10 @@ export function MessagesChatConversation({
       </div>
 
       {/* 2. Messages Scroll Body */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#f8fafc]/50">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#f8fafc]/50"
+      >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
             <MessageCircle className="w-8 h-8 stroke-[1.5] text-slate-300 mb-2" />
@@ -265,7 +280,6 @@ export function MessagesChatConversation({
             )
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* 3. Bottom Chat Input Bar */}

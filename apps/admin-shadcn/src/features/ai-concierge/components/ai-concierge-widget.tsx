@@ -184,17 +184,25 @@ export function AiConciergeWidget() {
     ])
   }
 
-  const messagesEndRef = React.useRef<HTMLDivElement>(null)
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+  const prevMsgCountRef = React.useRef(0)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const scrollToBottom = (smooth = true) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      })
+    }
   }
 
   React.useEffect(() => {
-    if (isOpen) {
-      scrollToBottom()
+    const totalCount = (chatMode === "ai" ? messages : consultantMessages).length
+    if (isOpen && totalCount > prevMsgCountRef.current) {
+      scrollToBottom(prevMsgCountRef.current > 0)
     }
-  }, [messages, consultantMessages, isOpen, chatMode])
+    prevMsgCountRef.current = totalCount
+  }, [messages.length, consultantMessages.length, isOpen, chatMode])
 
   // 1. Send Message to AI
   const handleSendAiMessage = async (textToSend?: string) => {
@@ -530,7 +538,10 @@ export function AiConciergeWidget() {
           )}
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-[#082226] to-[#05181a]">
+          <div
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-[#082226] to-[#05181a]"
+          >
             {(chatMode === "ai" ? messages : consultantMessages).map((m) => {
               const isUser = m.role === "user"
               const isAdmin = m.role === "admin"
@@ -627,7 +638,6 @@ export function AiConciergeWidget() {
                 </span>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Footer Input */}

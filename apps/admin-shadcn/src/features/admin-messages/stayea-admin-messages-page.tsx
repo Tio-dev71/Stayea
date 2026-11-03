@@ -86,7 +86,21 @@ export function StayeaAdminMessagesPage({
                 : "Khách hàng",
         }))
 
-        setConversations(mapped)
+        setConversations((prev) => {
+          if (prev.length === mapped.length) {
+            const isSame = prev.every((item, i) => {
+              const next = mapped[i]
+              return (
+                item.id === next?.id &&
+                item.lastMessage === next?.lastMessage &&
+                item.unreadCount === next?.unreadCount &&
+                item.name === next?.name
+              )
+            })
+            if (isSame) return prev
+          }
+          return mapped
+        })
 
         // If no active conversation yet, pick the first
         setActiveConversationId((current) => current || mapped[0]?.id || null)
@@ -146,10 +160,20 @@ export function StayeaAdminMessagesPage({
           status: "sent",
         }))
 
-        setMessagesMap((prev) => ({
-          ...prev,
-          [convId]: mapped,
-        }))
+        setMessagesMap((prev) => {
+          const current = prev[convId]
+          if (current && current.length === mapped.length) {
+            const lastCur = current[current.length - 1]
+            const lastMap = mapped[mapped.length - 1]
+            if (lastCur?.id === lastMap?.id && lastCur?.content === lastMap?.content) {
+              return prev
+            }
+          }
+          return {
+            ...prev,
+            [convId]: mapped,
+          }
+        })
       }
     } catch {
       // ignore
@@ -230,8 +254,9 @@ export function StayeaAdminMessagesPage({
   const handleSendMessage = async (text: string) => {
     if (!activeConversation) return
 
+    const tempId = `temp-${Date.now()}`
     const tempMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
+      id: tempId,
       senderId: "admin",
       senderName: "STAYEA CSKH",
       senderAvatar: "/profile/profile-avatar.jpg",
@@ -263,13 +288,25 @@ export function StayeaAdminMessagesPage({
     )
 
     try {
-      await stayeaApi.sendChatMessage(activeConversation.id, {
+      const savedMsg = await stayeaApi.sendChatMessage(activeConversation.id, {
         content: text,
         senderType: "admin",
         senderName: "STAYEA CSKH VIP",
       })
+      if (savedMsg?.id) {
+        setMessagesMap((prev) => ({
+          ...prev,
+          [activeConversation.id]: (prev[activeConversation.id] || []).map((m) =>
+            m.id === tempId ? { ...m, id: savedMsg.id } : m
+          ),
+        }))
+      }
     } catch (err: any) {
       toast.error(err?.message || "Lỗi khi gửi tin nhắn")
+      setMessagesMap((prev) => ({
+        ...prev,
+        [activeConversation.id]: (prev[activeConversation.id] || []).filter((m) => m.id !== tempId),
+      }))
     }
   }
 

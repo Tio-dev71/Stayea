@@ -36,10 +36,16 @@ export function PartnerAdminChat({ profile }: PartnerAdminChatProps) {
   const [inputText, setInputText] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const prevMsgCountRef = useRef(0)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const scrollToBottom = (smooth = true) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      })
+    }
   }
 
   const fetchChat = useCallback(async (isInitial = false) => {
@@ -59,7 +65,16 @@ export function PartnerAdminChat({ profile }: PartnerAdminChatProps) {
               })
             : "Vừa xong",
         }))
-        setMessages(mapped)
+        setMessages((prev) => {
+          if (prev.length === mapped.length) {
+            const lastPrev = prev[prev.length - 1]
+            const lastMapped = mapped[mapped.length - 1]
+            if (lastPrev?.id === lastMapped?.id && lastPrev?.content === lastMapped?.content) {
+              return prev
+            }
+          }
+          return mapped
+        })
       }
     } catch {
       // ignore
@@ -77,8 +92,11 @@ export function PartnerAdminChat({ profile }: PartnerAdminChatProps) {
   }, [fetchChat])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (messages.length > prevMsgCountRef.current) {
+      scrollToBottom(prevMsgCountRef.current > 0)
+    }
+    prevMsgCountRef.current = messages.length
+  }, [messages.length])
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim()
@@ -97,14 +115,20 @@ export function PartnerAdminChat({ profile }: PartnerAdminChatProps) {
     setMessages((prev) => [...prev, tempMsg])
 
     try {
-      await stayeaApi.sendPartnerChatMessage(profile.id, {
+      const saved = await stayeaApi.sendPartnerChatMessage(profile.id, {
         content: text,
         senderType: "partner",
         senderName: `${profile.contactName} (${profile.businessName})`,
       })
+      if (saved?.id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempMsg.id ? { ...m, id: saved.id } : m))
+        )
+      }
       await fetchChat(false)
     } catch (err: any) {
       toast.error(err?.message || "Không thể gửi tin nhắn. Vui lòng thử lại.")
+      setMessages((prev) => prev.filter((m) => m.id !== tempMsg.id))
     } finally {
       setSending(false)
     }
@@ -169,7 +193,10 @@ export function PartnerAdminChat({ profile }: PartnerAdminChatProps) {
       </div>
 
       {/* 3. Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-[#081716] to-[#040e0d]">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-[#081716] to-[#040e0d]"
+      >
         {loading ? (
           <div className="py-24 text-center space-y-3">
             <div className="w-7 h-7 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -218,7 +245,6 @@ export function PartnerAdminChat({ profile }: PartnerAdminChatProps) {
             )
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* 4. Input Area */}

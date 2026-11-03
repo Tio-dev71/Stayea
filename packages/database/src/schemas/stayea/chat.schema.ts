@@ -92,3 +92,4 @@ export const stayeaChatMessagesTable = pgTable(
 
 export type StayeaChatMessage = typeof stayeaChatMessagesTable.$inferSelect
 export type InsertStayeaChatMessage = typeof stayeaChatMessagesTable.$inferInsert
+

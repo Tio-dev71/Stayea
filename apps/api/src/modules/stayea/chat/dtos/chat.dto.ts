@@ -62,3 +62,4 @@ export class StartCustomerChatDto {
   @IsOptional()
   metadata?: Record<string, unknown>
 }
+

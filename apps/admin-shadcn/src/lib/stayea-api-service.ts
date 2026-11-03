@@ -379,6 +379,9 @@ class StayeaApiService {
     if (!headers.has("Cache-Control")) {
       headers.set("Cache-Control", "no-cache, no-store")
     }
+    if (init?.body && typeof init.body === "string" && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json")
+    }
 
     let url = input
     const isGet = !init?.method || init.method.toUpperCase() === "GET"
@@ -1934,6 +1937,7 @@ class StayeaApiService {
   }): Promise<any> {
     const res = await this.fetchWithAuth(`/api/stayea/chat/conversations/${conversationId}/messages`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
     const json = await res.json()
@@ -1987,6 +1991,7 @@ class StayeaApiService {
   }): Promise<any> {
     const res = await this.fetchWithAuth(`/api/stayea/chat/partner/${partnerId}/messages`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
     const json = await res.json()

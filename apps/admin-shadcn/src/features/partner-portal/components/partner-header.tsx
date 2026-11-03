@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import {
   Bell,
+  BookOpen,
   Building,
   Car,
   CheckCircle2,
@@ -26,8 +27,8 @@ interface PartnerHeaderProps {
   currentProfile: PartnerProfileData | null
   profiles: PartnerProfileData[]
   onSelectProfile: (profile: PartnerProfileData) => void
-  activeTab: "overview" | "services" | "inventory" | "orders" | "messages" | "settings"
-  onSelectTab: (tab: "overview" | "services" | "inventory" | "orders" | "messages" | "settings") => void
+  activeTab: "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings"
+  onSelectTab: (tab: "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings") => void
   pendingOrdersCount?: number
   onNavigateHome?: () => void
   onLogout?: () => void
@@ -441,6 +442,19 @@ export function PartnerHeader({
             >
               <MessageSquare className="w-4 h-4 text-emerald-400" />
               <span>Tin nhắn Admin</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onSelectTab("blogs")}
+              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+                activeTab === "blogs"
+                  ? "bg-emerald-600/30 text-emerald-300 border border-emerald-500/40"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-emerald-950/30"
+              }`}
+            >
+              <BookOpen className="w-4 h-4 text-emerald-400" />
+              <span>Bài viết & Blog</span>
             </button>
 
             <button

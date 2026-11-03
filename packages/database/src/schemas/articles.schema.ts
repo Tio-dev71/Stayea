@@ -44,10 +44,8 @@ export const articlesTable = pgTable(
     // Tags (JSONB array)
     tags: jsonb('tags').$type<string[]>().notNull().default([]),
 
-    // Category (enum)
-    category: text('category', { enum: ['tech', 'design', 'product', 'other'] })
-      .notNull()
-      .default('other'),
+    // Category
+    category: text('category').notNull().default('cam-nang'),
 
     // Author name (text, not a foreign key)
     author: text('author').notNull().default(''),
@@ -57,6 +55,12 @@ export const articlesTable = pgTable(
 
     // Whether pinned
     isPinned: boolean('is_pinned').notNull().default(false),
+
+    // Cover image URL
+    imageUrl: text('image_url'),
+
+    // Partner ID (if authored by a partner)
+    partnerId: text('partner_id'),
 
     // Timestamps
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

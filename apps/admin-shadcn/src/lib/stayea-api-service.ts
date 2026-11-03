@@ -2055,6 +2055,125 @@ class StayeaApiService {
     if (!res.ok) throw new Error(json.message || "Lỗi khi chạy thử nghiệm prompt AI")
     return json.data || json
   }
+
+  // ==========================================
+  // BLOG & ARTICLES MANAGEMENT
+  // ==========================================
+
+  async getBlogArticles(params?: { category?: string; search?: string; partnerId?: string }): Promise<any[]> {
+    try {
+      const q = new URLSearchParams()
+      if (params?.category) q.set("category", params.category)
+      if (params?.search) q.set("search", params.search)
+      if (params?.partnerId) q.set("partnerId", params.partnerId)
+      const res = await fetch(`${this.baseUrl}/api/stayea/blogs?${q.toString()}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async getBlogDetail(idOrSlug: string): Promise<any | null> {
+    try {
+      const res = await fetch(`${this.baseUrl}/api/stayea/blogs/${idOrSlug}`)
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.data || json
+    } catch {
+      return null
+    }
+  }
+
+  async getAdminBlogArticles(params?: { search?: string; status?: string; category?: string }): Promise<any[]> {
+    try {
+      const q = new URLSearchParams()
+      if (params?.search) q.set("search", params.search)
+      if (params?.status) q.set("status", params.status)
+      if (params?.category) q.set("category", params.category)
+      const res = await this.fetchWithAuth(`/api/stayea/blogs/admin/all?${q.toString()}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async createAdminBlogArticle(payload: Record<string, unknown>): Promise<any | null> {
+    const res = await this.fetchWithAuth("/api/stayea/blogs/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tạo bài viết blog")
+    return json.data || json
+  }
+
+  async updateAdminBlogArticle(id: string, payload: Record<string, unknown>): Promise<any | null> {
+    const res = await this.fetchWithAuth(`/api/stayea/blogs/admin/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể cập nhật bài viết blog")
+    return json.data || json
+  }
+
+  async deleteAdminBlogArticle(id: string): Promise<boolean> {
+    const res = await this.fetchWithAuth(`/api/stayea/blogs/admin/${id}`, {
+      method: "DELETE",
+    })
+    return res.ok
+  }
+
+  async getPartnerBlogArticles(partnerId?: string): Promise<any[]> {
+    try {
+      const q = new URLSearchParams()
+      if (partnerId) q.set("partnerId", partnerId)
+      const res = await this.fetchWithAuth(`/api/stayea/blogs/partner/my?${q.toString()}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async createPartnerBlogArticle(payload: Record<string, unknown>, partnerId?: string): Promise<any | null> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/blogs/partner${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể đăng bài viết blog")
+    return json.data || json
+  }
+
+  async updatePartnerBlogArticle(id: string, payload: Record<string, unknown>, partnerId?: string): Promise<any | null> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/blogs/partner/${id}${q}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể cập nhật bài viết blog")
+    return json.data || json
+  }
+
+  async deletePartnerBlogArticle(id: string, partnerId?: string): Promise<boolean> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/blogs/partner/${id}${q}`, {
+      method: "DELETE",
+    })
+    return res.ok
+  }
 }
 
 export const stayeaApi = new StayeaApiService()

@@ -18,6 +18,7 @@ import {
   Settings,
   ArrowRight,
   Bot,
+  BookOpen,
 } from "lucide-react"
 import type { SidebarNavMenuItem } from "@/features/admin-dashboard/stayea-admin-mock-data"
 import { ADMIN_SIDEBAR_NAV_VI } from "@/features/admin-dashboard/stayea-admin-mock-data"
@@ -72,6 +73,12 @@ function getSidebarIcon(iconName: string) {
     case "marketing": {
       return <Send className={iconClass} />
     }
+    case "book":
+    case "blog":
+    case "blogs":
+    case "articles": {
+      return <BookOpen className={iconClass} />
+    }
     case "analytics": {
       return <BarChart2 className={iconClass} />
     }
@@ -97,6 +104,8 @@ const DEFAULT_TAB_ROUTES: Record<string, string> = {
   "tin-nhan": "/stayea/messages",
   "ai-agent": "/stayea/ai-agent",
   "kiem-soat-ai": "/stayea/ai-agent",
+  "bai-viet-blogs": "/stayea/blogs",
+  "blogs": "/stayea/blogs",
   "marketing": "/stayea/marketing",
   "bao-cao": "/stayea/reports",
   "cai-dat": "/stayea/settings",
@@ -140,6 +149,13 @@ export function StayeaAdminSidebar({
           return "danh-gia"
         case "messages":
           return "tin-nhan"
+        case "ai-agent":
+        case "kiem-soat-ai":
+          return "ai-agent"
+        case "bai-viet-blogs":
+        case "blogs":
+        case "articles":
+          return "bai-viet-blogs"
         case "marketing":
           return "marketing"
         case "analytics":
@@ -164,6 +180,8 @@ export function StayeaAdminSidebar({
       if (pathname.startsWith("/stayea/revenue")) return "doanh-thu-thanh-toan"
       if (pathname.startsWith("/stayea/reviews")) return "danh-gia"
       if (pathname.startsWith("/stayea/messages")) return "tin-nhan"
+      if (pathname.startsWith("/stayea/ai-agent")) return "ai-agent"
+      if (pathname.startsWith("/stayea/blogs") || pathname.startsWith("/stayea/articles")) return "bai-viet-blogs"
       if (pathname.startsWith("/stayea/marketing")) return "marketing"
       if (pathname.startsWith("/stayea/reports")) return "bao-cao"
       if (pathname.startsWith("/stayea/settings")) return "cai-dat"

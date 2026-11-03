@@ -128,6 +128,7 @@ export const ADMIN_SIDEBAR_NAV_VI: readonly SidebarNavMenuItem[] = [
   { id: "danh-gia", label: "Đánh giá", icon: "reviews", href: "#danh-gia" },
   { id: "tin-nhan", label: "Tin nhắn", icon: "messages", href: "#tin-nhan" },
   { id: "ai-agent", label: "Kiểm soát AI / Prompt", icon: "bot", href: "/stayea/ai-agent" },
+  { id: "bai-viet-blogs", label: "Bài viết & Blog", icon: "book", href: "/stayea/blogs" },
   { id: "marketing", label: "Marketing", icon: "marketing", href: "#marketing" },
   { id: "bao-cao", label: "Báo cáo", icon: "analytics", href: "#analytics" },
   { id: "cai-dat", label: "Cài đặt", icon: "settings", href: "#settings" },

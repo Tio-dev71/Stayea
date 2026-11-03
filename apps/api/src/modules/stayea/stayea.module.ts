@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common"
 
+import { StayeaBlogModule } from "@/modules/stayea/blog/stayea-blog.module"
 import { StayeaBookingModule } from "@/modules/stayea/booking/stayea-booking.module"
 import { StayeaCatalogModule } from "@/modules/stayea/catalog/stayea-catalog.module"
 import { StayeaClubModule } from "@/modules/stayea/club/stayea-club.module"
@@ -21,6 +22,7 @@ import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
     StayeaPartnerModule,
     StayeaAiAgentModule,
     StayeaChatModule,
+    StayeaBlogModule,
   ],
   exports: [
     StayeaNotificationModule,
@@ -32,6 +34,7 @@ import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
     StayeaPartnerModule,
     StayeaAiAgentModule,
     StayeaChatModule,
+    StayeaBlogModule,
   ],
 })
 export class StayeaModule {}

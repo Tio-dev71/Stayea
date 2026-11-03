@@ -28,6 +28,8 @@ const PUBLIC_ROUTES = new Set([
   '/new-booking',
   '/service-detail',
   '/add-payment',
+  '/terms',
+  '/partner-agreement',
   '/login',
   '/register',
   '/oauth/callback',

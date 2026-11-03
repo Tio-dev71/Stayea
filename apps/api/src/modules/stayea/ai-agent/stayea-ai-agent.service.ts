@@ -346,7 +346,16 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
 
             const unitPrice = Number(matchedService.price)
             const qty = fnArgs.quantity || 1
-            const totalAmount = unitPrice * qty
+            let durationMultiplier = 1
+            if (fnArgs.startDate && fnArgs.endDate) {
+              const start = new Date(fnArgs.startDate).getTime()
+              const end = new Date(fnArgs.endDate).getTime()
+              const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24))
+              if (diffDays > 0) {
+                durationMultiplier = diffDays
+              }
+            }
+            const totalAmount = unitPrice * qty * durationMultiplier
             const serviceTitle = matchedService.title
             const serviceType = matchedService.serviceType
             const partnerId = matchedService.partnerId
@@ -436,7 +445,16 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
             }
             const unitPrice = Number(matchedService.price)
             const qty = p.quantity || 1
-            const totalAmount = unitPrice * qty
+            let durationMultiplier = 1
+            if (p.startDate && p.endDate) {
+              const start = new Date(p.startDate).getTime()
+              const end = new Date(p.endDate).getTime()
+              const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24))
+              if (diffDays > 0) {
+                durationMultiplier = diffDays
+              }
+            }
+            const totalAmount = unitPrice * qty * durationMultiplier
 
             const order = await this.partnerService.createDraftOrder({
               partnerId: matchedService.partnerId,

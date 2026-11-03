@@ -413,6 +413,32 @@ export function PartnerPortalPage({
     setAllServices((prev) => prev.filter((s) => s.id !== serviceId))
   }
 
+  // Update Service Details (Capacity, Images, Rich Description, etc.)
+  const handleUpdateService = async (
+    serviceId: string,
+    updatedData: Partial<PartnerServiceData>
+  ): Promise<boolean> => {
+    try {
+      const ok = await stayeaApi.updatePartnerService(serviceId, {
+        ...updatedData,
+        price: updatedData.price ? Number(updatedData.price) : undefined,
+        originalPrice: updatedData.originalPrice ? Number(updatedData.originalPrice) : undefined,
+      })
+      if (!ok) {
+        toast.error("Không thể cập nhật dịch vụ.")
+        return false
+      }
+      toast.success("Đã cập nhật dịch vụ thành công!")
+      setAllServices((prev) =>
+        prev.map((s) => (s.id === serviceId ? { ...s, ...updatedData } : s))
+      )
+      return true
+    } catch (err: any) {
+      toast.error(err?.message || "Lỗi khi cập nhật dịch vụ.")
+      return false
+    }
+  }
+
   // Update Profile
   const handleUpdateProfile = async (updated: Partial<PartnerProfileData>): Promise<boolean> => {
     const saved = await stayeaApi.updatePartnerProfile(updated as Record<string, unknown>)
@@ -718,6 +744,7 @@ export function PartnerPortalPage({
                 onToggleStatus={handleToggleServiceStatus}
                 onDeleteService={handleDeleteService}
                 onGoToInventory={() => setActiveTab("inventory")}
+                onUpdateService={handleUpdateService}
               />
             )}
 

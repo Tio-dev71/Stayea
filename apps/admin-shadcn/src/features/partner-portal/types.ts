@@ -40,6 +40,8 @@ export interface PartnerServiceData {
     amenities?: string[]
     schedule?: string
     duration?: string
+    totalUnits?: number // Số xe / Số phòng / Sức chứa tối đa sẵn có
+    capacity?: number
   }
   status: "active" | "inactive" | "pending_approval"
 }

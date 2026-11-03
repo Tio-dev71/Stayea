@@ -185,6 +185,43 @@ export class StayeaPartnerService implements OnModuleInit {
         } catch {}
 
         await this.syncServiceToCatalog(s, hostName)
+
+        // Ensure 30-day inventory exists with service's total units capacity
+        try {
+          const existingInv = await this.db
+            .select()
+            .from(partnerInventoryTable)
+            .where(eq(partnerInventoryTable.serviceId, s.id))
+            .limit(1)
+
+          if (existingInv.length === 0) {
+            const totalUnits = Math.max(
+              1,
+              Number((s.attributes as any)?.totalUnits) ||
+              Number((s.attributes as any)?.capacity) ||
+              (s.serviceType === "transport" ? 5 : s.serviceType === "experience" ? 20 : 1)
+            )
+            const today = new Date()
+            const initialDates = []
+            for (let i = 0; i < 30; i++) {
+              const d = new Date(today)
+              d.setDate(today.getDate() + i)
+              const dateStr = d.toISOString().split("T")[0] || d.toISOString().slice(0, 10)
+              initialDates.push({
+                id: generateUid("inv"),
+                partnerId: s.partnerId,
+                serviceId: s.id,
+                date: dateStr,
+                totalSlots: totalUnits,
+                bookedSlots: 0,
+                isAvailable: true,
+                priceOverride: null,
+                note: null,
+              })
+            }
+            await this.db.insert(partnerInventoryTable).values(initialDates).onConflictDoNothing()
+          }
+        } catch {}
       }
       console.log(`[StayeaPartnerService] Synced ${services.length} active partner services to catalog tables.`)
     } catch (err) {
@@ -591,12 +628,47 @@ export class StayeaPartnerService implements OnModuleInit {
       })
       .returning()
 
+    if (!service) {
+      throw new Error("Không thể khởi tạo dịch vụ")
+    }
+
     // Automatically sync into public catalog only if active and approved
     if (serviceStatus === "active" && isPartnerApproved) {
       await this.syncServiceToCatalog(
         service,
         profile?.contactName || profile?.businessName
       )
+    }
+
+    // Auto-initialize 30 days of inventory using totalUnits capacity
+    try {
+      const totalUnits = Math.max(
+        1,
+        Number((dto.attributes as any)?.totalUnits) ||
+        Number((dto.attributes as any)?.capacity) ||
+        (dto.serviceType === "transport" ? 5 : dto.serviceType === "experience" ? 20 : 1)
+      )
+      const today = new Date()
+      const initialDates = []
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() + i)
+        const dateStr = d.toISOString().split("T")[0] || d.toISOString().slice(0, 10)
+        initialDates.push({
+          id: generateUid("inv"),
+          partnerId,
+          serviceId: service.id,
+          date: dateStr,
+          totalSlots: totalUnits,
+          bookedSlots: 0,
+          isAvailable: true,
+          priceOverride: null,
+          note: null,
+        })
+      }
+      await this.db.insert(partnerInventoryTable).values(initialDates).onConflictDoNothing()
+    } catch (invErr) {
+      console.error(`[StayeaPartnerService] Failed to auto-initialize inventory for service ${service.id}:`, invErr)
     }
 
     return service

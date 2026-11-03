@@ -24,7 +24,7 @@ export const envSchema = z.object({
   // Database connection pool configuration
   DB_POOL_MAX: z
     .string()
-    .default('20')
+    .default('5')
     .transform((value) => Number.parseInt(value, 10))
     .refine((value) => value > 0 && value <= 100, {
       message: 'DB_POOL_MAX must be between 1 and 100',
@@ -32,7 +32,7 @@ export const envSchema = z.object({
 
   DB_POOL_MIN: z
     .string()
-    .default('5')
+    .default('1')
     .transform((value) => Number.parseInt(value, 10))
     .refine((value) => value >= 0 && value <= 50, {
       message: 'DB_POOL_MIN must be between 0 and 50',

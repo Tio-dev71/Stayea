@@ -96,14 +96,21 @@ export function HostsRightSidebar({
   }, [regionalDistribution])
 
   const topHosts = useMemo(() => {
-    return hosts.slice(0, 5).map((h, idx) => ({
-      id: h.id,
-      rank: idx + 1,
-      name: h.name,
-      revenue: h.revenue || "0 ₫",
-      avatar: h.avatar || "/avatars/avatar-1.jpg",
-      subTitle: h.partnerTypeLabel,
-    }))
+    return [...hosts]
+      .sort((a, b) => {
+        const revA = Number(String(a.revenue || "").replace(/[^\d]/g, "")) || 0
+        const revB = Number(String(b.revenue || "").replace(/[^\d]/g, "")) || 0
+        return revB - revA
+      })
+      .slice(0, 5)
+      .map((h, idx) => ({
+        id: h.id,
+        rank: idx + 1,
+        name: h.name,
+        revenue: h.revenue || "0 ₫",
+        avatar: h.avatar || "/avatars/avatar-1.jpg",
+        subTitle: h.partnerTypeLabel,
+      }))
   }, [hosts])
   return (
     <div className="flex flex-col gap-5">

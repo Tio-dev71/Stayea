@@ -15,7 +15,7 @@ import { ValidationPipe, UnprocessableEntityException, HttpStatus } from '@nestj
 export function createValidationPipe(): ValidationPipe {
   return new ValidationPipe({
     whitelist: true,
-    forbidNonWhitelisted: true,
+    forbidNonWhitelisted: false,
     transform: true,
     transformOptions: {
       enableImplicitConversion: true,

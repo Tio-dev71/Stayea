@@ -83,11 +83,27 @@ export function StayeaAdminHostsPage({
   }, [])
 
   useEffect(() => {
-    stayeaApi
-      .getAdminPartners()
-      .then((res) => {
-        if (res && res.length > 0) {
-          const mapped: HostPartnerItem[] = res.map((p: any) => ({
+    Promise.all([
+      stayeaApi.getAdminPartners().catch(() => []),
+      stayeaApi.getAdminOrdersQueue().catch(() => []),
+    ]).then(([partnersRes, ordersRes]) => {
+      const orders = Array.isArray(ordersRes) ? ordersRes : []
+      if (partnersRes && partnersRes.length > 0) {
+        const mapped: HostPartnerItem[] = partnersRes.map((p: any) => {
+          // Calculate partner revenue from partner profile stats or fallback to orders queue
+          const partnerOrders = orders.filter(
+            (o: any) =>
+              o.partnerId === p.id &&
+              o.status !== "cancelled" &&
+              o.status !== "partner_rejected"
+          )
+          const fallbackRevenue = partnerOrders.reduce(
+            (sum: number, o: any) => sum + (Number(o.totalAmount) || 0),
+            0
+          )
+          const revenueNumber = Number(p.totalRevenue ?? p.revenue ?? 0) || fallbackRevenue
+
+          return {
             id: p.id,
             name: p.contactName || p.businessName,
             email: p.email,
@@ -95,12 +111,12 @@ export function StayeaAdminHostsPage({
             partnerType:
               p.businessType === "transport" ? "management_company" : "individual",
             partnerTypeLabel: p.businessName || "Chủ nhà đối tác",
-            propertiesCount: 1,
+            propertiesCount: Number(p.propertiesCount || p.servicesCount || 1),
             region: p.city || "Phú Quốc",
             joinedDate: p.createdAt
               ? new Date(p.createdAt).toLocaleDateString("vi-VN")
               : "Hôm nay",
-            revenue: "0 ₫",
+            revenue: `${revenueNumber.toLocaleString("vi-VN")} ₫`,
             status:
               p.status === "approved"
                 ? "active"
@@ -114,16 +130,19 @@ export function StayeaAdminHostsPage({
                   ? "Tạm dừng"
                   : "Chờ duyệt",
             commission: `${p.commissionRate || 10}%`,
-            raw: p,
-          }))
-          setLivePartners(mapped)
-        } else {
-          setLivePartners([])
-        }
-      })
-      .catch(() => {
+            raw: {
+              ...p,
+              totalRevenue: revenueNumber,
+            },
+          }
+        })
+        setLivePartners(mapped)
+      } else {
         setLivePartners([])
-      })
+      }
+    }).catch(() => {
+      setLivePartners([])
+    })
   }, [])
 
   const liveHostKpis = useMemo(() => {

@@ -43,4 +43,8 @@ export class OffsetPaginationDto {
   @MinField(1)
   @MaxField(100)
   pageSize?: number = 20
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  _t?: any
 }

@@ -41,15 +41,17 @@ export function StayeaAdminCustomersPage({
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const [usersRes, bookingsRes] = await Promise.all([
+      const [usersRes, bookingsRes, ordersRes] = await Promise.all([
         stayeaApi.getUsers().catch(() => ({ items: [], total: 0 })),
         stayeaApi.getAllBookingsForAdmin().catch(() => []),
+        stayeaApi.getAdminOrdersQueue().catch(() => []),
       ])
 
       const rawUsers = Array.isArray(usersRes)
         ? usersRes
         : (usersRes as any)?.items || (usersRes as any)?.data || []
       const rawBookings: any[] = Array.isArray(bookingsRes) ? bookingsRes : []
+      const rawOrders: any[] = Array.isArray(ordersRes) ? ordersRes : []
 
       // Aggregate bookings by email, phone, or userId
       const bookingsByEmail = new Map<
@@ -70,6 +72,27 @@ export function StayeaAdminCustomersPage({
         const existing = bookingsByEmail.get(key) || { count: 0, totalSpent: 0, phone, name }
         existing.count += 1
         existing.totalSpent += amount
+        if (phone) existing.phone = phone
+        if (name) existing.name = name
+        bookingsByEmail.set(key, existing)
+      }
+
+      // Also merge partner orders if any customer booked directly or through partner dispatch
+      for (const o of rawOrders) {
+        const email = (o.customerEmail || "").toLowerCase().trim()
+        const phone = o.customerPhone || ""
+        const name = o.customerName || ""
+        const amount = Number(o.totalAmount || 0)
+
+        const key = email || phone || o.id
+        if (!key) continue
+
+        const isFromBooking = o.bookingId && rawBookings.some((b) => b.id === o.bookingId)
+        const existing = bookingsByEmail.get(key) || { count: 0, totalSpent: 0, phone, name }
+        if (!isFromBooking) {
+          existing.count += 1
+          existing.totalSpent += amount
+        }
         if (phone && !existing.phone) existing.phone = phone
         if (name && !existing.name) existing.name = name
         bookingsByEmail.set(key, existing)
@@ -84,7 +107,8 @@ export function StayeaAdminCustomersPage({
         const email = (u.email || "").toLowerCase().trim()
         const roleUpper = (u.role || "USER").toUpperCase()
         const bookingStats = bookingsByEmail.get(email) || { count: 0, totalSpent: 0 }
-        seenKeys.add(email)
+        if (email) seenKeys.add(email)
+        if (u.id) seenKeys.add(u.id)
 
         const badge =
           bookingStats.count >= 2 || roleUpper === "ADMIN"
@@ -123,6 +147,7 @@ export function StayeaAdminCustomersPage({
       // Add guest customers who booked directly but haven't registered an account
       for (const [key, bData] of bookingsByEmail.entries()) {
         if (!seenKeys.has(key)) {
+          seenKeys.add(key)
           mapped.push({
             id: `guest-${key}`,
             name: bData.name || key.split("@")[0] || "Khách đặt phòng",

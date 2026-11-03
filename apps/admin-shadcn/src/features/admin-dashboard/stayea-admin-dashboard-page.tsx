@@ -60,7 +60,31 @@ export function StayeaAdminDashboardPage({
         const accommodations = Array.isArray(rawAccommodations)
           ? rawAccommodations
           : (rawAccommodations as any)?.items || (rawAccommodations as any)?.data || []
-        const users = Array.isArray(rawUsers) ? rawUsers : []
+        const userItems: any[] = Array.isArray(rawUsers)
+          ? rawUsers
+          : (rawUsers as any)?.items || (rawUsers as any)?.data || []
+
+        // Calculate unique customers count (registered users + guest bookings)
+        const customerKeys = new Set<string>()
+        userItems.forEach((u: any) => {
+          const k = (u.email || u.id || "").toLowerCase().trim()
+          if (k) customerKeys.add(k)
+        })
+        bookings.forEach((b: any) => {
+          const contact = b.details?.contactInfo || {}
+          const k = (
+            b.customerEmail ||
+            contact.email ||
+            b.customerPhone ||
+            contact.phone ||
+            b.userId ||
+            ""
+          )
+            .toLowerCase()
+            .trim()
+          if (k) customerKeys.add(k)
+        })
+        const totalGuestsCount = Math.max(customerKeys.size, userItems.length)
 
         // 1. Calculate Revenue
         const totalRev = bookings.reduce((sum: number, b: any) => {
@@ -105,7 +129,7 @@ export function StayeaAdminDashboardPage({
           {
             id: "total-guests",
             title: "Tổng số khách",
-            value: users.length.toString(),
+            value: totalGuestsCount.toString(),
             change: "0%",
             comparisonText: "so với tuần trước",
             isPositive: true,

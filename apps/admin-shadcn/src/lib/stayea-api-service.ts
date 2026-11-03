@@ -386,8 +386,10 @@ class StayeaApiService {
     let url = input
     const isGet = !init?.method || init.method.toUpperCase() === "GET"
     if (typeof input === "string" && isGet) {
-      const sep = input.includes("?") ? "&" : "?"
-      url = `${input}${sep}_t=${Date.now()}`
+      if (!input.includes("_t=")) {
+        const sep = input.includes("?") ? "&" : "?"
+        url = `${input}${sep}_t=${Date.now()}`
+      }
     }
 
     let res = await fetch(url, { ...init, headers, cache: "no-store" })

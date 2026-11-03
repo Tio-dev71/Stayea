@@ -78,6 +78,8 @@ export function StayeaAdminDashboardPage({
             b.customerPhone ||
             contact.phone ||
             b.userId ||
+            b.user_id ||
+            b.id ||
             ""
           )
             .toLowerCase()
@@ -167,7 +169,13 @@ export function StayeaAdminDashboardPage({
 
           return {
             id: b.id || `bk-real-${idx}`,
-            guestName: b.contactName || b.metadata?.contactName || "Khách hàng",
+            guestName:
+              b.details?.contactInfo?.fullName ||
+              b.details?.contactInfo?.name ||
+              b.customerName ||
+              b.contactName ||
+              b.metadata?.contactName ||
+              "Khách hàng",
             guestAvatar: "/about/team-1.jpg",
             guestCountry: "Việt Nam",
             guestFlag: "🇻🇳",

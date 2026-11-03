@@ -540,17 +540,24 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(this.routerKey ? { Authorization: `Bearer ${this.routerKey}` } : {}),
+        Authorization: `Bearer ${this.routerKey || "sk-tiodev-chatbot-secret"}`,
       },
       body: JSON.stringify(payload),
     })
 
+    const rawText = await res.text()
+
     if (!res.ok) {
-      const errText = await res.text()
-      throw new Error(`AI Gateway error HTTP ${res.status}: ${errText.slice(0, 200)}`)
+      throw new Error(`AI Gateway error HTTP ${res.status}: ${rawText.slice(0, 200)}`)
     }
 
-    return res.json()
+    try {
+      // 9router streaming or SSE responses may append "\ndata: [DONE]\n\n"
+      const cleanJsonText = (rawText.split("\ndata: [DONE]")[0] || "").trim()
+      return JSON.parse(cleanJsonText)
+    } catch {
+      return JSON.parse(rawText)
+    }
   }
 
   /**

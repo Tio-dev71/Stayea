@@ -63,10 +63,10 @@ export function StayeaAdminCustomersPage({
         const contact = b.details?.contactInfo || {}
         const email = (b.customerEmail || contact.email || "").toLowerCase().trim()
         const phone = b.customerPhone || contact.phone || ""
-        const name = b.customerName || contact.fullName || ""
+        const name = b.customerName || contact.fullName || contact.name || ""
         const amount = Number(b.finalAmount || b.totalAmount || 0)
 
-        const key = email || phone || b.userId || b.id
+        const key = email || phone || b.userId || b.user_id || b.id
         if (!key) continue
 
         const existing = bookingsByEmail.get(key) || { count: 0, totalSpent: 0, phone, name }

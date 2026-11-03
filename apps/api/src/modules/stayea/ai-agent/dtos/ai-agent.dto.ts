@@ -79,3 +79,73 @@ export interface AiChatResponse {
   bookingCreated?: BookingPreviewCard | null
   suggestedActions?: string[]
 }
+
+export class UpdateAiConfigDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  systemPrompt?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  greetingMessage?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  tone?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  model?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  temperature?: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  maxTokens?: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  autoInjectCatalog?: boolean
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  customRules?: string[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  metadata?: Record<string, unknown>
+}
+
+export class AiTestPromptDto {
+  @ApiProperty()
+  @IsString()
+  message!: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  systemPrompt?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  model?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  temperature?: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  autoInjectCatalog?: boolean
+}
+

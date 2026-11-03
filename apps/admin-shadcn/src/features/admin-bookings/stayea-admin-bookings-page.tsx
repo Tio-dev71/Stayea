@@ -40,6 +40,7 @@ export function StayeaAdminBookingsPage({
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
+  const [serviceTypeFilter, setServiceTypeFilter] = useState("all")
 
   // Fetch real bookings from backend
   const fetchBookings = async () => {
@@ -67,9 +68,68 @@ export function StayeaAdminBookingsPage({
             currency: "VND",
           }).format(totalNum)
 
+          // Intelligent service categorization
+          let serviceType: BookingRecord["serviceType"] = "stay"
+          const rawType = (
+            item.bookingType ||
+            item.booking_type ||
+            item.serviceType ||
+            item.details?.serviceType ||
+            ""
+          ).toLowerCase()
+          const titleLower = (item.title || "").toLowerCase()
+
+          if (
+            rawType === "transport" ||
+            rawType === "car" ||
+            titleLower.includes("xe") ||
+            titleLower.includes("tự lái") ||
+            titleLower.includes("đưa đón") ||
+            titleLower.includes("limousine")
+          ) {
+            serviceType = "transport"
+          } else if (
+            rawType === "experience" ||
+            rawType === "tour" ||
+            titleLower.includes("tour") ||
+            titleLower.includes("cano") ||
+            titleLower.includes("lặn") ||
+            titleLower.includes("vé")
+          ) {
+            serviceType = "experience"
+          } else if (
+            rawType === "combo" ||
+            rawType === "package" ||
+            titleLower.includes("combo")
+          ) {
+            serviceType = "combo"
+          }
+
+          let serviceTypeLabel = "Homestay / Villa"
+          let serviceDetails = "Homestay / Biệt thự nghỉ dưỡng"
+          if (serviceType === "transport") {
+            serviceTypeLabel = "Thuê xe / Đưa đón"
+            serviceDetails =
+              item.details?.vehicleType ||
+              item.details?.carModel ||
+              "Xe ô tô di chuyển Phú Quốc"
+          } else if (serviceType === "experience") {
+            serviceTypeLabel = "Tour & Canô"
+            serviceDetails =
+              item.details?.experienceType ||
+              item.details?.tourTitle ||
+              "Tour trải nghiệm đảo ngọc"
+          } else if (serviceType === "combo") {
+            serviceTypeLabel = "Gói Combo"
+            serviceDetails = "Combo lưu trú + di chuyển"
+          }
+
           return {
             id: item.id,
             code: item.bookingCode || item.id || "",
+            serviceType,
+            serviceTypeLabel,
+            serviceDetails,
             guestName:
               item.details?.contactInfo?.fullName ||
               item.contactName ||
@@ -141,9 +201,27 @@ export function StayeaAdminBookingsPage({
         if (b.paymentStatus !== paymentFilter) return false
       }
 
+      // Service type filter (stay, transport, experience, combo)
+      if (serviceTypeFilter !== "all") {
+        if (b.serviceType !== serviceTypeFilter) return false
+      }
+
       return true
     })
-  }, [bookingsList, searchQuery, statusFilter, paymentFilter])
+  }, [bookingsList, searchQuery, statusFilter, paymentFilter, serviceTypeFilter])
+
+  // Counts by service category
+  const serviceTypeCounts = useMemo(() => {
+    return {
+      all: bookingsList.length,
+      stay: bookingsList.filter((b) => b.serviceType === "stay").length,
+      transport: bookingsList.filter((b) => b.serviceType === "transport").length,
+      experience: bookingsList.filter((b) => b.serviceType === "experience").length,
+      combo: bookingsList.filter(
+        (b) => b.serviceType === "combo" || b.serviceType === "package"
+      ).length,
+    }
+  }, [bookingsList])
 
   // Dynamic KPIs
   const dynamicKpis: BookingKpiItem[] = useMemo(() => {
@@ -276,11 +354,14 @@ export function StayeaAdminBookingsPage({
             {/* Top Action & Greeting Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                  Đặt phòng
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Đơn đặt & Dịch vụ</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                    Đa dịch vụ
+                  </span>
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                  Quản lý toàn bộ đơn đặt phòng, check-in, check-out và thanh toán hệ sinh thái STAYEA.
+                  Quản lý tập trung toàn bộ đơn đặt phòng lưu trú, xe tự lái / đưa đón sân bay và tour trải nghiệm STAYEA.
                 </p>
               </div>
 
@@ -316,7 +397,7 @@ export function StayeaAdminBookingsPage({
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1b7a4e] hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Tạo đặt phòng mới</span>
+                  <span>Tạo đơn đặt mới</span>
                 </button>
               </div>
             </div>
@@ -326,13 +407,16 @@ export function StayeaAdminBookingsPage({
               {/* 4 KPI Cards */}
               <BookingsKpiCards kpis={dynamicKpis} />
 
-              {/* Filter and Search Bar */}
+              {/* Filter and Search Bar with Category Tabs */}
               <BookingsFilterBar
                 onSearchChange={(val) => setSearchQuery(val)}
                 onStatusChange={(st) => setStatusFilter(st)}
                 onPaymentChange={(pt) => setPaymentFilter(pt)}
+                onServiceTypeChange={(st) => setServiceTypeFilter(st)}
                 statusValue={statusFilter}
                 paymentValue={paymentFilter}
+                serviceTypeValue={serviceTypeFilter}
+                serviceTypeCounts={serviceTypeCounts}
                 onAdvancedFilter={() => {
                   toast.info("Bộ lọc nâng cao", {
                     description: "Lọc theo khoảng giá, số lượng phòng ngủ và tiện ích.",

@@ -1,13 +1,18 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
+import { eq } from "drizzle-orm"
+import { stayeaAiConfigsTable } from "@workspace/database"
 
+import { DB_TOKEN, type DrizzleDb } from "@/app/database/db.port"
 import { StayeaCatalogService } from "@/modules/stayea/catalog/stayea-catalog.service"
 import { StayeaPartnerService } from "@/modules/stayea/partner/stayea-partner.service"
 import type {
   AiChatRequestDto,
   AiChatResponse,
+  AiTestPromptDto,
   BookingPreviewCard,
   ChatMessage,
+  UpdateAiConfigDto,
 } from "@/modules/stayea/ai-agent/dtos/ai-agent.dto"
 
 const SYSTEM_PROMPT = `Bạn là STAYEA Luxury Concierge — Chuyên gia Cố vấn Du lịch & Trải nghiệm Độc bản tại Đảo Ngọc Phú Quốc của nền tảng STAYEA.
@@ -134,6 +139,7 @@ export class StayeaAiAgentService {
   private readonly modelName: string
 
   constructor(
+    @Inject(DB_TOKEN) private readonly db: DrizzleDb,
     private readonly partnerService: StayeaPartnerService,
     private readonly catalogService: StayeaCatalogService,
     private readonly configService: ConfigService
@@ -153,15 +159,11 @@ export class StayeaAiAgentService {
   }
 
   /**
-   * Main entry point for customer AI Concierge chat
+   * Builds the live catalog context from active DB partner services & accommodations
    */
-  async processChat(dto: AiChatRequestDto): Promise<AiChatResponse> {
-    const rawMessages = dto.messages || []
-    let createdBooking: BookingPreviewCard | null = null
-
-    // 1. Fetch available partner services and accommodations to include in context
+  async buildCatalogContext() {
     const [activeServices, accResult] = await Promise.all([
-      this.partnerService.getAllActiveServices(),
+      this.partnerService.getAllActiveServices().catch(() => []),
       this.catalogService.findAccommodations({}).catch(() => ({ items: [] })),
     ])
 
@@ -169,7 +171,6 @@ export class StayeaAiAgentService {
       ? accResult
       : (accResult as any)?.items || []
 
-    // Build deduplicated real listings catalog from database
     const realCatalogItems: Array<{
       id: string
       title: string
@@ -220,7 +221,233 @@ export class StayeaAiAgentService {
       )
       .join("\n")
 
-    const dynamicSystemPrompt = `${SYSTEM_PROMPT}
+    return {
+      activeServices,
+      realCatalogItems,
+      catalogListing,
+      stats: {
+        total: realCatalogItems.length,
+        stays: realCatalogItems.filter((i) => i.serviceType === "stay" || i.serviceType === "homestay").length,
+        transports: realCatalogItems.filter((i) => i.serviceType === "transport" || i.serviceType === "car").length,
+        experiences: realCatalogItems.filter((i) => i.serviceType === "tour" || i.serviceType === "experience").length,
+      },
+    }
+  }
+
+  /**
+   * Retrieve active AI Prompt & System Configuration
+   */
+  async getAiConfig() {
+    try {
+      const [existing] = await this.db
+        .select()
+        .from(stayeaAiConfigsTable)
+        .where(eq(stayeaAiConfigsTable.id, "default"))
+        .limit(1)
+
+      const catalogData = await this.buildCatalogContext()
+
+      if (existing) {
+        return {
+          ...existing,
+          catalogStats: catalogData.stats,
+          catalogItems: catalogData.realCatalogItems,
+        }
+      }
+
+      // First time initialization with standard template
+      const [created] = await this.db
+        .insert(stayeaAiConfigsTable)
+        .values({
+          id: "default",
+          systemPrompt: SYSTEM_PROMPT,
+          greetingMessage:
+            "Dạ em chào anh/chị! Em là STAYEA Concierge — Chuyên gia Cố vấn Du lịch & Trải nghiệm Độc bản tại Đảo Ngọc Phú Quốc. Em có thể hỗ trợ anh/chị chọn biệt thự nghỉ dưỡng, đặt xe tự lái hoặc tour cano ngắm hoàng hôn hôm nay ạ?",
+          tone: "luxury",
+          model: this.modelName || "gemini-2.5-flash",
+          temperature: "0.70",
+          maxTokens: 2048,
+          autoInjectCatalog: true,
+          customRules: [
+            "Ưu tiên gợi ý dịch vụ có sẵn trong hệ thống STAYEA",
+            "Xưng hô dạ/thưa lịch thiệp, giữ vững chuẩn phong cách nghỉ dưỡng cao cấp",
+            "Luôn thu thập đủ SĐT, họ tên và ngày đi để gửi Admin điều phối duyệt",
+          ],
+        })
+        .returning()
+
+      return {
+        ...(created || {
+          id: "default",
+          systemPrompt: SYSTEM_PROMPT,
+          greetingMessage: "Dạ em chào anh/chị! Em là STAYEA Concierge...",
+          tone: "luxury",
+          model: this.modelName || "gemini-2.5-flash",
+          temperature: "0.70",
+          maxTokens: 2048,
+          autoInjectCatalog: true,
+          customRules: [],
+        }),
+        catalogStats: catalogData.stats,
+        catalogItems: catalogData.realCatalogItems,
+      }
+    } catch (err: any) {
+      this.logger.warn(`Failed to fetch AI config from DB: ${err?.message}`)
+      const catalogData = await this.buildCatalogContext().catch(() => ({ stats: { total: 0, stays: 0, transports: 0, experiences: 0 }, realCatalogItems: [] }))
+      return {
+        id: "default",
+        systemPrompt: SYSTEM_PROMPT,
+        greetingMessage:
+          "Dạ em chào anh/chị! Em là STAYEA Concierge — Cố vấn Du lịch Phú Quốc.",
+        tone: "luxury",
+        model: this.modelName || "gemini-2.5-flash",
+        temperature: "0.70",
+        maxTokens: 2048,
+        autoInjectCatalog: true,
+        customRules: [],
+        catalogStats: catalogData.stats,
+        catalogItems: catalogData.realCatalogItems,
+      }
+    }
+  }
+
+  /**
+   * Update AI Prompt Configuration
+   */
+  async updateAiConfig(dto: UpdateAiConfigDto, updatedBy?: string) {
+    const updatePayload: Record<string, any> = {
+      updatedAt: new Date(),
+    }
+    if (dto.systemPrompt !== undefined) updatePayload.systemPrompt = dto.systemPrompt
+    if (dto.greetingMessage !== undefined) updatePayload.greetingMessage = dto.greetingMessage
+    if (dto.tone !== undefined) updatePayload.tone = dto.tone
+    if (dto.model !== undefined) updatePayload.model = dto.model
+    if (dto.temperature !== undefined) updatePayload.temperature = String(dto.temperature)
+    if (dto.maxTokens !== undefined) updatePayload.maxTokens = dto.maxTokens
+    if (dto.autoInjectCatalog !== undefined) updatePayload.autoInjectCatalog = dto.autoInjectCatalog
+    if (dto.customRules !== undefined) updatePayload.customRules = dto.customRules
+    if (dto.metadata !== undefined) updatePayload.metadata = dto.metadata
+    if (updatedBy) updatePayload.updatedBy = updatedBy
+
+    await this.db
+      .insert(stayeaAiConfigsTable)
+      .values({
+        id: "default",
+        systemPrompt: dto.systemPrompt || SYSTEM_PROMPT,
+        ...updatePayload,
+      })
+      .onConflictDoUpdate({
+        target: stayeaAiConfigsTable.id,
+        set: updatePayload,
+      })
+
+    return this.getAiConfig()
+  }
+
+  /**
+   * Reset AI Prompt Configuration to System Default
+   */
+  async resetAiConfig(updatedBy?: string) {
+    await this.db
+      .insert(stayeaAiConfigsTable)
+      .values({
+        id: "default",
+        systemPrompt: SYSTEM_PROMPT,
+        greetingMessage:
+          "Dạ em chào anh/chị! Em là STAYEA Concierge — Chuyên gia Cố vấn Du lịch & Trải nghiệm Độc bản tại Đảo Ngọc Phú Quốc. Em có thể hỗ trợ anh/chị chọn biệt thự nghỉ dưỡng, đặt xe tự lái hoặc tour cano ngắm hoàng hôn hôm nay ạ?",
+        tone: "luxury",
+        model: "gemini-2.5-flash",
+        temperature: "0.70",
+        maxTokens: 2048,
+        autoInjectCatalog: true,
+        customRules: [
+          "Ưu tiên gợi ý dịch vụ có sẵn trong hệ thống STAYEA",
+          "Xưng hô dạ/thưa lịch thiệp, giữ vững chuẩn phong cách nghỉ dưỡng cao cấp",
+          "Luôn thu thập đủ SĐT, họ tên và ngày đi để gửi Admin điều phối duyệt",
+        ],
+        updatedBy,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: stayeaAiConfigsTable.id,
+        set: {
+          systemPrompt: SYSTEM_PROMPT,
+          greetingMessage:
+            "Dạ em chào anh/chị! Em là STAYEA Concierge — Chuyên gia Cố vấn Du lịch & Trải nghiệm Độc bản tại Đảo Ngọc Phú Quốc.",
+          tone: "luxury",
+          model: "gemini-2.5-flash",
+          temperature: "0.70",
+          maxTokens: 2048,
+          autoInjectCatalog: true,
+          customRules: [],
+          updatedBy,
+          updatedAt: new Date(),
+        },
+      })
+
+    return this.getAiConfig()
+  }
+
+  /**
+   * Test AI Prompt with custom message in Sandbox Mode
+   */
+  async testPrompt(dto: AiTestPromptDto) {
+    const config = await this.getAiConfig()
+    const basePrompt = dto.systemPrompt || config.systemPrompt || SYSTEM_PROMPT
+    const injectCatalog = dto.autoInjectCatalog ?? config.autoInjectCatalog ?? true
+
+    let finalPrompt = basePrompt
+    if (injectCatalog) {
+      const catalogData = await this.buildCatalogContext()
+      finalPrompt = `${basePrompt}
+
+DANH MỤC DỊCH VỤ & BIỆT THỰ ĐANG HOẠT ĐỘNG THỰC TẾ TRÊN NỀN TẢNG STAYEA:
+${catalogData.catalogListing || "1. [MÃ DỊCH VỤ: svc_ba8dd5135155] \"Teest Villa\" - 1.500.000 ₫/đêm\n2. [MÃ DỊCH VỤ: svc_e4a1f20e8a9e] \"Teesst 22\" - 1.500.000 ₫/đêm"}
+
+QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ):
+1. Hệ thống STAYEA hiện tại CHỈ CÓ CÁC DỊCH VỤ VÀ NƠI LƯU TRÚ THỰC TẾ NÊU TRÊN.
+2. TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ BỊA ĐẶT RA BẤT KỲ TÊN DỊCH VỤ NÀO KHÁC.`
+    }
+
+    const messages: ChatMessage[] = [
+      { role: "system", content: finalPrompt },
+      { role: "user", content: dto.message },
+    ]
+
+    const modelToUse = dto.model || config.model || this.modelName
+    const tempToUse = dto.temperature !== undefined ? dto.temperature : Number(config.temperature) || 0.7
+
+    const response = await this.callAiGateway(messages, undefined, modelToUse, tempToUse)
+    const reply = response.choices?.[0]?.message?.content || "Không có phản hồi từ mô hình."
+
+    return {
+      reply,
+      modelUsed: modelToUse,
+      temperatureUsed: tempToUse,
+      promptLength: finalPrompt.length,
+      autoInjectCatalog: injectCatalog,
+    }
+  }
+
+  /**
+   * Main entry point for customer AI Concierge chat
+   */
+  async processChat(dto: AiChatRequestDto): Promise<AiChatResponse> {
+    const rawMessages = dto.messages || []
+    let createdBooking: BookingPreviewCard | null = null
+
+    // Fetch config and live catalog
+    const [config, catalogData] = await Promise.all([
+      this.getAiConfig(),
+      this.buildCatalogContext(),
+    ])
+
+    const { activeServices, realCatalogItems, catalogListing } = catalogData
+    const basePrompt = config.systemPrompt || SYSTEM_PROMPT
+
+    let dynamicSystemPrompt = basePrompt
+    if (config.autoInjectCatalog !== false) {
+      dynamicSystemPrompt = `${basePrompt}
 
 DANH MỤC DỊCH VỤ & BIỆT THỰ ĐANG HOẠT ĐỘNG THỰC TẾ TRÊN NỀN TẢNG STAYEA:
 ${catalogListing || "1. [MÃ DỊCH VỤ: svc_ba8dd5135155] \"Teest Villa\" - Giá: 1.500.000 ₫/đêm - Khu vực: Dương Đông, Phú Quốc\n2. [MÃ DỊCH VỤ: svc_e4a1f20e8a9e] \"Teesst 22\" - Giá: 1.500.000 ₫/đêm - Khu vực: Dương Đông, Phú Quốc"}
@@ -235,6 +462,7 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
    - Giới thiệu ngay các căn thực tế: "Teest Villa" và "Teesst 22" (giá 1.500.000đ/đêm tại Dương Đông).
    - Hỏi khách về ngày đi, số đêm và số khách để hỗ trợ tạo đơn giữ chỗ gửi Admin duyệt ngay.
 5. Khi khách cung cấp đủ thông tin (Họ tên, SĐT, ngày nhận phòng), hãy gọi hàm 'create_booking_draft' với mã serviceId tương ứng ('svc_ba8dd5135155' hoặc 'svc_e4a1f20e8a9e').`
+    }
 
     // Prepare message payload
     const outboundMessages: ChatMessage[] = [
@@ -245,9 +473,17 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
       })),
     ]
 
+    const modelToUse = config.model || this.modelName
+    const tempToUse = config.temperature ? Number(config.temperature) : 0.7
+
     try {
       // First round: ask AI Gateway
-      const response = await this.callAiGateway(outboundMessages, TOOLS_DEFINITION)
+      const response = await this.callAiGateway(
+        outboundMessages,
+        TOOLS_DEFINITION,
+        modelToUse,
+        tempToUse
+      )
 
       const choices = response.choices || response.data?.choices || []
       const choice = choices[0]
@@ -281,12 +517,12 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
               rawType === "homestay" || rawType === "villa" || rawType === "stay"
                 ? "stay"
                 : rawType === "tour" || rawType === "experience"
-                ? "experience"
-                : rawType === "car" || rawType === "transport"
-                ? "transport"
-                : rawType === "package" || rawType === "combo"
-                ? "package"
-                : undefined
+                  ? "experience"
+                  : rawType === "car" || rawType === "transport"
+                    ? "transport"
+                    : rawType === "package" || rawType === "combo"
+                      ? "package"
+                      : undefined
 
             const [results, accData] = await Promise.all([
               this.partnerService.getAllActiveServices({
@@ -296,10 +532,10 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
               }),
               (!mappedType || mappedType === "stay")
                 ? this.catalogService
-                    .findAccommodations({
-                      search: fnArgs.search,
-                    })
-                    .catch(() => ({ items: [] }))
+                  .findAccommodations({
+                    search: fnArgs.search,
+                  })
+                  .catch(() => ({ items: [] }))
                 : Promise.resolve({ items: [] }),
             ])
 
@@ -410,7 +646,12 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
         }
 
         // Second turn to summarize tool execution to customer
-        const secondResponse = await this.callAiGateway(outboundMessages)
+        const secondResponse = await this.callAiGateway(
+          outboundMessages,
+          undefined,
+          modelToUse,
+          tempToUse
+        )
         const secondChoices = secondResponse.choices || secondResponse.data?.choices || []
         const finalReply =
           secondChoices[0]?.message?.content ||
@@ -515,10 +756,12 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
    */
   private async callAiGateway(
     messages: ChatMessage[],
-    tools?: FunctionToolDef[]
+    tools?: FunctionToolDef[],
+    customModel?: string,
+    customTemp?: number
   ): Promise<any> {
     const payload: any = {
-      model: this.modelName,
+      model: customModel || this.modelName,
       messages: messages.map((m: any) => ({
         role: m.role,
         content: m.content,
@@ -526,7 +769,7 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
         ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
         ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
       })),
-      temperature: 0.7,
+      temperature: customTemp ?? 0.7,
       max_tokens: 1500,
       stream: false,
     }

@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Post } from "@nestjs/common"
+import { Body, Controller, Get, Patch, Post, Request } from "@nestjs/common"
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { Throttle } from "@nestjs/throttler"
 
 import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
-import { AiChatRequestDto } from "@/modules/stayea/ai-agent/dtos/ai-agent.dto"
+import {
+  AiChatRequestDto,
+  AiTestPromptDto,
+  UpdateAiConfigDto,
+} from "@/modules/stayea/ai-agent/dtos/ai-agent.dto"
 import { StayeaAiAgentService } from "@/modules/stayea/ai-agent/stayea-ai-agent.service"
 
 @ApiTags("Stayea AI Concierge Agent")
@@ -21,6 +25,36 @@ export class StayeaAiAgentController {
   @ApiResponse({ status: 200, description: "Phản hồi từ AI và thông tin đơn draft nếu có" })
   async chat(@Body() dto: AiChatRequestDto) {
     return this.aiService.processChat(dto)
+  }
+
+  @Public()
+  @Get("config")
+  @ApiOperation({ summary: "Lấy cấu hình Prompt và tham số mô hình của STAYEA AI" })
+  async getConfig() {
+    return this.aiService.getAiConfig()
+  }
+
+  @Public()
+  @Patch("config")
+  @ApiOperation({ summary: "Quản trị viên cập nhật Prompt và tham số STAYEA AI" })
+  async updateConfig(@Body() dto: UpdateAiConfigDto, @Request() req: any) {
+    const updatedBy = req?.user?.email || req?.user?.name || "Admin"
+    return this.aiService.updateAiConfig(dto, updatedBy)
+  }
+
+  @Public()
+  @Post("config/reset")
+  @ApiOperation({ summary: "Khôi phục cấu hình Prompt AI về mặc định của hệ thống" })
+  async resetConfig(@Request() req: any) {
+    const updatedBy = req?.user?.email || req?.user?.name || "Admin"
+    return this.aiService.resetAiConfig(updatedBy)
+  }
+
+  @Public()
+  @Post("test")
+  @ApiOperation({ summary: "Thử nghiệm Prompt AI trực tiếp trong Sandbox (Admin test)" })
+  async testPrompt(@Body() dto: AiTestPromptDto) {
+    return this.aiService.testPrompt(dto)
   }
 
   @Public()

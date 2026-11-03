@@ -118,7 +118,7 @@ export interface SidebarNavMenuItem {
 
 export const ADMIN_SIDEBAR_NAV_VI: readonly SidebarNavMenuItem[] = [
   { id: "tong-quan", label: "Tổng quan", icon: "dashboard", href: "#admin", isActive: true },
-  { id: "dat-phong", label: "Đặt phòng", icon: "bookings", href: "#admin-bookings" },
+  { id: "dat-phong", label: "Đơn đặt & Dịch vụ", icon: "bookings", href: "#admin-bookings" },
   { id: "bat-dong-san", label: "Bất động sản", icon: "properties", href: "#properties" },
   { id: "khach-hang", label: "Khách hàng", icon: "guests", href: "#guests" },
   { id: "chu-nha-doi-tac", label: "Chủ nhà/Đối tác", icon: "hosts", href: "#hosts" },
@@ -127,6 +127,7 @@ export const ADMIN_SIDEBAR_NAV_VI: readonly SidebarNavMenuItem[] = [
   { id: "doanh-thu-thanh-toan", label: "Doanh thu & Thanh toán", icon: "transactions", href: "#transactions" },
   { id: "danh-gia", label: "Đánh giá", icon: "reviews", href: "#danh-gia" },
   { id: "tin-nhan", label: "Tin nhắn", icon: "messages", href: "#tin-nhan" },
+  { id: "ai-agent", label: "Kiểm soát AI / Prompt", icon: "bot", href: "/stayea/ai-agent" },
   { id: "marketing", label: "Marketing", icon: "marketing", href: "#marketing" },
   { id: "bao-cao", label: "Báo cáo", icon: "analytics", href: "#analytics" },
   { id: "cai-dat", label: "Cài đặt", icon: "settings", href: "#settings" },

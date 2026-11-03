@@ -55,6 +55,8 @@ export const BOOKINGS_KPIS: readonly BookingKpiItem[] = [
 export interface BookingRecord {
   id: string
   code: string
+  serviceType: "stay" | "transport" | "experience" | "package" | "combo"
+  serviceTypeLabel: string
   guestName: string
   guestAvatar: string
   guestFlag: string
@@ -62,10 +64,14 @@ export interface BookingRecord {
   guestEmail?: string
   specialRequests?: string
   paymentMethod?: string
-  propertyName: string
-  checkIn: string
-  checkOut: string
-  guestsCount: number
+  propertyName: string // Tên dịch vụ / Xe / Biệt thự / Tour
+  checkIn: string // Hoặc Ngày nhận xe / Ngày khởi hành tour
+  checkOut: string // Hoặc Ngày trả xe / Ngày kết thúc tour
+  durationText?: string // "3 đêm", "2 ngày", "1 ngày"
+  serviceDetails?: string // "Xe Fortuner 7 chỗ", "Villa 2 phòng ngủ", "Cano 4 đảo"
+  pickupLocation?: string
+  returnLocation?: string
+  guestsCount: number // Số khách hoặc số ghế xe / số vé
   bookingStatus: "Đang lưu trú" | "Đã xác nhận" | "Đã hoàn tất" | "Đã hủy" | "Chờ xác nhận"
   paymentStatus: "Đã thanh toán" | "Cọc 50%" | "Hoàn tiền" | "Chờ thanh toán"
   totalAmount: string

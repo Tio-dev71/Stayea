@@ -3,6 +3,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgTable,
   text,
   timestamp,
@@ -92,4 +93,29 @@ export const stayeaChatMessagesTable = pgTable(
 
 export type StayeaChatMessage = typeof stayeaChatMessagesTable.$inferSelect
 export type InsertStayeaChatMessage = typeof stayeaChatMessagesTable.$inferInsert
+
+/**
+ * STAYEA AI Agent Configuration & Prompt Control Table
+ */
+export const stayeaAiConfigsTable = pgTable("stayea_ai_configs", {
+  id: text("id").primaryKey().default("default"),
+  systemPrompt: text("system_prompt").notNull(),
+  greetingMessage: text("greeting_message"),
+  tone: text("tone").default("luxury"),
+  model: text("model").default("gemini-2.5-flash"),
+  temperature: numeric("temperature", { precision: 3, scale: 2 }).default("0.70"),
+  maxTokens: integer("max_tokens").default(2048),
+  autoInjectCatalog: boolean("auto_inject_catalog").default(true),
+  customRules: jsonb("custom_rules").$type<string[]>().default([]),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+  updatedBy: text("updated_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+})
+
+export type StayeaAiConfig = typeof stayeaAiConfigsTable.$inferSelect
+export type InsertStayeaAiConfig = typeof stayeaAiConfigsTable.$inferInsert
+
 

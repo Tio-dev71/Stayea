@@ -17,6 +17,7 @@ import {
   BarChart2,
   Settings,
   ArrowRight,
+  Bot,
 } from "lucide-react"
 import type { SidebarNavMenuItem } from "@/features/admin-dashboard/stayea-admin-mock-data"
 import { ADMIN_SIDEBAR_NAV_VI } from "@/features/admin-dashboard/stayea-admin-mock-data"
@@ -63,6 +64,11 @@ function getSidebarIcon(iconName: string) {
     case "messages": {
       return <MessageSquare className={iconClass} />
     }
+    case "bot":
+    case "ai-agent":
+    case "sparkles": {
+      return <Bot className={iconClass} />
+    }
     case "marketing": {
       return <Send className={iconClass} />
     }
@@ -89,6 +95,8 @@ const DEFAULT_TAB_ROUTES: Record<string, string> = {
   "doanh-thu-thanh-toan": "/stayea/revenue",
   "danh-gia": "/stayea/reviews",
   "tin-nhan": "/stayea/messages",
+  "ai-agent": "/stayea/ai-agent",
+  "kiem-soat-ai": "/stayea/ai-agent",
   "marketing": "/stayea/marketing",
   "bao-cao": "/stayea/reports",
   "cai-dat": "/stayea/settings",

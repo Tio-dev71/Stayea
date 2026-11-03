@@ -2002,6 +2002,59 @@ class StayeaApiService {
     if (!res.ok) throw new Error(json.message || "Không thể gửi tin nhắn đối tác")
     return json.data || json
   }
+
+  /**
+   * AI Prompt & System Config Management
+   */
+  async getAiConfig(): Promise<any> {
+    try {
+      const res = await this.fetchWithAuth("/api/stayea/ai/config")
+      if (res.ok) {
+        const json = await res.json()
+        return json.data || json
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }
+
+  async updateAiConfig(payload: Record<string, unknown>): Promise<any> {
+    const res = await this.fetchWithAuth("/api/stayea/ai/config", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể cập nhật cấu hình AI Prompt")
+    return json.data || json
+  }
+
+  async resetAiConfig(): Promise<any> {
+    const res = await this.fetchWithAuth("/api/stayea/ai/config/reset", {
+      method: "POST",
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể khôi phục prompt mặc định")
+    return json.data || json
+  }
+
+  async testAiPrompt(payload: {
+    message: string
+    systemPrompt?: string
+    model?: string
+    temperature?: number
+    autoInjectCatalog?: boolean
+  }): Promise<{ reply: string; modelUsed: string; temperatureUsed: number; promptLength: number }> {
+    const res = await this.fetchWithAuth("/api/stayea/ai/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Lỗi khi chạy thử nghiệm prompt AI")
+    return json.data || json
+  }
 }
 
 export const stayeaApi = new StayeaApiService()

@@ -15,6 +15,10 @@ import {
   CheckCircle2,
   CheckCheck,
   XCircle,
+  Building,
+  Car,
+  Compass,
+  Sparkles,
 } from "lucide-react"
 import type { BookingRecord } from "@/features/admin-bookings/stayea-admin-bookings-mock-data"
 
@@ -164,6 +168,36 @@ function renderChannelBadge(channel: BookingRecord["channel"], channelType: Book
   }
 }
 
+function renderServiceTypeBadge(serviceType?: BookingRecord["serviceType"]) {
+  switch (serviceType) {
+    case "transport":
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200/80">
+          <Car className="w-3.5 h-3.5 text-blue-600" /> Thuê xe / Đón
+        </span>
+      )
+    case "experience":
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80">
+          <Compass className="w-3.5 h-3.5 text-amber-600" /> Tour / Canô
+        </span>
+      )
+    case "combo":
+    case "package":
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-900 border border-purple-200/80">
+          <Sparkles className="w-3.5 h-3.5 text-purple-600" /> Gói Combo
+        </span>
+      )
+    default:
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+          <Building className="w-3.5 h-3.5 text-emerald-600" /> Lưu trú
+        </span>
+      )
+  }
+}
+
 export function BookingsDataTable({
   bookings = [],
   onSortChange,
@@ -286,12 +320,12 @@ export function BookingsDataTable({
                   className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                 />
               </th>
-              <th className="pb-3 px-3 font-semibold">Mã đặt chỗ</th>
+              <th className="pb-3 px-3 font-semibold">Mã đơn</th>
               <th className="pb-3 px-3 font-semibold">Khách hàng</th>
-              <th className="pb-3 px-3 font-semibold">Bất động sản</th>
-              <th className="pb-3 px-3 font-semibold">Nhận phòng</th>
-              <th className="pb-3 px-3 font-semibold">Trả phòng</th>
-              <th className="pb-3 px-3 font-semibold text-center">Số khách</th>
+              <th className="pb-3 px-3 font-semibold">Dịch vụ</th>
+              <th className="pb-3 px-3 font-semibold">Chi tiết dịch vụ</th>
+              <th className="pb-3 px-3 font-semibold">Thời gian thực hiện</th>
+              <th className="pb-3 px-3 font-semibold text-center">Quy mô</th>
               <th className="pb-3 px-3 font-semibold">Trạng thái</th>
               <th className="pb-3 px-3 font-semibold">Thanh toán</th>
               <th className="pb-3 px-3 font-semibold">Tổng tiền</th>
@@ -303,7 +337,7 @@ export function BookingsDataTable({
             {displayedBookings.length === 0 ? (
               <tr>
                 <td colSpan={12} className="py-8 text-center text-xs text-slate-500">
-                  Không tìm thấy đơn đặt phòng nào phù hợp với bộ lọc.
+                  Không tìm thấy đơn đặt phòng hoặc dịch vụ nào phù hợp với bộ lọc.
                 </td>
               </tr>
             ) : (
@@ -347,11 +381,16 @@ export function BookingsDataTable({
                         </div>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">
+                            <span className="font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors text-xs">
                               {b.guestName}
                             </span>
                             <span className="text-xs">{b.guestFlag || "🇻🇳"}</span>
                           </div>
+                          {(b.guestPhone || b.guestEmail) && (
+                            <span className="text-[10px] text-slate-500">
+                              {b.guestPhone || b.guestEmail}
+                            </span>
+                          )}
                           {b.specialRequests && (
                             <span
                               className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1 mt-0.5 max-w-[180px] truncate"
@@ -364,24 +403,51 @@ export function BookingsDataTable({
                       </div>
                     </td>
 
-                    {/* Bất động sản */}
-                    <td className="py-3.5 px-3 text-slate-600 font-medium whitespace-nowrap text-xs">
-                      {b.propertyName}
+                    {/* Loại dịch vụ Badge */}
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      {renderServiceTypeBadge(b.serviceType)}
                     </td>
 
-                    {/* Nhận phòng */}
-                    <td className="py-3.5 px-3 text-slate-500 whitespace-nowrap text-xs">
-                      {b.checkIn}
+                    {/* Chi tiết dịch vụ */}
+                    <td className="py-3.5 px-3 whitespace-nowrap text-xs">
+                      <div className="flex flex-col max-w-[200px]">
+                        <span className="font-semibold text-slate-800 truncate" title={b.propertyName}>
+                          {b.propertyName}
+                        </span>
+                        {b.serviceDetails && (
+                          <span className="text-[11px] text-slate-500 truncate">
+                            {b.serviceDetails}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
-                    {/* Trả phòng */}
-                    <td className="py-3.5 px-3 text-slate-500 whitespace-nowrap text-xs">
-                      {b.checkOut}
+                    {/* Thời gian thực hiện */}
+                    <td className="py-3.5 px-3 whitespace-nowrap text-xs text-slate-600">
+                      <div className="flex flex-col">
+                        <div className="font-medium text-slate-800">
+                          {b.serviceType === "transport"
+                            ? "Nhận: "
+                            : b.serviceType === "experience"
+                              ? "Khởi hành: "
+                              : "Nhận: "}
+                          <span className="text-slate-900 font-semibold">{b.checkIn}</span>
+                        </div>
+                        {b.checkOut && b.checkOut !== "Chưa xác định" && (
+                          <div className="text-[11px] text-slate-500">
+                            {b.serviceType === "transport" ? "Trả: " : "Trả: "}
+                            {b.checkOut}
+                          </div>
+                        )}
+                      </div>
                     </td>
 
-                    {/* Số khách */}
+                    {/* Quy mô (Số khách / Ghế / Vé) */}
                     <td className="py-3.5 px-3 text-slate-700 text-center font-medium whitespace-nowrap text-xs">
-                      {b.guestsCount}
+                      <span className="font-bold text-slate-900">{b.guestsCount}</span>{" "}
+                      <span className="text-[11px] text-slate-500">
+                        {b.serviceType === "transport" ? "chỗ" : b.serviceType === "experience" ? "vé" : "khách"}
+                      </span>
                     </td>
 
                     {/* Trạng thái */}

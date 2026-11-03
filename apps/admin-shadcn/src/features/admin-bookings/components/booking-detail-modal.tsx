@@ -26,15 +26,21 @@ export function BookingDetailModal({
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold">
               <span>Mã đơn: {booking.code}</span>
+              <span>•</span>
+              <span>{booking.serviceTypeLabel || "Lưu trú"}</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-1">
-              Chi tiết đơn đặt phòng
+              {booking.serviceType === "transport"
+                ? "Chi tiết đơn thuê xe & đưa đón"
+                : booking.serviceType === "experience"
+                  ? "Chi tiết tour & canô trải nghiệm"
+                  : "Chi tiết đơn đặt phòng lưu trú"}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -42,23 +48,50 @@ export function BookingDetailModal({
 
         {/* Content Body */}
         <div className="space-y-4 text-xs sm:text-sm">
-          {/* Property Info */}
+          {/* Service Info */}
           <div className="p-3.5 bg-slate-50 rounded-2xl space-y-2">
             <div className="flex items-center gap-2 text-slate-900 font-bold">
               <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{booking.propertyName}</span>
             </div>
+            {booking.serviceDetails && (
+              <p className="text-[11px] text-slate-500 pl-6">
+                {booking.serviceDetails}
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-2 text-slate-600 text-xs pt-1">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                <span>Nhận: <strong>{booking.checkIn}</strong></span>
+                <span>
+                  {booking.serviceType === "transport"
+                    ? "Nhận xe: "
+                    : booking.serviceType === "experience"
+                      ? "Khởi hành: "
+                      : "Nhận phòng: "}
+                  <strong>{booking.checkIn}</strong>
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                <span>Trả: <strong>{booking.checkOut}</strong></span>
+                <span>
+                  {booking.serviceType === "transport"
+                    ? "Trả xe: "
+                    : "Trả phòng: "}
+                  <strong>{booking.checkOut}</strong>
+                </span>
               </div>
-              <div>Số khách: <strong>{booking.guestsCount} khách</strong></div>
-              <div>Kênh: <strong>{booking.channel}</strong></div>
+              <div>
+                Quy mô:{" "}
+                <strong>
+                  {booking.guestsCount}{" "}
+                  {booking.serviceType === "transport"
+                    ? "chỗ"
+                    : booking.serviceType === "experience"
+                      ? "vé"
+                      : "khách"}
+                </strong>
+              </div>
+              <div>Kênh đặt: <strong>{booking.channel}</strong></div>
             </div>
           </div>
 

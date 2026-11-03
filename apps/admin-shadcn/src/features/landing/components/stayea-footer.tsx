@@ -115,7 +115,11 @@ export function StayeaFooter({ variant = "about", onNavigate }: StayeaFooterProp
       case "Chính sách bảo mật":
       case "Chính sách hủy phòng":
       case "Chính sách huỷ phòng":
-        alert("Chính sách & Điều khoản dịch vụ STAYEA: Cam kết bảo vệ quyền lợi và bảo mật thông tin tối đa cho khách hàng và đối tác.")
+        window.location.href = "/terms"
+        break
+      case "Hợp đồng đối tác":
+      case "Điều khoản hợp tác":
+        window.location.href = "/partner-agreement"
         break
       default:
         onNavigate(item)

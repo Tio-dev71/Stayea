@@ -252,6 +252,7 @@ export class StayeaAiAgentService {
           ...existing,
           catalogStats: catalogData.stats,
           catalogItems: catalogData.realCatalogItems,
+          catalogData,
         }
       }
 
@@ -290,10 +291,11 @@ export class StayeaAiAgentService {
         }),
         catalogStats: catalogData.stats,
         catalogItems: catalogData.realCatalogItems,
+        catalogData,
       }
     } catch (err: any) {
       this.logger.warn(`Failed to fetch AI config from DB: ${err?.message}`)
-      const catalogData = await this.buildCatalogContext().catch(() => ({ stats: { total: 0, stays: 0, transports: 0, experiences: 0 }, realCatalogItems: [] }))
+      const catalogData = await this.buildCatalogContext().catch(() => ({ stats: { total: 0, stays: 0, transports: 0, experiences: 0 }, realCatalogItems: [], catalogListing: "", activeServices: [] }))
       return {
         id: "default",
         systemPrompt: SYSTEM_PROMPT,
@@ -307,6 +309,7 @@ export class StayeaAiAgentService {
         customRules: [],
         catalogStats: catalogData.stats,
         catalogItems: catalogData.realCatalogItems,
+        catalogData,
       }
     }
   }
@@ -389,6 +392,108 @@ export class StayeaAiAgentService {
   }
 
   /**
+   * Dynamically build system prompt with categorized real-time catalog items
+   */
+  private formatDynamicCatalogPrompt(
+    basePrompt: string,
+    catalogData: {
+      realCatalogItems: Array<{
+        id: string
+        title: string
+        price: number
+        unit: string
+        location: string
+        partnerId?: string
+        serviceType: string
+        description: string
+      }>
+      catalogListing: string
+    }
+  ): string {
+    const { realCatalogItems } = catalogData
+
+    const stays = realCatalogItems.filter(
+      (i) => i.serviceType === "stay" || i.serviceType === "homestay"
+    )
+    const transports = realCatalogItems.filter(
+      (i) => i.serviceType === "transport" || i.serviceType === "car"
+    )
+    const experiences = realCatalogItems.filter(
+      (i) => i.serviceType === "tour" || i.serviceType === "experience"
+    )
+    const combos = realCatalogItems.filter(
+      (i) => i.serviceType === "combo" || i.serviceType === "package"
+    )
+
+    const staysText =
+      stays.length > 0
+        ? stays
+            .map(
+              (s) =>
+                `  - [MÃ DỊCH VỤ: ${s.id}] "${s.title}" — Giá niêm yết: ${s.price.toLocaleString("vi-VN")} ₫/${s.unit} — Khu vực: ${s.location}. ${s.description}`
+            )
+            .join("\n")
+        : "  - Hiện các cơ sở lưu trú đang được quản trị viên cập nhật."
+
+    const transportsText =
+      transports.length > 0
+        ? transports
+            .map(
+              (t) =>
+                `  - [MÃ DỊCH VỤ: ${t.id}] "${t.title}" — Giá niêm yết: ${t.price.toLocaleString("vi-VN")} ₫/${t.unit} — Khu vực: ${t.location}. ${t.description}`
+            )
+            .join("\n")
+        : "  - Hiện các dòng xe tự lái / đưa đón sân bay đang được đối tác chuẩn bị ra mắt."
+
+    const experiencesText =
+      experiences.length > 0
+        ? experiences
+            .map(
+              (e) =>
+                `  - [MÃ DỊCH VỤ: ${e.id}] "${e.title}" — Giá niêm yết: ${e.price.toLocaleString("vi-VN")} ₫/${e.unit} — Khu vực: ${e.location}. ${e.description}`
+            )
+            .join("\n")
+        : "  - Hiện các tour cano 4 đảo / ngắm hoàng hôn đang được đối tác chuẩn bị ra mắt."
+
+    const combosText =
+      combos.length > 0
+        ? `\n4. GÓI DỊCH VỤ COMBO:\n` +
+          combos
+            .map(
+              (c) =>
+                `  - [MÃ DỊCH VỤ: ${c.id}] "${c.title}" — Giá niêm yết: ${c.price.toLocaleString("vi-VN")} ₫/${c.unit} — ${c.description}`
+            )
+            .join("\n")
+        : ""
+
+    return `${basePrompt}
+
+DANH MỤC DỊCH VỤ THỰC TẾ ĐANG MỞ BÁN TRÊN NỀN TẢNG STAYEA (ĐỒNG BỘ THỜI GIAN THỰC):
+1. LƯU TRÚ & NGHỈ DƯỠNG (HOMESTAY, VILLA):
+${staysText}
+
+2. XE THUÊ TỰ LÁI & ĐƯA ĐÓN SÂN BAY PHÚ QUỐC:
+${transportsText}
+
+3. TOUR TRẢI NGHIỆM ĐẢO & CANÔ:
+${experiencesText}${combosText}
+
+QUY TẮC BẮT BUỘC VỀ DỮ LIỆU & ĐIỀU KHOẢN PHÁP LÝ (TUYỆT ĐỐI TUÂN THỦ):
+1. BÁM SÁT DANH MỤC THỰC TẾ:
+   - Bạn CHỈ ĐƯỢC TƯ VẤN các dịch vụ có thật trong danh sách trên.
+   - TUYỆT ĐỐI KHÔNG TỰ BỊA ĐẶT dịch vụ, tên villa/xe hay giá tiền không có trong danh mục.
+2. TƯ VẤN ĐÚNG NHU CẦU:
+   - Nếu khách hỏi thuê xe: Giới thiệu ngay các phương tiện có trong mục "XE THUÊ" (ví dụ: Xe máy wave, xe tự lái) kèm giá niêm yết.
+   - Nếu khách hỏi homestay / villa: Giới thiệu các nơi lưu trú có trong mục "LƯU TRÚ" kèm vị trí và giá.
+   - Nếu khách hỏi tour: Giới thiệu các tour trong mục "TOUR TRẢI NGHIỆM".
+   - Nếu mục nào chưa có dịch vụ đang mở bán, hãy thông báo lịch sự rằng đối tác đang hoàn tất chuẩn bị và sẽ sớm mở bán.
+3. QUY TRÌNH ĐẶT CHỖ & MIỄN TRỪ TRÁCH NHIỆM:
+   - Khi khách muốn đặt dịch vụ (cung cấp Tên, Số điện thoại, Ngày bắt đầu), hãy gọi hàm 'create_booking_draft' với [MÃ DỊCH VỤ] tương ứng.
+   - Nhắc khách rằng: "Đơn đặt này là Phiếu yêu cầu giữ chỗ sơ bộ được gửi tới Admin STAYEA xét duyệt và liên hệ xác nhận chính thức với Đối tác trước khi thanh toán."
+   - Khi nhận SĐT, thông báo: "STAYEA sẽ lưu thông tin liên hệ và chuyển tới Đối tác cung cấp dịch vụ để đón tiếp Quý khách."`
+  }
+
+  /**
    * Test AI Prompt with custom message in Sandbox Mode
    */
   async testPrompt(dto: AiTestPromptDto) {
@@ -398,15 +503,8 @@ export class StayeaAiAgentService {
 
     let finalPrompt = basePrompt
     if (injectCatalog) {
-      const catalogData = await this.buildCatalogContext()
-      finalPrompt = `${basePrompt}
-
-DANH MỤC DỊCH VỤ & BIỆT THỰ ĐANG HOẠT ĐỘNG THỰC TẾ TRÊN NỀN TẢNG STAYEA:
-${catalogData.catalogListing || "1. [MÃ DỊCH VỤ: svc_ba8dd5135155] \"Teest Villa\" - 1.500.000 ₫/đêm\n2. [MÃ DỊCH VỤ: svc_e4a1f20e8a9e] \"Teesst 22\" - 1.500.000 ₫/đêm"}
-
-QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ):
-1. Hệ thống STAYEA hiện tại CHỈ CÓ CÁC DỊCH VỤ VÀ NƠI LƯU TRÚ THỰC TẾ NÊU TRÊN.
-2. TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ BỊA ĐẶT RA BẤT KỲ TÊN DỊCH VỤ NÀO KHÁC.`
+      const catalogData = (config as any).catalogData || (await this.buildCatalogContext())
+      finalPrompt = this.formatDynamicCatalogPrompt(basePrompt, catalogData)
     }
 
     const messages: ChatMessage[] = [
@@ -436,32 +534,15 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
     const rawMessages = dto.messages || []
     let createdBooking: BookingPreviewCard | null = null
 
-    // Fetch config and live catalog
-    const [config, catalogData] = await Promise.all([
-      this.getAiConfig(),
-      this.buildCatalogContext(),
-    ])
-
-    const { activeServices, realCatalogItems, catalogListing } = catalogData
+    // Fetch config and pre-attached live catalog in a single call (prevents duplicate DB query)
+    const config = await this.getAiConfig()
+    const catalogData = (config as any).catalogData || (await this.buildCatalogContext())
+    const { activeServices, realCatalogItems } = catalogData
     const basePrompt = config.systemPrompt || SYSTEM_PROMPT
 
     let dynamicSystemPrompt = basePrompt
     if (config.autoInjectCatalog !== false) {
-      dynamicSystemPrompt = `${basePrompt}
-
-DANH MỤC DỊCH VỤ & BIỆT THỰ ĐANG HOẠT ĐỘNG THỰC TẾ TRÊN NỀN TẢNG STAYEA:
-${catalogListing || "1. [MÃ DỊCH VỤ: svc_ba8dd5135155] \"Teest Villa\" - Giá: 1.500.000 ₫/đêm - Khu vực: Dương Đông, Phú Quốc\n2. [MÃ DỊCH VỤ: svc_e4a1f20e8a9e] \"Teesst 22\" - Giá: 1.500.000 ₫/đêm - Khu vực: Dương Đông, Phú Quốc"}
-
-QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ):
-1. Hệ thống STAYEA hiện tại CHỈ CÓ CÁC DỊCH VỤ VÀ NƠI LƯU TRÚ THỰC TẾ NÊU TRÊN (${realCatalogItems.map((s) => `"${s.title}" - ${s.price.toLocaleString("vi-VN")}đ/${s.unit}`).join(", ")}).
-2. TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ BỊA ĐẶT RA BẤT KỲ TÊN HOMESTAY / VILLA NÀO KHÁC (cấm tuyệt đối các tên ảo như "Sunshine Ocean Villa", "Sunset Resort", cấm tự bịa giá 3.500.000đ).
-3. Khi khách hàng hỏi: "Bên mình đang có những dịch vụ nào?" hoặc tương tự:
-   - Liệt kê chính xác các nơi lưu trú đang mở bán: ${realCatalogItems.map((s) => `"${s.title}" (giá ${s.price.toLocaleString("vi-VN")}đ/${s.unit} tại ${s.location})`).join(" và ")}.
-   - Nêu rõ các dịch vụ xe thuê và tour cano đang được các đối tác liên kết chuẩn bị hoàn thiện để sớm ra mắt.
-4. Khi khách muốn tìm homestay / villa nghỉ dưỡng:
-   - Giới thiệu ngay các căn thực tế: "Teest Villa" và "Teesst 22" (giá 1.500.000đ/đêm tại Dương Đông).
-   - Hỏi khách về ngày đi, số đêm và số khách để hỗ trợ tạo đơn giữ chỗ gửi Admin duyệt ngay.
-5. Khi khách cung cấp đủ thông tin (Họ tên, SĐT, ngày nhận phòng), hãy gọi hàm 'create_booking_draft' với mã serviceId tương ứng ('svc_ba8dd5135155' hoặc 'svc_e4a1f20e8a9e').`
+      dynamicSystemPrompt = this.formatDynamicCatalogPrompt(basePrompt, catalogData)
     }
 
     // Prepare message payload
@@ -573,7 +654,9 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
               name: fnName,
             })
           } else if (fnName === "create_booking_draft") {
-            const matchedService = activeServices.find((s) => s.id === fnArgs.serviceId)
+            const matchedService: any =
+              realCatalogItems.find((s: any) => s.id === fnArgs.serviceId) ||
+              activeServices.find((s: any) => s.id === fnArgs.serviceId)
             if (!matchedService) {
               const toolOutput = JSON.stringify({ success: false, message: "Không tìm thấy dịch vụ đang hoạt động để tạo đơn." })
               outboundMessages.push({ role: "tool", content: toolOutput, tool_call_id: toolCall.id, name: fnName })
@@ -593,8 +676,12 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
             }
             const totalAmount = unitPrice * qty * durationMultiplier
             const serviceTitle = matchedService.title
-            const serviceType = matchedService.serviceType
-            const partnerId = matchedService.partnerId
+            const serviceType = matchedService.serviceType || "stay"
+            let partnerId = matchedService.partnerId
+            if (!partnerId) {
+              const [firstPartner] = await this.partnerService.getAllPartnersForAdmin().catch(() => [])
+              partnerId = firstPartner?.id || "ptn_1793601124656"
+            }
 
             const order = await this.partnerService.createDraftOrder({
               partnerId,
@@ -676,7 +763,9 @@ QUY TẮC BẮT BUỘC VỀ DỮ LIỆU DỊCH VỤ (TUYỆT ĐỐI TUÂN THỦ)
           const parsed = JSON.parse(actionMatch[0])
           if (parsed.action === "create_booking_draft" && parsed.params) {
             const p = parsed.params
-            const matchedService = activeServices.find((s) => s.id === p.serviceId)
+            const matchedService: any =
+              realCatalogItems.find((s: any) => s.id === p.serviceId) ||
+              activeServices.find((s: any) => s.id === p.serviceId)
             if (!matchedService) {
               return {
                 reply: "Mình chưa tìm thấy dịch vụ đang hoạt động để tạo đơn. Hãy chọn một dịch vụ có sẵn trong danh sách.",

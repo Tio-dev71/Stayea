@@ -467,7 +467,15 @@ export function PartnerPayoutSettings({
                 Hợp Đồng Đối Tác STAYEA: {profile.commissionRate}% Chiết Khấu
               </div>
               <div className="text-[11px] text-slate-400">
-                STAYEA cam kết không phát sinh bất kỳ khoản phí ẩn nào khác.
+                STAYEA cam kết không phát sinh bất kỳ khoản phí ẩn nào khác.{" "}
+                <a
+                  href="/partner-agreement"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-400 underline hover:text-emerald-300 ml-1 font-medium"
+                >
+                  Xem điều khoản hợp đồng & quy chế quyết toán ➔
+                </a>
               </div>
             </div>
           </div>

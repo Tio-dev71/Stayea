@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Patch, Post, Request } from "@nestjs/common"
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger"
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { Throttle } from "@nestjs/throttler"
 
 import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
+import { Roles } from "@/shared-kernel/infrastructure/decorators/roles.decorator"
 import {
   AiChatRequestDto,
   AiTestPromptDto,
@@ -27,30 +28,35 @@ export class StayeaAiAgentController {
     return this.aiService.processChat(dto)
   }
 
-  @Public()
+  @ApiBearerAuth()
+  @Roles("ADMIN")
   @Get("config")
-  @ApiOperation({ summary: "Lấy cấu hình Prompt và tham số mô hình của STAYEA AI" })
+  @ApiOperation({ summary: "Lấy cấu hình Prompt và tham số mô hình của STAYEA AI (Admin Only)" })
   async getConfig() {
     return this.aiService.getAiConfig()
   }
 
-  @Public()
+  @ApiBearerAuth()
+  @Roles("ADMIN")
   @Patch("config")
-  @ApiOperation({ summary: "Quản trị viên cập nhật Prompt và tham số STAYEA AI" })
+  @ApiOperation({ summary: "Quản trị viên cập nhật Prompt và tham số STAYEA AI (Admin Only)" })
   async updateConfig(@Body() dto: UpdateAiConfigDto, @Request() req: any) {
     const updatedBy = req?.user?.email || req?.user?.name || "Admin"
     return this.aiService.updateAiConfig(dto, updatedBy)
   }
 
-  @Public()
+  @ApiBearerAuth()
+  @Roles("ADMIN")
   @Post("config/reset")
-  @ApiOperation({ summary: "Khôi phục cấu hình Prompt AI về mặc định của hệ thống" })
+  @ApiOperation({ summary: "Khôi phục cấu hình Prompt AI về mặc định của hệ thống (Admin Only)" })
   async resetConfig(@Request() req: any) {
     const updatedBy = req?.user?.email || req?.user?.name || "Admin"
     return this.aiService.resetAiConfig(updatedBy)
   }
 
-  @Public()
+  @ApiBearerAuth()
+  @Roles("ADMIN")
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
   @Post("test")
   @ApiOperation({ summary: "Thử nghiệm Prompt AI trực tiếp trong Sandbox (Admin test)" })
   async testPrompt(@Body() dto: AiTestPromptDto) {

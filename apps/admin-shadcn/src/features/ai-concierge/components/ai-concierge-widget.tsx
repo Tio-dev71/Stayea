@@ -670,6 +670,14 @@ export function AiConciergeWidget() {
                 <span>{chatMode === "ai" ? "Trực tuyến 24/7" : "Chuyên viên sẵn sàng"}</span>
               </span>
             </div>
+            <div className="mt-1.5 pt-1.5 border-t border-emerald-900/60 text-[9.5px] text-slate-400 leading-tight">
+              <span>
+                * Thông tin tư vấn & báo giá mang tính chất tham khảo sơ bộ. Đơn giữ chỗ sẽ được Admin thẩm định xác nhận chính thức với Đối tác theo{" "}
+                <a href="/terms" target="_blank" className="text-emerald-400 underline hover:text-emerald-300">
+                  Điều khoản & Quy chế sàn
+                </a>.
+              </span>
+            </div>
           </div>
         </div>
       )}

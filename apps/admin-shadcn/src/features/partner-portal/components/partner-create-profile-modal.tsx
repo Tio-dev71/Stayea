@@ -27,6 +27,7 @@ export function PartnerCreateProfileModal({
   const [bankName, setBankName] = useState("")
   const [bankAccount, setBankAccount] = useState("")
   const [bankAccountHolder, setBankAccountHolder] = useState("")
+  const [termsAgreed, setTermsAgreed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -45,6 +46,26 @@ export function PartnerCreateProfileModal({
     e.preventDefault()
     if (!businessName.trim() || !contactName.trim() || !phone.trim()) {
       toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc (*)")
+      return
+    }
+
+    // Phone validation
+    const cleanedPhone = phone.trim().replace(/[\s.-]/g, "")
+    const vnPhoneRegex = /^(0[35789])[0-9]{8}$/
+    if (!vnPhoneRegex.test(cleanedPhone)) {
+      toast.error("Số điện thoại không hợp lệ. Vui lòng nhập số di động 10 chữ số (VD: 0921724444).")
+      return
+    }
+
+    // Bank Account validation
+    if (bankAccount.trim() && !/^[0-9]{6,25}$/.test(bankAccount.trim().replace(/\s/g, ""))) {
+      toast.error("Số tài khoản ngân hàng không hợp lệ (yêu cầu từ 6 đến 25 chữ số).")
+      return
+    }
+
+    // Legal & Terms agreement check
+    if (!termsAgreed) {
+      toast.error("Vui lòng tích chọn đồng ý với Hợp đồng Đối tác & Quy chế Sàn STAYEA.")
       return
     }
 
@@ -285,6 +306,30 @@ export function PartnerCreateProfileModal({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Terms & Agreement Checkbox */}
+          <div className="pt-2 border-t border-slate-800">
+            <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-slate-300 leading-relaxed select-none">
+              <input
+                type="checkbox"
+                checked={termsAgreed}
+                onChange={(e) => setTermsAgreed(e.target.checked)}
+                className="mt-0.5 rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
+              />
+              <span>
+                Tôi xác nhận thông tin cơ sở là chính xác và đồng ý với{" "}
+                <a
+                  href="/partner-agreement"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-400 underline hover:text-emerald-300 font-semibold"
+                >
+                  Hợp đồng Đối tác & Quy chế Hoạt động Sàn STAYEA
+                </a>{" "}
+                (Mức chiết khấu hoa hồng 10.00%, quyết toán minh bạch, cam kết chất lượng dịch vụ).
+              </span>
+            </label>
           </div>
 
           {/* Actions */}

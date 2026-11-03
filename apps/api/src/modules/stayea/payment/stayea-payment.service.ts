@@ -729,12 +729,26 @@ export class StayeaPaymentService {
   /**
    * Request a new partner payout withdrawal
    */
-  async requestPartnerPayout(userId: string, dto: RequestPayoutDto) {
-    const [partner] = await this.db
-      .select()
-      .from(partnerProfilesTable)
-      .where(eq(partnerProfilesTable.userId, userId))
-      .limit(1)
+  async requestPartnerPayout(userId: string, dto: RequestPayoutDto, partnerId?: string) {
+    let partner: typeof partnerProfilesTable.$inferSelect | undefined
+
+    if (partnerId) {
+      const [found] = await this.db
+        .select()
+        .from(partnerProfilesTable)
+        .where(eq(partnerProfilesTable.id, partnerId))
+        .limit(1)
+      partner = found
+    }
+
+    if (!partner && userId) {
+      const [found] = await this.db
+        .select()
+        .from(partnerProfilesTable)
+        .where(eq(partnerProfilesTable.userId, userId))
+        .limit(1)
+      partner = found
+    }
 
     if (!partner) {
       throw new ForbiddenException({
@@ -838,18 +852,33 @@ export class StayeaPaymentService {
   /**
    * Get partner settlement overview (available balance, total earned, payout history)
    */
-  async getPartnerPayoutOverview(userId: string) {
-    const [partner] = await this.db
-      .select()
-      .from(partnerProfilesTable)
-      .where(eq(partnerProfilesTable.userId, userId))
-      .limit(1)
+  async getPartnerPayoutOverview(userId?: string, partnerId?: string) {
+    let partner: typeof partnerProfilesTable.$inferSelect | undefined
+
+    if (partnerId) {
+      const [found] = await this.db
+        .select()
+        .from(partnerProfilesTable)
+        .where(eq(partnerProfilesTable.id, partnerId))
+        .limit(1)
+      partner = found
+    }
+
+    if (!partner && userId) {
+      const [found] = await this.db
+        .select()
+        .from(partnerProfilesTable)
+        .where(eq(partnerProfilesTable.userId, userId))
+        .limit(1)
+      partner = found
+    }
 
     if (!partner) {
       return {
         partner: null,
         availableBalance: 0,
         totalEarned: 0,
+        inProgressEarned: 0,
         totalWithdrawn: 0,
         payoutRequests: [],
       }
@@ -869,10 +898,15 @@ export class StayeaPaymentService {
         )
       )
 
-    const totalEarned = partnerOrders.reduce(
-      (sum, o) => sum + Number(o.partnerPayoutAmount || 0),
-      0
-    )
+    const completedEarned = partnerOrders
+      .filter((o) => o.status === "completed")
+      .reduce((sum, o) => sum + Number(o.partnerPayoutAmount || 0), 0)
+
+    const inProgressEarned = partnerOrders
+      .filter((o) => o.status === "partner_accepted" || o.status === "in_progress")
+      .reduce((sum, o) => sum + Number(o.partnerPayoutAmount || 0), 0)
+
+    const totalEarned = completedEarned + inProgressEarned
 
     const payoutRequests = await this.db
       .select()
@@ -884,12 +918,14 @@ export class StayeaPaymentService {
       .filter((p) => ["pending", "approved", "processing", "paid"].includes(p.status))
       .reduce((sum, p) => sum + Number(p.amount || 0), 0)
 
-    const availableBalance = Math.max(0, totalEarned - totalWithdrawnOrPending)
+    const availableBalance = Math.max(0, completedEarned - totalWithdrawnOrPending)
 
     return {
       partner,
       availableBalance,
       totalEarned,
+      completedEarned,
+      inProgressEarned,
       totalWithdrawn: totalWithdrawnOrPending,
       payoutRequests,
     }

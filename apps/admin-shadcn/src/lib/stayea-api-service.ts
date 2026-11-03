@@ -1289,6 +1289,7 @@ class StayeaApiService {
     try {
       const searchParams = new URLSearchParams()
       if (params?.status) searchParams.set("status", params.status)
+      if (params?.partnerId) searchParams.set("partnerId", params.partnerId)
       const res = await this.fetchWithAuth(`/api/stayea/partner/orders?${searchParams.toString()}`)
       if (res.ok) {
         const json = await res.json()
@@ -1719,10 +1720,11 @@ class StayeaApiService {
     bankName?: string
     bankAccount?: string
     bankAccountHolder?: string
-  }): Promise<{ success: boolean; message: string; payoutRequest?: any; availableBalance?: number }> {
-    const res = await fetch(`/api/stayea/payments/payouts/request`, {
+  }, partnerId?: string): Promise<{ success: boolean; message: string; payoutRequest?: any; availableBalance?: number }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/payments/payouts/request${q}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...this.getAuthHeader() },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
     const json = await res.json()
@@ -1735,17 +1737,17 @@ class StayeaApiService {
   /**
    * Payouts: Get partner settlement overview
    */
-  async getPartnerPayoutOverview(): Promise<{
+  async getPartnerPayoutOverview(partnerId?: string): Promise<{
     partner: any
     availableBalance: number
     totalEarned: number
+    inProgressEarned?: number
     totalWithdrawn: number
     payoutRequests: any[]
   }> {
     try {
-      const res = await fetch(`/api/stayea/payments/payouts/overview`, {
-        headers: this.getAuthHeader(),
-      })
+      const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/payments/payouts/overview${q}`)
       if (res.ok) {
         const json = await res.json()
         return json.data || json

@@ -121,21 +121,29 @@ export class StayeaPaymentController {
     return this.paymentService.processCheckout(req.user.id, dto)
   }
 
+  @Public()
   @Post("payouts/request")
   @UseEnvelope()
   @ApiOperation({ summary: "Partner requests a payout withdrawal" })
   async requestPayout(
-    @Request() req: { user: { id: string } },
-    @Body() dto: RequestPayoutDto
+    @Request() req: any,
+    @Body() dto: RequestPayoutDto,
+    @Query("partnerId") partnerId?: string
   ) {
-    return this.paymentService.requestPartnerPayout(req.user.id, dto)
+    const userId = req?.user?.id || req?.user?.sub || ""
+    return this.paymentService.requestPartnerPayout(userId, dto, partnerId)
   }
 
+  @Public()
   @Get("payouts/overview")
   @UseEnvelope()
   @ApiOperation({ summary: "Get partner settlement overview (available balance, history)" })
-  async getPayoutOverview(@Request() req: { user: { id: string } }) {
-    return this.paymentService.getPartnerPayoutOverview(req.user.id)
+  async getPayoutOverview(
+    @Request() req: any,
+    @Query("partnerId") partnerId?: string
+  ) {
+    const userId = req?.user?.id || req?.user?.sub || ""
+    return this.paymentService.getPartnerPayoutOverview(userId, partnerId)
   }
 
   @Get("admin/payouts")

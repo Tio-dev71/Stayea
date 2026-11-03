@@ -744,6 +744,7 @@ export function PartnerPortalPage({
             {activeTab === "settings" && (
               <PartnerPayoutSettings
                 profile={currentProfile}
+                orders={currentOrders}
                 onUpdateProfile={handleUpdateProfile}
               />
             )}

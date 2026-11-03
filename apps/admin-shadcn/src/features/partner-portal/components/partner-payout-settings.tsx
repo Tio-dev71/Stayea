@@ -17,15 +17,17 @@ import {
   X,
 } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
-import type { PartnerProfileData } from "../types"
+import type { PartnerOrderData, PartnerProfileData } from "../types"
 
 interface PartnerPayoutSettingsProps {
   profile: PartnerProfileData
+  orders?: PartnerOrderData[]
   onUpdateProfile: (updated: Partial<PartnerProfileData>) => Promise<boolean>
 }
 
 export function PartnerPayoutSettings({
   profile,
+  orders = [],
   onUpdateProfile,
 }: PartnerPayoutSettingsProps) {
   const [businessName, setBusinessName] = useState(profile.businessName)
@@ -58,7 +60,8 @@ export function PartnerPayoutSettings({
 
   const fetchOverview = async () => {
     try {
-      const data = await stayeaApi.getPartnerPayoutOverview()
+      setLoadingOverview(true)
+      const data = await stayeaApi.getPartnerPayoutOverview(profile.id)
       setOverview(data)
     } catch {
       // ignore
@@ -69,7 +72,17 @@ export function PartnerPayoutSettings({
 
   useEffect(() => {
     fetchOverview()
-  }, [])
+  }, [profile.id])
+
+  // Compute live revenue fallback from completed orders
+  const completedOrdersEarned = (orders || [])
+    .filter((o) => o.status === "completed")
+    .reduce((sum, o) => sum + Number.parseFloat(o.partnerPayoutAmount || "0"), 0)
+
+  const activeTotalEarned = overview.totalEarned > 0 ? overview.totalEarned : completedOrdersEarned
+  const activeAvailableBalance = overview.availableBalance > 0
+    ? overview.availableBalance
+    : Math.max(0, activeTotalEarned - overview.totalWithdrawn)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,8 +108,8 @@ export function PartnerPayoutSettings({
       toast.error("Số tiền rút tối thiểu là 100,000 ₫")
       return
     }
-    if (amountNum > overview.availableBalance) {
-      toast.error(`Số dư khả dụng hiện tại (${overview.availableBalance.toLocaleString("vi-VN")} ₫) không đủ để rút`)
+    if (amountNum > activeAvailableBalance) {
+      toast.error(`Số dư khả dụng hiện tại (${activeAvailableBalance.toLocaleString("vi-VN")} ₫) không đủ để rút`)
       return
     }
     if (!bankName || !bankAccount || !bankAccountHolder) {
@@ -111,7 +124,7 @@ export function PartnerPayoutSettings({
         bankName,
         bankAccount,
         bankAccountHolder,
-      })
+      }, profile.id)
       toast.success(res.message || "Đã gửi yêu cầu quyết toán thành công!")
       setIsModalOpen(false)
       setWithdrawAmount("")
@@ -190,7 +203,7 @@ export function PartnerPayoutSettings({
               </span>
             </div>
             <div className="text-2xl font-black text-white tracking-tight">
-              {loadingOverview ? "..." : `${overview.availableBalance.toLocaleString("vi-VN")} ₫`}
+              {loadingOverview && activeAvailableBalance === 0 ? "..." : `${activeAvailableBalance.toLocaleString("vi-VN")} ₫`}
             </div>
             <p className="text-[11px] text-slate-400 mt-1">
               Doanh thu từ các đơn hàng đã phục vụ thành công
@@ -201,7 +214,7 @@ export function PartnerPayoutSettings({
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              disabled={overview.availableBalance < 100_000}
+              disabled={activeAvailableBalance < 100_000}
               className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2"
             >
               <ArrowDownToLine className="w-3.5 h-3.5" />
@@ -217,7 +230,7 @@ export function PartnerPayoutSettings({
               <DollarSign className="w-4 h-4 text-blue-400" /> Tổng Thu Nhập Tích Lũy
             </div>
             <div className="text-2xl font-black text-white tracking-tight">
-              {overview.totalEarned.toLocaleString("vi-VN")} ₫
+              {activeTotalEarned.toLocaleString("vi-VN")} ₫
             </div>
             <p className="text-[11px] text-slate-400 mt-1">
               Thực nhận sau khi trừ chiết khấu {profile.commissionRate}%

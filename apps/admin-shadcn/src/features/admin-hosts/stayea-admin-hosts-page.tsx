@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
+  Building2,
   Check,
   CreditCard,
   Percent,
@@ -335,15 +336,16 @@ export function StayeaAdminHostsPage({
                 <button
                   type="button"
                   onClick={() => router.push("/hub")}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#0c3b40] border border-emerald-300/80 text-xs sm:text-sm font-semibold shadow-xs transition-all cursor-pointer"
                 >
+                  <Building2 className="w-4 h-4 text-emerald-700" />
                   <span>Mở Cổng Đối Tác (Partner Hub)</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleAddHost}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1b7a4e] hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1b7a4e] hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Thêm chủ nhà/Đối tác</span>
@@ -417,26 +419,24 @@ export function StayeaAdminHostsPage({
             ) : adminSection === "catalog_moderation" ? (
               <AdminCatalogModerationTable />
             ) : (
-              /* Main Content Grid: 8 cols left, 4 cols right */
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Left Column (8 cols) */}
-                <div className="lg:col-span-8 space-y-6">
-                  {/* 4 KPI Cards */}
-                  <HostsKpiCards kpis={liveHostKpis} />
+              /* Main Content Full-Width Layout: Spacious & Unconstrained */
+              <div className="space-y-6">
+                {/* 1. 4 KPI Cards across full width */}
+                <HostsKpiCards kpis={liveHostKpis} />
 
-                  {/* Filter and Segment Bar */}
-                  <HostsFilterBar
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    activeSegment={activeSegment}
-                    onSegmentChange={setActiveSegment}
-                    segmentCounts={segmentCounts}
-                    onAdvancedFilter={handleAdvancedFilter}
-                    onExport={handleExport}
-                  />
+                {/* 2. Filter and Segment Bar across full width */}
+                <HostsFilterBar
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  activeSegment={activeSegment}
+                  onSegmentChange={setActiveSegment}
+                  segmentCounts={segmentCounts}
+                  onAdvancedFilter={handleAdvancedFilter}
+                  onExport={handleExport}
+                />
 
-                  {/* Hosts Data Table */}
-                  <HostsDataTable
+                {/* 3. Hosts Data Table across full width - spacious, no cramped columns! */}
+                <HostsDataTable
                     hosts={filteredPartners}
                     onHostAction={async (action, host) => {
                       if (action === "chat") {
@@ -486,11 +486,9 @@ export function StayeaAdminHostsPage({
                       }
                     }}
                   />
-                </div>
 
-                {/* Right Column (4 cols) */}
-                <div className="lg:col-span-4">
-                  <HostsRightSidebar
+                {/* 4. Auxiliary Insights & Quick Actions below table in a responsive horizontal grid */}
+                <HostsRightSidebar
                     hosts={livePartners}
                     onBannerAction={() => {
                       toast.info("Hành trình cùng đối tác Stayea", {
@@ -535,7 +533,6 @@ export function StayeaAdminHostsPage({
                       }
                     }}
                   />
-                </div>
               </div>
             )}
 

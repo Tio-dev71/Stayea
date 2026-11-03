@@ -15,6 +15,13 @@ import {
 } from "lucide-react"
 import type { HostPartnerItem, PartnerType, PartnerStatus } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
 import { HOSTS_MOCK_LIST } from "@/features/admin-hosts/stayea-admin-hosts-mock-data"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@workspace/ui/components/dropdown-menu"
 
 interface HostsDataTableProps {
   hosts?: readonly HostPartnerItem[]
@@ -72,7 +79,6 @@ export function HostsDataTable({
   onHostAction,
 }: HostsDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
   const pageSize = 10
@@ -101,7 +107,7 @@ export function HostsDataTable({
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
       {/* Table Container */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-thin min-h-[220px]">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/70 text-slate-500 font-semibold select-none">
@@ -114,22 +120,21 @@ export function HostsDataTable({
                   className="rounded border-slate-300 text-[#1b7a4e] focus:ring-[#1b7a4e] cursor-pointer"
                 />
               </th>
-              <th className="py-3.5 px-3 min-w-[200px]">Chủ nhà / Đối tác</th>
-              <th className="py-3.5 px-3 whitespace-nowrap">Loại đối tác</th>
-              <th className="py-3.5 px-3 text-center whitespace-nowrap">Số BĐS</th>
-              <th className="py-3.5 px-3 whitespace-nowrap">Khu vực</th>
-              <th className="py-3.5 px-3 whitespace-nowrap">Ngày tham gia</th>
-              <th className="py-3.5 px-3 whitespace-nowrap">Doanh thu tạo ra</th>
-              <th className="py-3.5 px-3 text-center whitespace-nowrap">Hoa hồng</th>
-              <th className="py-3.5 px-3 whitespace-nowrap">Trạng thái</th>
-              <th className="py-3.5 pr-4 pl-3 text-center whitespace-nowrap">Thao tác</th>
+              <th className="py-3.5 px-3 min-w-[220px]">Chủ nhà / Đối tác</th>
+              <th className="py-3.5 px-3 whitespace-nowrap min-w-[120px]">Loại đối tác</th>
+              <th className="py-3.5 px-3 text-center whitespace-nowrap min-w-[80px]">Số BĐS</th>
+              <th className="py-3.5 px-3 whitespace-nowrap min-w-[120px]">Khu vực</th>
+              <th className="py-3.5 px-3 whitespace-nowrap min-w-[110px]">Ngày tham gia</th>
+              <th className="py-3.5 px-3 whitespace-nowrap min-w-[130px]">Doanh thu tạo ra</th>
+              <th className="py-3.5 px-3 text-center whitespace-nowrap min-w-[90px]">Hoa hồng</th>
+              <th className="py-3.5 px-3 whitespace-nowrap min-w-[120px]">Trạng thái</th>
+              <th className="py-3.5 pr-4 pl-3 text-center whitespace-nowrap min-w-[140px]">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {paginatedHosts.length > 0 ? (
               paginatedHosts.map((host) => {
               const isSelected = selectedIds.includes(host.id)
-              const isMenuOpen = activeMenuId === host.id
 
               return (
                 <tr
@@ -220,7 +225,7 @@ export function HostsDataTable({
                   </td>
 
                   {/* Action Button & Chat Button */}
-                  <td className="py-3 pr-4 pl-3 text-center relative whitespace-nowrap">
+                  <td className="py-3 pr-4 pl-3 text-center whitespace-nowrap">
                     <div className="inline-flex items-center gap-1.5 justify-center">
                       <button
                         type="button"
@@ -232,76 +237,54 @@ export function HostsDataTable({
                         <span>Nhắn tin</span>
                       </button>
 
-                      <button
-                        type="button"
-                        aria-label="Thao tác"
-                        onClick={() => setActiveMenuId(isMenuOpen ? null : host.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          type="button"
+                          aria-label="Thao tác"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer outline-none"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="w-48 bg-white border border-slate-200/90 shadow-xl rounded-xl p-1 z-50">
+                          <DropdownMenuItem
+                            onClick={() => onHostAction?.("chat", host)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Chat với Chủ nhà</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onHostAction?.("view", host)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Xem hồ sơ đối tác</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onHostAction?.("contract", host)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Quản lý hợp đồng</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onHostAction?.("commission", host)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+                          >
+                            <Percent className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Thiết lập hoa hồng</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="my-1 border-slate-100" />
+                          <DropdownMenuItem
+                            onClick={() => onHostAction?.("suspend", host)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                          >
+                            <UserX className="w-3.5 h-3.5 text-rose-500" />
+                            <span>{host.status === "paused" ? "Mở khóa đối tác" : "Tạm dừng hợp tác"}</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-
-                    {isMenuOpen && (
-                      <div className="absolute right-4 top-10 w-48 bg-white rounded-xl shadow-lg border border-slate-200/80 py-1.5 z-20 text-left text-xs animate-in fade-in zoom-in-95 duration-150">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveMenuId(null)
-                            onHostAction?.("chat", host)
-                          }}
-                          className="w-full px-3 py-2 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 font-medium"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Chat với Chủ nhà</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveMenuId(null)
-                            onHostAction?.("view", host)
-                          }}
-                          className="w-full px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Xem hồ sơ đối tác</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveMenuId(null)
-                            onHostAction?.("contract", host)
-                          }}
-                          className="w-full px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Quản lý hợp đồng</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveMenuId(null)
-                            onHostAction?.("commission", host)
-                          }}
-                          className="w-full px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <Percent className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Thiết lập hoa hồng</span>
-                        </button>
-                        <div className="my-1 border-t border-slate-100" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveMenuId(null)
-                            onHostAction?.("suspend", host)
-                          }}
-                          className="w-full px-3 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2"
-                        >
-                          <UserX className="w-3.5 h-3.5 text-rose-500" />
-                          <span>Tạm dừng hợp tác</span>
-                        </button>
-                      </div>
-                    )}
                   </td>
                 </tr>
               )

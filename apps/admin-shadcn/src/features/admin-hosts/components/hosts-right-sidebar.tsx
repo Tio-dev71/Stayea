@@ -113,32 +113,38 @@ export function HostsRightSidebar({
       }))
   }, [hosts])
   return (
-    <div className="flex flex-col gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
       {/* 1. Top Promo Banner: Cùng chủ nhà kiến tạo những hành trình đáng nhớ */}
-      <div className="relative overflow-hidden rounded-2xl aspect-[16/6] border border-slate-200/80 shadow-xs group">
+      <div className="relative overflow-hidden rounded-2xl min-h-[220px] h-full border border-slate-200/80 shadow-xs group">
         <Image
           src="/about/beach-opt-2.jpg"
           alt="Cùng chủ nhà kiến tạo những hành trình đáng nhớ"
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-950/70 via-sky-900/35 to-transparent flex items-center justify-between p-4 sm:p-5 text-white">
-          <div className="space-y-0.5">
-            <h3 className="text-xs sm:text-sm font-bold tracking-tight leading-snug">
+        <div className="absolute inset-0 bg-gradient-to-t from-sky-950/85 via-sky-900/40 to-transparent flex flex-col justify-between p-5 text-white">
+          <div className="space-y-1">
+            <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/30 text-emerald-100 border border-emerald-400/30 backdrop-blur-xs">
+              Mạng lưới đối tác
+            </span>
+            <h3 className="text-sm sm:text-base font-bold tracking-tight leading-snug">
               Cùng chủ nhà kiến tạo
             </h3>
-            <p className="text-[11px] text-emerald-100 font-medium">
-              những hành trình đáng nhớ
+            <p className="text-xs text-emerald-100 font-medium">
+              những hành trình đáng nhớ tại Phú Quốc
             </p>
           </div>
-          <button
-            type="button"
-            aria-label="Khám phá hợp tác"
-            onClick={onBannerAction}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-slate-800 flex items-center justify-center shrink-0 shadow-md hover:scale-105 active:scale-95 transition-transform"
-          >
-            <ArrowRight className="w-4 h-4 text-emerald-700" />
-          </button>
+          <div className="flex items-center justify-between pt-4">
+            <span className="text-xs text-slate-200 font-medium">Khám phá Partner Hub</span>
+            <button
+              type="button"
+              aria-label="Khám phá hợp tác"
+              onClick={onBannerAction}
+              className="w-8 h-8 rounded-full bg-white text-slate-800 flex items-center justify-center shrink-0 shadow-md hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+            >
+              <ArrowRight className="w-4 h-4 text-emerald-700" />
+            </button>
+          </div>
         </div>
       </div>
 

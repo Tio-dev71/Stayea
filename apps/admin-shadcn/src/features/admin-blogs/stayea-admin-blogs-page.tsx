@@ -106,7 +106,15 @@ function parseDriveUrl(input: string): { convertedUrl: string; isDrive: boolean 
   return { convertedUrl: trimmed, isDrive: false }
 }
 
-export function StayeaAdminBlogsPage() {
+interface StayeaAdminBlogsPageProps {
+  onNavigateTab?: (tab: string) => void
+  onLogout?: () => void
+}
+
+export function StayeaAdminBlogsPage({
+  onNavigateTab,
+  onLogout,
+}: StayeaAdminBlogsPageProps = {}) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [blogs, setBlogs] = useState<BlogArticleItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -352,20 +360,22 @@ export function StayeaAdminBlogsPage() {
         searchPlaceholder="Tìm kiếm bài viết, cẩm nang, tác giả..."
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onSearch={(q) => setSearchQuery(q)}
+        onLogout={onLogout}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* 2. Responsive Sidebar Drawer */}
-        <div
-          className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <StayeaAdminSidebar activeTab="bai-viet-blogs" />
+      {/* 2. Main Body with Sidebar + Content */}
+      <div className="flex-1 flex overflow-hidden min-w-0">
+        {/* Left Sidebar */}
+        <div className={`${sidebarOpen ? "block" : "hidden"} lg:block`}>
+          <StayeaAdminSidebar
+            activeTab="bai-viet-blogs"
+            onSelectTab={onNavigateTab}
+          />
         </div>
 
-        {/* 3. Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Scrollable Content Container */}
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           {/* Top Title & Action Bar */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -611,11 +621,12 @@ export function StayeaAdminBlogsPage() {
               })}
             </div>
           )}
-        </main>
-      </div>
 
-      {/* 4. Footer */}
-      <StayeaAdminFooter />
+          {/* 4. Footer */}
+          <StayeaAdminFooter />
+        </div>
+      </main>
+    </div>
 
       {/* CREATE / EDIT BLOG MODAL */}
       {isModalOpen && (

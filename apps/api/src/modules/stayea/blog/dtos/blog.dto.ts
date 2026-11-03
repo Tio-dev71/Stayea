@@ -89,3 +89,4 @@ export class UpdateBlogDto {
   @IsOptional()
   isPinned?: boolean
 }
+

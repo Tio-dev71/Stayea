@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from "@nestjs/common"
+import { ConflictException } from "@nestjs/common"
 import { describe, expect, it, vi } from "vitest"
 
 import { StayeaPmsService } from "@/modules/stayea/pms/stayea-pms.service"
@@ -130,7 +130,7 @@ describe("StayeaPmsService", () => {
     )
 
     expect(result.item).toBeDefined()
-    expect(result.item.amount).toBe("40000")
+    expect(result.item?.amount).toBe("40000")
     expect(mockTx.update).toHaveBeenCalled() // updates stock and folio
   })
 
@@ -200,7 +200,7 @@ describe("StayeaPmsService", () => {
       "Lễ tân ca sáng"
     )
 
-    expect(result.reservation.status).toBe("checked_out")
+    expect(result.reservation?.status).toBe("checked_out")
     expect(mockTx.update).toHaveBeenCalled() // updates room to vacant_dirty & folio to closed
   })
 })

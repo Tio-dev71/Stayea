@@ -200,6 +200,191 @@ export const PHU_QUOC_DESTINATIONS: DestinationSuggestion[] = [
   },
 ]
 
+export interface PmsRoomType {
+  id: string
+  partnerId: string
+  serviceId?: string | null
+  name: string
+  code: string
+  basePrice: string | number
+  hourlyPrice?: string | number
+  maxOccupancy: number
+  maxAdults: number
+  maxChildren: number
+  amenities: string[]
+  description?: string | null
+  createdAt?: string
+}
+
+export interface PmsRoom {
+  id: string
+  partnerId: string
+  roomTypeId: string
+  roomNumber: string
+  floor: string
+  status: "vacant_clean" | "vacant_dirty" | "occupied" | "reserved" | "maintenance"
+  housekeepingStatus: "clean" | "dirty" | "cleaning" | "inspecting"
+  housekeepingAssignedTo?: string | null
+  housekeepingUpdatedAt?: string | null
+  note?: string | null
+  roomTypeName?: string
+  roomTypeCode?: string
+  basePrice?: string | number
+  maxOccupancy?: number
+}
+
+export interface PmsReservation {
+  id: string
+  partnerId: string
+  bookingId?: string | null
+  roomId?: string | null
+  roomTypeId: string
+  reservationCode: string
+  channel: "direct_walkin" | "direct_phone" | "stayea_marketplace" | "ota_other"
+  status: "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled" | "no_show"
+  guestName: string
+  guestPhone: string
+  guestEmail?: string | null
+  guestIdNumber?: string | null
+  guestCount: number
+  adultsCount: number
+  childrenCount: number
+  expectedCheckIn: string
+  expectedCheckOut: string
+  actualCheckIn?: string | null
+  actualCheckOut?: string | null
+  roomRate: string | number
+  depositAmount: string | number
+  depositPaymentMethod?: string | null
+  specialRequests?: string | null
+  internalNotes?: string | null
+  checkedInBy?: string | null
+  checkedOutBy?: string | null
+  roomNumber?: string
+  roomTypeName?: string
+  folioId?: string
+  folioTotal?: string | number
+  folioPaid?: string | number
+  folioRemaining?: string | number
+  createdAt: string
+}
+
+export interface PmsFolioItem {
+  id: string
+  folioId: string
+  serviceItemId?: string | null
+  description: string
+  quantity: string | number
+  unitPrice: string | number
+  amount: string | number
+  itemType: "room_charge" | "minibar" | "laundry" | "fnb" | "spa" | "surcharge" | "discount" | "custom"
+  isCancelled: boolean
+  cancellationReason?: string | null
+  cancelledAt?: string | null
+  cancelledBy?: string | null
+  note?: string | null
+  recordedBy: string
+  recordedAt: string
+}
+
+export interface PmsFolioPayment {
+  id: string
+  folioId: string
+  amount: string | number
+  paymentMethod: "cash" | "bank_transfer" | "credit_card" | "stayea_prepaid"
+  isDeposit: boolean
+  referenceCode?: string | null
+  note?: string | null
+  recordedBy: string
+  recordedAt: string
+}
+
+export interface PmsFolio {
+  id: string
+  reservationId: string
+  partnerId: string
+  folioNumber: string
+  roomCharges: string | number
+  serviceCharges: string | number
+  surcharges: string | number
+  discountAmount: string | number
+  totalAmount: string | number
+  paidAmount: string | number
+  remainingBalance: string | number
+  status: "open" | "closed" | "cancelled"
+  closedAt?: string | null
+  closedBy?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PmsFolioDetails {
+  folio: PmsFolio
+  items: PmsFolioItem[]
+  payments: PmsFolioPayment[]
+  reservation: PmsReservation
+}
+
+export interface PmsServiceItem {
+  id: string
+  partnerId: string
+  category: "minibar_drink" | "minibar_food" | "laundry" | "fnb" | "spa" | "transport" | "surcharge" | "other"
+  name: string
+  code: string
+  unit: string
+  sellingPrice: string | number
+  costPrice?: string | number | null
+  trackInventory: boolean
+  currentStock: number
+  minStockAlert: number
+  isActive: boolean
+}
+
+export interface PmsInventoryTransaction {
+  id: string
+  partnerId: string
+  itemId: string
+  transactionType: "in" | "out_sale" | "out_loss" | "adjustment"
+  quantity: number
+  unitCost?: string | number | null
+  previousStock: number
+  newStock: number
+  referenceFolioId?: string | null
+  reason: string
+  performedBy: string
+  createdAt: string
+  itemName?: string
+  itemCode?: string
+  itemUnit?: string
+}
+
+export interface PmsOperationalReports {
+  roomsSummary: {
+    totalRooms: number
+    occupiedRooms: number
+    vacantClean: number
+    vacantDirty: number
+    reserved: number
+    maintenance: number
+    occupancyRate: number
+  }
+  todayOperations: {
+    inHouse: number
+    arrivalsToday: number
+    departuresToday: number
+  }
+  financialSummary: {
+    totalRoomRevenue: number
+    totalServiceRevenue: number
+    totalSurcharges: number
+    totalDiscounts: number
+    totalRevenue: number
+    totalCollected: number
+    totalReceivables: number
+  }
+  lowStockItems: PmsServiceItem[]
+}
+
 class StayeaApiService {
   private baseUrl = "/api/stayea"
 
@@ -2287,6 +2472,291 @@ class StayeaApiService {
       method: "DELETE",
     })
     return res.ok
+  }
+
+  // -------------------------------------------------------------
+  // PMS (Property Management System) & Hotel Operations APIs
+  // -------------------------------------------------------------
+
+  async getPmsRoomTypes(partnerId?: string): Promise<PmsRoomType[]> {
+    try {
+      const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/pms/room-types${q}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async createPmsRoomType(dto: Partial<PmsRoomType>, partnerId?: string): Promise<PmsRoomType> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/room-types${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tạo hạng phòng")
+    return json.data || json
+  }
+
+  async getPmsRooms(
+    partnerId?: string,
+    query?: { floor?: string; status?: string; housekeepingStatus?: string }
+  ): Promise<PmsRoom[]> {
+    try {
+      const sp = new URLSearchParams()
+      if (partnerId) sp.set("partnerId", partnerId)
+      if (query?.floor) sp.set("floor", query.floor)
+      if (query?.status) sp.set("status", query.status)
+      if (query?.housekeepingStatus) sp.set("housekeepingStatus", query.housekeepingStatus)
+      const q = sp.toString() ? `?${sp.toString()}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/pms/rooms${q}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async createPmsRoom(dto: Partial<PmsRoom>, partnerId?: string): Promise<PmsRoom> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/rooms${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tạo phòng")
+    return json.data || json
+  }
+
+  async updatePmsRoomStatus(
+    roomId: string,
+    dto: { status?: string; housekeepingStatus?: string; housekeepingAssignedTo?: string; note?: string },
+    partnerId?: string
+  ): Promise<PmsRoom> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/rooms/${roomId}/status${q}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể cập nhật trạng thái phòng")
+    return json.data || json
+  }
+
+  async getPmsReservations(
+    partnerId?: string,
+    query?: { status?: string; date?: string; roomId?: string }
+  ): Promise<PmsReservation[]> {
+    try {
+      const sp = new URLSearchParams()
+      if (partnerId) sp.set("partnerId", partnerId)
+      if (query?.status) sp.set("status", query.status)
+      if (query?.date) sp.set("date", query.date)
+      if (query?.roomId) sp.set("roomId", query.roomId)
+      const q = sp.toString() ? `?${sp.toString()}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/pms/reservations${q}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async createPmsReservation(dto: any, partnerId?: string): Promise<PmsReservation> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/reservations${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tạo lượt đặt phòng")
+    return json.data || json
+  }
+
+  async checkInPmsReservation(id: string, dto: any, partnerId?: string): Promise<PmsReservation> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/reservations/${id}/check-in${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Nhận phòng thất bại")
+    return json.data || json
+  }
+
+  async checkOutPmsReservation(
+    id: string,
+    dto: any,
+    partnerId?: string
+  ): Promise<{ reservation: PmsReservation; folio: PmsFolio }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/reservations/${id}/check-out${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Trả phòng thất bại")
+    return json.data || json
+  }
+
+  async transferPmsRoom(
+    id: string,
+    dto: { targetRoomId: string; reason: string },
+    partnerId?: string
+  ): Promise<PmsReservation> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/reservations/${id}/transfer-room${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Đổi phòng thất bại")
+    return json.data || json
+  }
+
+  async getPmsFolio(reservationId: string, partnerId?: string): Promise<PmsFolioDetails> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/reservations/${reservationId}/folio${q}`)
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tải hóa đơn phòng")
+    return json.data || json
+  }
+
+  async postPmsFolioItem(
+    reservationId: string,
+    dto: any,
+    partnerId?: string
+  ): Promise<{ item: PmsFolioItem; folio: PmsFolio }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/reservations/${reservationId}/folio/items${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể ghi nhận dịch vụ vào phòng")
+    return json.data || json
+  }
+
+  async cancelPmsFolioItem(
+    folioItemId: string,
+    reason: string,
+    partnerId?: string
+  ): Promise<{ cancelledItem: PmsFolioItem; folio: PmsFolio }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/folio-items/${folioItemId}/cancel${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể hủy dòng phí")
+    return json.data || json
+  }
+
+  async recordPmsFolioPayment(
+    folioId: string,
+    dto: any,
+    partnerId?: string
+  ): Promise<{ payment: PmsFolioPayment; folio: PmsFolio }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/folios/${folioId}/payments${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể ghi nhận thanh toán")
+    return json.data || json
+  }
+
+  async getPmsServiceItems(partnerId?: string, category?: string): Promise<PmsServiceItem[]> {
+    try {
+      const sp = new URLSearchParams()
+      if (partnerId) sp.set("partnerId", partnerId)
+      if (category) sp.set("category", category)
+      const q = sp.toString() ? `?${sp.toString()}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/pms/service-items${q}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async createPmsServiceItem(dto: any, partnerId?: string): Promise<PmsServiceItem> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/service-items${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tạo mặt hàng dịch vụ")
+    return json.data || json
+  }
+
+  async adjustPmsStock(
+    dto: any,
+    partnerId?: string
+  ): Promise<{ item: PmsServiceItem; transaction: PmsInventoryTransaction }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/inventory/adjust${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể điều chỉnh tồn kho")
+    return json.data || json
+  }
+
+  async getPmsInventoryTransactions(partnerId?: string, itemId?: string, limit = 40): Promise<any[]> {
+    try {
+      const sp = new URLSearchParams()
+      if (partnerId) sp.set("partnerId", partnerId)
+      if (itemId) sp.set("itemId", itemId)
+      sp.set("limit", String(limit))
+      const res = await this.fetchWithAuth(`/api/stayea/pms/inventory/transactions?${sp.toString()}`)
+      if (!res.ok) return []
+      const json = await res.json()
+      return json.data || json || []
+    } catch {
+      return []
+    }
+  }
+
+  async getPmsOperationalReports(
+    partnerId?: string,
+    fromDate?: string,
+    toDate?: string
+  ): Promise<PmsOperationalReports | null> {
+    try {
+      const sp = new URLSearchParams()
+      if (partnerId) sp.set("partnerId", partnerId)
+      if (fromDate) sp.set("fromDate", fromDate)
+      if (toDate) sp.set("toDate", toDate)
+      const q = sp.toString() ? `?${sp.toString()}` : ""
+      const res = await this.fetchWithAuth(`/api/stayea/pms/reports/operational${q}`)
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.data || json || null
+    } catch {
+      return null
+    }
   }
 }
 

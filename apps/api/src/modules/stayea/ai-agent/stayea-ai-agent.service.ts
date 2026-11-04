@@ -428,42 +428,42 @@ export class StayeaAiAgentService {
     const staysText =
       stays.length > 0
         ? stays
-            .map(
-              (s) =>
-                `  - [MÃ DỊCH VỤ: ${s.id}] "${s.title}" — Giá niêm yết: ${s.price.toLocaleString("vi-VN")} ₫/${s.unit} — Khu vực: ${s.location}. ${s.description}`
-            )
-            .join("\n")
+          .map(
+            (s) =>
+              `  - [MÃ DỊCH VỤ: ${s.id}] "${s.title}" — Giá niêm yết: ${s.price.toLocaleString("vi-VN")} ₫/${s.unit} — Khu vực: ${s.location}. ${s.description}`
+          )
+          .join("\n")
         : "  - Hiện các cơ sở lưu trú đang được quản trị viên cập nhật."
 
     const transportsText =
       transports.length > 0
         ? transports
-            .map(
-              (t) =>
-                `  - [MÃ DỊCH VỤ: ${t.id}] "${t.title}" — Giá niêm yết: ${t.price.toLocaleString("vi-VN")} ₫/${t.unit} — Khu vực: ${t.location}. ${t.description}`
-            )
-            .join("\n")
+          .map(
+            (t) =>
+              `  - [MÃ DỊCH VỤ: ${t.id}] "${t.title}" — Giá niêm yết: ${t.price.toLocaleString("vi-VN")} ₫/${t.unit} — Khu vực: ${t.location}. ${t.description}`
+          )
+          .join("\n")
         : "  - Hiện các dòng xe tự lái / đưa đón sân bay đang được đối tác chuẩn bị ra mắt."
 
     const experiencesText =
       experiences.length > 0
         ? experiences
-            .map(
-              (e) =>
-                `  - [MÃ DỊCH VỤ: ${e.id}] "${e.title}" — Giá niêm yết: ${e.price.toLocaleString("vi-VN")} ₫/${e.unit} — Khu vực: ${e.location}. ${e.description}`
-            )
-            .join("\n")
+          .map(
+            (e) =>
+              `  - [MÃ DỊCH VỤ: ${e.id}] "${e.title}" — Giá niêm yết: ${e.price.toLocaleString("vi-VN")} ₫/${e.unit} — Khu vực: ${e.location}. ${e.description}`
+          )
+          .join("\n")
         : "  - Hiện các tour cano 4 đảo / ngắm hoàng hôn đang được đối tác chuẩn bị ra mắt."
 
     const combosText =
       combos.length > 0
         ? `\n4. GÓI DỊCH VỤ COMBO:\n` +
-          combos
-            .map(
-              (c) =>
-                `  - [MÃ DỊCH VỤ: ${c.id}] "${c.title}" — Giá niêm yết: ${c.price.toLocaleString("vi-VN")} ₫/${c.unit} — ${c.description}`
-            )
-            .join("\n")
+        combos
+          .map(
+            (c) =>
+              `  - [MÃ DỊCH VỤ: ${c.id}] "${c.title}" — Giá niêm yết: ${c.price.toLocaleString("vi-VN")} ₫/${c.unit} — ${c.description}`
+          )
+          .join("\n")
         : ""
 
     return `${basePrompt}

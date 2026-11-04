@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import {
+  BedDouble,
   Bell,
   BookOpen,
   Building,
@@ -28,8 +29,8 @@ interface PartnerHeaderProps {
   currentProfile: PartnerProfileData | null
   profiles: PartnerProfileData[]
   onSelectProfile: (profile: PartnerProfileData) => void
-  activeTab: "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings"
-  onSelectTab: (tab: "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings") => void
+  activeTab: "overview" | "services" | "inventory" | "pms" | "orders" | "messages" | "blogs" | "settings"
+  onSelectTab: (tab: "overview" | "services" | "inventory" | "pms" | "orders" | "messages" | "blogs" | "settings") => void
   pendingOrdersCount?: number
   onNavigateHome?: () => void
   onLogout?: () => void
@@ -403,6 +404,19 @@ export function PartnerHeader({
             >
               <Layers className="w-4 h-4" />
               <span>Lịch & Tồn kho</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onSelectTab("pms")}
+              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+                activeTab === "pms"
+                  ? "bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-bold"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-emerald-950/30"
+              }`}
+            >
+              <BedDouble className="w-4 h-4 text-emerald-400" />
+              <span>Vận Hành Khách Sạn & PMS</span>
             </button>
 
             <button

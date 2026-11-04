@@ -82,3 +82,4 @@ export type StayeaNotification = typeof stayeaNotificationsTable.$inferSelect
 export type NewStayeaNotification = typeof stayeaNotificationsTable.$inferInsert
 export type StayeaNotificationRead = typeof stayeaNotificationReadsTable.$inferSelect
 export type NewStayeaNotificationRead = typeof stayeaNotificationReadsTable.$inferInsert
+

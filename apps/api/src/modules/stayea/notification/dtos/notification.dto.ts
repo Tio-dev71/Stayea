@@ -93,3 +93,4 @@ export class MarkReadDto {
   @IsEnum(["user", "partner", "admin"])
   readerRole: "user" | "partner" | "admin"
 }
+

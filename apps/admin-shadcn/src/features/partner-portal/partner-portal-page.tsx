@@ -23,6 +23,7 @@ import { PartnerServicesManager } from "./components/partner-services-manager"
 import { PartnerCreateProfileModal } from "./components/partner-create-profile-modal"
 import { PartnerAdminChat } from "./components/partner-admin-chat"
 import { PartnerBlogsManager } from "./components/partner-blogs-manager"
+import { PartnerPmsManager } from "./components/partner-pms-manager"
 import type {
   PartnerOrderData,
   PartnerProfileData,
@@ -30,7 +31,7 @@ import type {
 } from "./types"
 
 interface PartnerPortalPageProps {
-  initialTab?: "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings"
+  initialTab?: "overview" | "services" | "inventory" | "pms" | "orders" | "messages" | "blogs" | "settings"
   onNavigateHome?: () => void
   onLogout?: () => void
 }
@@ -75,20 +76,20 @@ export function PartnerPortalPage({
 
   // Tab State with URL param & localStorage persistence across F5 refreshes
   const [activeTab, setActiveTabState] = useState<
-    "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings"
+    "overview" | "services" | "inventory" | "pms" | "orders" | "messages" | "blogs" | "settings"
   >(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
       const tabParam = params.get("tab")
-      if (tabParam && ["overview", "services", "inventory", "orders", "messages", "blogs", "settings"].includes(tabParam)) {
+      if (tabParam && ["overview", "services", "inventory", "pms", "orders", "messages", "blogs", "settings"].includes(tabParam)) {
         return tabParam as any
       }
       const hash = window.location.hash.replace("#", "")
-      if (hash && ["overview", "services", "inventory", "orders", "messages", "blogs", "settings"].includes(hash)) {
+      if (hash && ["overview", "services", "inventory", "pms", "orders", "messages", "blogs", "settings"].includes(hash)) {
         return hash as any
       }
       const saved = localStorage.getItem("stayea_hub_active_tab")
-      if (saved && ["overview", "services", "inventory", "orders", "messages", "blogs", "settings"].includes(saved)) {
+      if (saved && ["overview", "services", "inventory", "pms", "orders", "messages", "blogs", "settings"].includes(saved)) {
         return saved as any
       }
     }
@@ -96,7 +97,7 @@ export function PartnerPortalPage({
   })
 
   const setActiveTab = (
-    tab: "overview" | "services" | "inventory" | "orders" | "messages" | "blogs" | "settings"
+    tab: "overview" | "services" | "inventory" | "pms" | "orders" | "messages" | "blogs" | "settings"
   ) => {
     setActiveTabState(tab)
     if (typeof window !== "undefined") {
@@ -754,6 +755,11 @@ export function PartnerPortalPage({
             {/* TAB 3: INVENTORY CALENDAR */}
             {activeTab === "inventory" && (
               <PartnerInventoryCalendar services={currentServices} />
+            )}
+
+            {/* TAB: PMS HOTEL & HOMESTAY OPERATIONS */}
+            {activeTab === "pms" && (
+              <PartnerPmsManager profile={currentProfile} />
             )}
 
             {/* TAB 4: ORDERS MANAGER */}

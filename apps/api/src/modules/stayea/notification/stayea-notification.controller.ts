@@ -98,3 +98,4 @@ export class StayeaNotificationController {
     return this.notifService.deleteNotification(id)
   }
 }
+

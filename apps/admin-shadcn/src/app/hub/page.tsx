@@ -47,10 +47,10 @@ export default function HubPage() {
 
   if (checkingAuth || !isAuth) {
     return (
-      <div className="min-h-screen bg-[#070e0d] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-slate-400">Đang kiểm tra quyền truy cập Partner Hub...</p>
+          <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-slate-500 font-medium">Đang kiểm tra quyền truy cập Partner Hub...</p>
         </div>
       </div>
     )

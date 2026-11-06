@@ -6,12 +6,13 @@ import { CheckCircle2, ChevronRight, Info } from "lucide-react"
 interface RichTextPreviewProps {
   content: string
   className?: string
+  variant?: "light" | "dark"
 }
 
 /**
  * Parses inline formatting like **bold** and *italic* safely into React elements
  */
-function parseInlineFormatting(text: string): React.ReactNode[] {
+function parseInlineFormatting(text: string, isLight: boolean = true): React.ReactNode[] {
   // Regex to split by bold (**text**) or italic (*text*)
   const parts: React.ReactNode[] = []
   let remaining = text
@@ -32,7 +33,10 @@ function parseInlineFormatting(text: string): React.ReactNode[] {
         parts.push(remaining.slice(0, boldIdx))
       }
       parts.push(
-        <strong key={`bold-${keyIdx++}`} className="font-bold text-white tracking-wide">
+        <strong
+          key={`bold-${keyIdx++}`}
+          className={`font-bold tracking-wide ${isLight ? "text-slate-900 font-extrabold" : "text-white"}`}
+        >
           {boldMatch![1]}
         </strong>
       )
@@ -42,7 +46,10 @@ function parseInlineFormatting(text: string): React.ReactNode[] {
         parts.push(remaining.slice(0, italicIdx))
       }
       parts.push(
-        <em key={`italic-${keyIdx++}`} className="italic text-slate-300">
+        <em
+          key={`italic-${keyIdx++}`}
+          className={`italic ${isLight ? "text-slate-600" : "text-slate-300"}`}
+        >
           {italicMatch![1]}
         </em>
       )
@@ -59,10 +66,12 @@ function parseInlineFormatting(text: string): React.ReactNode[] {
 /**
  * Lightweight, zero-dependency Markdown / Rich-text renderer for service descriptions
  */
-export function RichTextPreview({ content, className = "" }: RichTextPreviewProps) {
+export function RichTextPreview({ content, className = "", variant = "light" }: RichTextPreviewProps) {
+  const isLight = variant === "light"
+
   if (!content || !content.trim()) {
     return (
-      <div className={`text-xs text-slate-500 italic py-4 text-center ${className}`}>
+      <div className={`text-xs ${isLight ? "text-slate-400" : "text-slate-500"} italic py-4 text-center ${className}`}>
         Chưa có nội dung mô tả để hiển thị xem trước.
       </div>
     )
@@ -82,9 +91,18 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
       elements.push(
         <ul key={`ul-${elements.length}`} className="my-2 space-y-1.5 pl-1">
           {currentList.items.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-xs text-slate-300 leading-relaxed">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
-              <span>{parseInlineFormatting(item)}</span>
+            <li
+              key={idx}
+              className={`flex items-start gap-2 text-xs leading-relaxed ${
+                isLight ? "text-slate-700" : "text-slate-300"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
+                  isLight ? "bg-emerald-600" : "bg-emerald-400"
+                }`}
+              />
+              <span>{parseInlineFormatting(item, isLight)}</span>
             </li>
           ))}
         </ul>
@@ -93,11 +111,22 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
       elements.push(
         <ol key={`ol-${elements.length}`} className="my-2 space-y-1.5 pl-1">
           {currentList.items.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-xs text-slate-300 leading-relaxed">
-              <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold flex items-center justify-center mt-0.5 shrink-0 border border-emerald-500/30">
+            <li
+              key={idx}
+              className={`flex items-start gap-2 text-xs leading-relaxed ${
+                isLight ? "text-slate-700" : "text-slate-300"
+              }`}
+            >
+              <span
+                className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center mt-0.5 shrink-0 border ${
+                  isLight
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                }`}
+              >
                 {idx + 1}
               </span>
-              <span>{parseInlineFormatting(item)}</span>
+              <span>{parseInlineFormatting(item, isLight)}</span>
             </li>
           ))}
         </ol>
@@ -124,10 +153,14 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
       elements.push(
         <h4
           key={`h4-${i}`}
-          className="text-sm font-bold text-emerald-300 mt-4 mb-2 flex items-center gap-1.5 border-b border-slate-800 pb-1"
+          className={`text-sm font-bold mt-4 mb-2 flex items-center gap-1.5 border-b pb-1 ${
+            isLight
+              ? "text-emerald-800 border-slate-200"
+              : "text-emerald-300 border-slate-800"
+          }`}
         >
-          <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{parseInlineFormatting(title)}</span>
+          <ChevronRight className={`w-3.5 h-3.5 ${isLight ? "text-emerald-600" : "text-emerald-400"}`} />
+          <span>{parseInlineFormatting(title, isLight)}</span>
         </h4>
       )
       continue
@@ -140,9 +173,13 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
       elements.push(
         <h3
           key={`h3-${i}`}
-          className="text-base font-bold text-white mt-4 mb-2 border-b border-emerald-900/60 pb-1.5"
+          className={`text-base font-bold mt-4 mb-2 border-b pb-1.5 ${
+            isLight
+              ? "text-slate-900 border-emerald-600/30"
+              : "text-white border-emerald-900/60"
+          }`}
         >
-          {parseInlineFormatting(title)}
+          {parseInlineFormatting(title, isLight)}
         </h3>
       )
       continue
@@ -155,10 +192,14 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
       elements.push(
         <div
           key={`quote-${i}`}
-          className="my-3 p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 border-l-4 border-l-emerald-400 text-xs text-emerald-200/90 leading-relaxed flex items-start gap-2.5 shadow-xs"
+          className={`my-3 p-3 rounded-xl border border-l-4 text-xs leading-relaxed flex items-start gap-2.5 shadow-xs ${
+            isLight
+              ? "bg-emerald-50/70 border-emerald-200 border-l-emerald-600 text-emerald-950"
+              : "bg-emerald-950/30 border-emerald-800/40 border-l-emerald-400 text-emerald-200/90"
+          }`}
         >
-          <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-          <div className="flex-1">{parseInlineFormatting(calloutText)}</div>
+          <Info className={`w-4 h-4 shrink-0 mt-0.5 ${isLight ? "text-emerald-600" : "text-emerald-400"}`} />
+          <div className="flex-1">{parseInlineFormatting(calloutText, isLight)}</div>
         </div>
       )
       continue
@@ -169,9 +210,14 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
       flushList()
       const checkText = trimmed.replace(/^(✅\s+|- \[x\]\s+)/, "")
       elements.push(
-        <div key={`check-${i}`} className="flex items-center gap-2 text-xs text-slate-200 py-1">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span>{parseInlineFormatting(checkText)}</span>
+        <div
+          key={`check-${i}`}
+          className={`flex items-center gap-2 text-xs py-1 ${
+            isLight ? "text-slate-800 font-medium" : "text-slate-200"
+          }`}
+        >
+          <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isLight ? "text-emerald-600" : "text-emerald-400"}`} />
+          <span>{parseInlineFormatting(checkText, isLight)}</span>
         </div>
       )
       continue
@@ -205,8 +251,13 @@ export function RichTextPreview({ content, className = "" }: RichTextPreviewProp
     // Normal paragraph
     flushList()
     elements.push(
-      <p key={`p-${i}`} className="text-xs text-slate-300 leading-relaxed my-1">
-        {parseInlineFormatting(trimmed)}
+      <p
+        key={`p-${i}`}
+        className={`text-xs leading-relaxed my-1 ${
+          isLight ? "text-slate-700" : "text-slate-300"
+        }`}
+      >
+        {parseInlineFormatting(trimmed, isLight)}
       </p>
     )
   }

@@ -459,3 +459,4 @@ export class StockAdjustmentDto {
   @IsNotEmpty()
   reason: string
 }
+

@@ -398,12 +398,12 @@ export function PartnerCreateServiceModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-emerald-900/60 rounded-2xl shadow-2xl p-5 sm:p-7 text-white my-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 sm:p-7 text-slate-800 my-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
               {businessType === "transport" ? (
                 <Car className="w-5 h-5" />
               ) : businessType === "tour" ? (
@@ -413,15 +413,15 @@ export function PartnerCreateServiceModal({
               )}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span>{isEditing ? "Chỉnh Sửa Dịch Vụ" : "Thêm Dịch Vụ Mới"}</span>
                 {isEditing && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md">
                     Cập nhật
                   </span>
                 )}
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {businessType === "transport"
                   ? "Khai báo đội xe, số lượng xe sẵn sàng phục vụ và chính sách thuê"
                   : businessType === "tour"
@@ -432,7 +432,7 @@ export function PartnerCreateServiceModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -442,8 +442,8 @@ export function PartnerCreateServiceModal({
         <form onSubmit={handleSubmit} className="mt-5 space-y-5">
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-              Tên dịch vụ / Xe / Phòng <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Tên dịch vụ / Xe / Phòng <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -457,25 +457,25 @@ export function PartnerCreateServiceModal({
               }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
             />
           </div>
 
-          {/* SỨC CHỨA & QUẢN LÝ SỐ LƯỢNG TỒN KHO (Crucial Feature requested by User) */}
-          <div className="p-4 rounded-xl bg-emerald-950/25 border border-emerald-800/40 space-y-3">
+          {/* SỨC CHỨA & QUẢN LÝ SỐ LƯỢNG TỒN KHO */}
+          <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
+              <label className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-emerald-700" />
                 <span>Số lượng tồn kho & Sức chứa sẵn sàng phục vụ</span>
               </label>
-              <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-300">
                 Tự động trừ tồn kho khi khách đặt
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
               <div className="sm:col-span-1">
-                <label className="block text-xs text-slate-300 mb-1 font-medium">
+                <label className="block text-xs text-slate-700 mb-1 font-semibold">
                   {businessType === "transport"
                     ? "Tổng số xe sẵn có trong kho:"
                     : businessType === "tour"
@@ -490,17 +490,17 @@ export function PartnerCreateServiceModal({
                     required
                     value={totalUnits}
                     onChange={(e) => setTotalUnits(Math.max(1, Number(e.target.value)))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-emerald-700/60 text-base font-bold text-emerald-300 text-center focus:outline-none focus:border-emerald-400"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-base font-extrabold text-emerald-800 text-center focus:outline-none focus:border-emerald-500 shadow-xs"
                   />
-                  <span className="text-xs font-semibold text-slate-400 shrink-0">
+                  <span className="text-xs font-semibold text-slate-600 shrink-0">
                     {businessType === "transport" ? "xe" : businessType === "tour" ? "vé/chỗ" : "phòng"}
                   </span>
                 </div>
               </div>
 
-              <div className="sm:col-span-2 text-xs text-slate-300 bg-slate-900/60 p-3 rounded-xl border border-slate-800 leading-relaxed">
+              <div className="sm:col-span-2 text-xs text-slate-700 bg-white p-3 rounded-xl border border-emerald-100 leading-relaxed shadow-2xs">
                 💡 <strong>Đối tác không cần đăng nhiều bài trùng lặp!</strong>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-slate-500 mt-1">
                   Ví dụ: Bạn có <strong>{totalUnits || 5} chiếc xe</strong> cùng loại. Chỉ cần đăng 1 bài duy nhất và đặt số lượng là <strong>{totalUnits || 5}</strong>. Khi khách thứ nhất đặt xe ngày 15/11, hệ thống hiển thị còn <strong>{(totalUnits || 5) - 1} xe</strong> để đón tiếp tiếp tục khách thứ 2, thứ 3... Cho đến khi hết sạch {totalUnits || 5} xe mới tự động báo kín lịch.
                 </p>
               </div>
@@ -510,19 +510,19 @@ export function PartnerCreateServiceModal({
           {/* Pricing & Unit Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1">
-                Giá niêm yết (₫) <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Giá niêm yết (₫) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="number"
                 required
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white font-medium focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 font-semibold focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Giá gốc chưa giảm (₫)
               </label>
               <input
@@ -530,26 +530,26 @@ export function PartnerCreateServiceModal({
                 placeholder="Để trống nếu không giảm"
                 value={originalPrice}
                 onChange={(e) => setOriginalPrice(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Đơn vị tính
               </label>
               <input
                 type="text"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
           </div>
 
           {/* Location */}
           <div>
-            <label className="block text-xs font-semibold text-slate-200 mb-1">
-              Vị trí / Địa chỉ giao nhận <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Vị trí / Địa chỉ giao nhận <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
@@ -559,19 +559,19 @@ export function PartnerCreateServiceModal({
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Ví dụ: 124 Trần Hưng Đạo, Dương Đông, Phú Quốc hoặc Giao nhận tận nơi"
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
           </div>
 
-          {/* BỘ SƯU TẬP ĐA HÌNH ẢNH (Multi-Image Gallery Album) */}
-          <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/80 space-y-3.5">
+          {/* BỘ SƯU TẬP ĐA HÌNH ẢNH */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <label className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                <ImageIcon className="w-4 h-4 text-emerald-400" />
+              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-emerald-700" />
                 <span>Bộ sưu tập hình ảnh ({images.length}/10 ảnh)</span>
               </label>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-500">
                 Ảnh đầu tiên (👑) sẽ là ảnh bìa đại diện
               </span>
             </div>
@@ -594,12 +594,12 @@ export function PartnerCreateServiceModal({
                       handleAddUrl()
                     }
                   }}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
                 />
                 <button
                   type="button"
                   onClick={handleAddUrl}
-                  className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shrink-0 transition-colors shadow-xs cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Thêm ảnh</span>
@@ -619,16 +619,16 @@ export function PartnerCreateServiceModal({
                   type="button"
                   disabled={isUploading || images.length >= 10}
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-full min-h-[38px] px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="w-full h-full min-h-[38px] px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
                       <span>Đang tải...</span>
                     </>
                   ) : (
                     <>
-                      <FolderUp className="w-3.5 h-3.5 text-emerald-400" />
+                      <FolderUp className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Tải ảnh từ máy</span>
                     </>
                   )}
@@ -637,8 +637,8 @@ export function PartnerCreateServiceModal({
             </div>
 
             {isDriveDetected && (
-              <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/40 p-2 rounded-lg border border-emerald-800/40">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                 <span>Đã nhận diện link Google Drive! Nhấn &quot;Thêm ảnh&quot; để tự động nạp ảnh qua CDN tốc độ cao.</span>
               </div>
             )}
@@ -651,10 +651,10 @@ export function PartnerCreateServiceModal({
                   return (
                     <div
                       key={idx}
-                      className={`group relative rounded-xl overflow-hidden aspect-4/3 bg-slate-900 border transition-all ${
+                      className={`group relative rounded-xl overflow-hidden aspect-4/3 bg-slate-100 border transition-all ${
                         isCover
-                          ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-lg"
-                          : "border-slate-700 hover:border-slate-500"
+                          ? "border-emerald-500 ring-2 ring-emerald-300 shadow-md"
+                          : "border-slate-200 hover:border-slate-400"
                       }`}
                     >
                       <img
@@ -669,19 +669,19 @@ export function PartnerCreateServiceModal({
 
                       {/* Cover Badge */}
                       {isCover && (
-                        <div className="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
+                        <div className="absolute top-1.5 left-1.5 bg-emerald-700 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
                           <Crown className="w-2.5 h-2.5" />
                           <span>Ảnh bìa</span>
                         </div>
                       )}
 
                       {/* Overlay Actions on Hover */}
-                      <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
+                      <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1 backdrop-blur-2xs">
                         {!isCover && (
                           <button
                             type="button"
                             onClick={() => handleMakeCover(idx)}
-                            className="px-2 py-1 rounded bg-emerald-600/90 hover:bg-emerald-500 text-white text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer w-full justify-center"
+                            className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer w-full justify-center shadow-xs"
                           >
                             <Crown className="w-3 h-3" />
                             <span>Đặt làm bìa</span>
@@ -690,7 +690,7 @@ export function PartnerCreateServiceModal({
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(idx)}
-                          className="px-2 py-1 rounded bg-rose-600/90 hover:bg-rose-500 text-white text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer w-full justify-center"
+                          className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer w-full justify-center shadow-xs"
                         >
                           <Trash2 className="w-3 h-3" />
                           <span>Xóa ảnh</span>
@@ -701,7 +701,7 @@ export function PartnerCreateServiceModal({
                 })}
               </div>
             ) : (
-              <div className="py-6 text-center text-xs text-slate-500 border border-dashed border-slate-700 rounded-xl">
+              <div className="py-6 text-center text-xs text-slate-400 border border-dashed border-slate-300 rounded-xl bg-white">
                 Chưa có hình ảnh nào. Dán link hoặc bấm &quot;Tải ảnh từ máy&quot; để thêm bộ sưu tập.
               </div>
             )}
@@ -709,17 +709,17 @@ export function PartnerCreateServiceModal({
 
           {/* Business Type Specific Attributes */}
           {businessType === "transport" && (
-            <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-900/40 space-y-3">
-              <div className="text-xs font-bold text-blue-400 uppercase tracking-wider">
+            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-3">
+              <div className="text-xs font-bold text-blue-900 uppercase tracking-wider">
                 Đặc tính Phương tiện & Hộp số
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Phân loại xe</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Phân loại xe</label>
                   <select
                     value={vehicleType}
                     onChange={(e) => setVehicleType(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
                   >
                     <option value="Xe máy tay ga">Xe máy tay ga (Vision/AirBlade)</option>
                     <option value="Xe máy số">Xe máy số (Wave Alpha/Blade)</option>
@@ -730,22 +730,22 @@ export function PartnerCreateServiceModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Loại truyền động</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Loại truyền động</label>
                   <select
                     value={transmission}
                     onChange={(e) => setTransmission(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
                   >
                     <option value="Số tự động (AT)">Số tự động (AT)</option>
                     <option value="Số sàn (MT)">Số sàn (MT)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Hình thức</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Hình thức</label>
                   <select
                     value={hasDriver ? "yes" : "no"}
                     onChange={(e) => setHasDriver(e.target.value === "yes")}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
                   >
                     <option value="no">Khách tự lái</option>
                     <option value="yes">Có tài xế riêng phục vụ</option>
@@ -756,29 +756,29 @@ export function PartnerCreateServiceModal({
           )}
 
           {businessType === "homestay" && (
-            <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-900/40 space-y-3">
-              <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-3">
+              <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
                 Đặc tính Homestay / Villa
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Số phòng ngủ</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Số phòng ngủ</label>
                   <input
                     type="number"
                     min={1}
                     value={bedrooms}
                     onChange={(e) => setBedrooms(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Số khách tối đa</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Số khách tối đa</label>
                   <input
                     type="number"
                     min={1}
                     value={maxGuests}
                     onChange={(e) => setMaxGuests(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -786,51 +786,51 @@ export function PartnerCreateServiceModal({
           )}
 
           {businessType === "tour" && (
-            <div className="p-4 rounded-xl bg-amber-950/20 border border-amber-900/40 space-y-3">
-              <div className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+            <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3">
+              <div className="text-xs font-bold text-amber-900 uppercase tracking-wider">
                 Đặc tính Tour Trải Nghiệm
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Thời lượng tour</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Thời lượng tour</label>
                   <input
                     type="text"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     placeholder="Ví dụ: 8 tiếng hoặc 1 ngày"
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Khung giờ khởi hành</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Khung giờ khởi hành</label>
                   <input
                     type="text"
                     value={schedule}
                     onChange={(e) => setSchedule(e.target.value)}
                     placeholder="Ví dụ: 08:30 - 16:30 hàng ngày"
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          {/* TRÌNH SOẠN THẢO MÔ TẢ RICH TEXT & MARKDOWN TOOLBAR (Crucial Feature requested by User) */}
+          {/* TRÌNH SOẠN THẢO MÔ TẢ RICH TEXT & MARKDOWN TOOLBAR */}
           <div className="space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <label className="text-xs font-semibold text-slate-200">
+              <label className="text-xs font-semibold text-slate-700">
                 Mô tả chi tiết bài viết (Hỗ trợ định dạng in đậm, nghiêng, danh sách)
               </label>
 
               {/* Edit / Preview Tabs */}
-              <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-lg border border-slate-700">
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
                 <button
                   type="button"
                   onClick={() => setDescTab("edit")}
-                  className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
                     descTab === "edit"
-                      ? "bg-emerald-600 text-white"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-white text-emerald-800 shadow-xs border border-slate-200"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   <FileEdit className="w-3 h-3" />
@@ -839,10 +839,10 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => setDescTab("preview")}
-                  className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
                     descTab === "preview"
-                      ? "bg-emerald-600 text-white"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-white text-emerald-800 shadow-xs border border-slate-200"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   <Eye className="w-3 h-3" />
@@ -853,11 +853,11 @@ export function PartnerCreateServiceModal({
 
             {/* Markdown Toolbar */}
             {descTab === "edit" && (
-              <div className="flex items-center gap-1.5 p-2 bg-slate-800/90 border border-slate-700 rounded-t-xl flex-wrap">
+              <div className="flex items-center gap-1.5 p-2 bg-slate-100 border border-slate-200 rounded-t-xl flex-wrap">
                 <button
                   type="button"
                   onClick={() => insertFormatting("**", "**")}
-                  className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   title="In đậm (Bold)"
                 >
                   <Bold className="w-3.5 h-3.5" />
@@ -865,16 +865,16 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => insertFormatting("*", "*")}
-                  className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   title="In nghiêng (Italic)"
                 >
                   <Italic className="w-3.5 h-3.5" />
                 </button>
-                <div className="w-px h-4 bg-slate-700 mx-1" />
+                <div className="w-px h-4 bg-slate-300 mx-1" />
                 <button
                   type="button"
                   onClick={() => insertFormatting("- ")}
-                  className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   title="Gạch đầu dòng danh sách"
                 >
                   <List className="w-3.5 h-3.5" />
@@ -882,7 +882,7 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => insertFormatting("1. ")}
-                  className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   title="Danh sách số"
                 >
                   <ListOrdered className="w-3.5 h-3.5" />
@@ -890,7 +890,7 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => insertFormatting("> 💡 **Lưu ý**: ")}
-                  className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   title="Hộp lưu ý nổi bật"
                 >
                   <Info className="w-3.5 h-3.5" />
@@ -898,7 +898,7 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => insertFormatting("✅ ")}
-                  className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   title="Dấu tích tiện ích bao gồm"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -908,9 +908,9 @@ export function PartnerCreateServiceModal({
                   <button
                     type="button"
                     onClick={applyTemplate}
-                    className="px-2.5 py-1 rounded bg-emerald-950/70 hover:bg-emerald-900/60 border border-emerald-700/50 text-emerald-300 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                   >
-                    <Sparkles className="w-3 h-3 text-emerald-400" />
+                    <Sparkles className="w-3 h-3 text-emerald-600" />
                     <span>Chèn bài viết mẫu chuẩn</span>
                   </button>
                 </div>
@@ -925,27 +925,27 @@ export function PartnerCreateServiceModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Nhập mô tả chi tiết, tiện nghi, điều kiện giao xe, thủ tục hoặc nhấn 'Chèn bài viết mẫu chuẩn' phía trên..."
-                className="w-full px-3.5 py-2.5 rounded-b-xl bg-slate-800/80 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-b-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono leading-relaxed"
               />
             ) : (
-              <div className="p-4 rounded-xl bg-slate-950/90 border border-slate-800 min-h-[180px] max-h-[300px] overflow-y-auto">
-                <RichTextPreview content={description} />
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 min-h-[180px] max-h-[300px] overflow-y-auto">
+                <RichTextPreview content={description} variant="light" />
               </div>
             )}
           </div>
 
           {/* Modal Actions */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-950 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
             >
               {isEditing ? <Sparkles className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               <span>{isEditing ? "Lưu Thay Đổi Dịch Vụ" : "Đăng Bán Dịch Vụ"}</span>

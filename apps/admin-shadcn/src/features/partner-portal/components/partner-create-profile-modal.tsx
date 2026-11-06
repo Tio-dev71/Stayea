@@ -121,16 +121,16 @@ export function PartnerCreateProfileModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-6 text-white my-8">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 text-slate-800 my-8">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
               <Building className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Đăng Ký Cơ Sở Đối Tác Mới</h3>
-              <p className="text-xs text-slate-400">
+              <h3 className="text-base font-bold text-slate-900">Đăng Ký Cơ Sở Đối Tác Mới</h3>
+              <p className="text-xs text-slate-500">
                 Thêm thông tin homestay, đội xe hoặc tour du lịch tại Phú Quốc
               </p>
             </div>
@@ -138,7 +138,7 @@ export function PartnerCreateProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -147,8 +147,8 @@ export function PartnerCreateProfileModal({
         <form onSubmit={handleSubmit} className="space-y-4 mt-5">
           {/* Business Type */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Loại hình dịch vụ <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Loại hình dịch vụ <span className="text-rose-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               <button
@@ -156,11 +156,11 @@ export function PartnerCreateProfileModal({
                 onClick={() => setBusinessType("homestay")}
                 className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                   businessType === "homestay"
-                    ? "bg-emerald-600/30 border-emerald-500 text-emerald-300 shadow-sm"
-                    : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white"
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-800 shadow-xs"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                <Building className="w-4 h-4" />
+                <Building className="w-4 h-4 text-emerald-600" />
                 <span>Homestay / Villa</span>
               </button>
               <button
@@ -168,11 +168,11 @@ export function PartnerCreateProfileModal({
                 onClick={() => setBusinessType("transport")}
                 className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                   businessType === "transport"
-                    ? "bg-blue-600/30 border-blue-500 text-blue-300 shadow-sm"
-                    : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white"
+                    ? "bg-blue-50 border-blue-300 text-blue-800 shadow-xs"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                <Car className="w-4 h-4" />
+                <Car className="w-4 h-4 text-blue-600" />
                 <span>Đội Xe / Vận Chuyển</span>
               </button>
               <button
@@ -180,11 +180,11 @@ export function PartnerCreateProfileModal({
                 onClick={() => setBusinessType("tour")}
                 className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                   businessType === "tour"
-                    ? "bg-amber-600/30 border-amber-500 text-amber-300 shadow-sm"
-                    : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white"
+                    ? "bg-amber-50 border-amber-300 text-amber-800 shadow-xs"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                <Compass className="w-4 h-4" />
+                <Compass className="w-4 h-4 text-amber-600" />
                 <span>Tour / Canô</span>
               </button>
             </div>
@@ -192,8 +192,8 @@ export function PartnerCreateProfileModal({
 
           {/* Business Name */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
-              Tên cơ sở kinh doanh <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Tên cơ sở kinh doanh <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -201,15 +201,15 @@ export function PartnerCreateProfileModal({
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               placeholder="VD: Sunset Hill Villa Phú Quốc"
-              className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
             />
           </div>
 
           {/* Contact Name & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Người đại diện / Liên hệ <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Người đại diện / Liên hệ <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -217,12 +217,12 @@ export function PartnerCreateProfileModal({
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="VD: Nguyễn Văn A"
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Số điện thoại liên hệ <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Số điện thoại liên hệ <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -230,7 +230,7 @@ export function PartnerCreateProfileModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="VD: 0912 345 678"
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
           </div>
@@ -238,7 +238,7 @@ export function PartnerCreateProfileModal({
           {/* Email & Address */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Email
               </label>
               <input
@@ -246,11 +246,11 @@ export function PartnerCreateProfileModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="partner@stayea.com"
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Khu vực / Tỉnh thành
               </label>
               <div className="flex gap-2">
@@ -259,22 +259,22 @@ export function PartnerCreateProfileModal({
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Địa chỉ / Khu vực"
-                  className="w-2/3 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="w-2/3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
                 />
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="TP / Tỉnh"
-                  className="w-1/3 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="w-1/3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
                 />
               </div>
             </div>
           </div>
 
           {/* Bank Info */}
-          <div className="pt-2 border-t border-slate-800">
-            <span className="block text-xs font-semibold text-emerald-400 mb-2">
+          <div className="pt-2 border-t border-slate-100">
+            <span className="block text-xs font-bold text-emerald-800 mb-2">
               Thông tin nhận quyết toán ngân hàng (Không bắt buộc)
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -284,7 +284,7 @@ export function PartnerCreateProfileModal({
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   placeholder="Ngân hàng (VD: VCB)"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
                 />
               </div>
               <div>
@@ -293,7 +293,7 @@ export function PartnerCreateProfileModal({
                   value={bankAccount}
                   onChange={(e) => setBankAccount(e.target.value)}
                   placeholder="Số tài khoản"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors font-mono"
                 />
               </div>
               <div>
@@ -302,20 +302,20 @@ export function PartnerCreateProfileModal({
                   value={bankAccountHolder}
                   onChange={(e) => setBankAccountHolder(e.target.value)}
                   placeholder="Chủ tài khoản"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 uppercase"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors uppercase"
                 />
               </div>
             </div>
           </div>
 
           {/* Terms & Agreement Checkbox */}
-          <div className="pt-2 border-t border-slate-800">
-            <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-slate-300 leading-relaxed select-none">
+          <div className="pt-2 border-t border-slate-100">
+            <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-slate-600 leading-relaxed select-none">
               <input
                 type="checkbox"
                 checked={termsAgreed}
                 onChange={(e) => setTermsAgreed(e.target.checked)}
-                className="mt-0.5 rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
+                className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
               <span>
                 Tôi xác nhận thông tin cơ sở là chính xác và đồng ý với{" "}
@@ -323,7 +323,7 @@ export function PartnerCreateProfileModal({
                   href="/partner-agreement"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-emerald-400 underline hover:text-emerald-300 font-semibold"
+                  className="text-emerald-700 underline hover:text-emerald-800 font-semibold"
                 >
                   Hợp đồng Đối tác & Quy chế Hoạt động Sàn STAYEA
                 </a>{" "}
@@ -333,18 +333,18 @@ export function PartnerCreateProfileModal({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm hover:shadow transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               <span>{isSubmitting ? "Đang tạo..." : "Xác Nhận Tạo Cơ Sở"}</span>

@@ -157,10 +157,10 @@ export function PartnerNotificationPopover({
           setIsOpen(!isOpen)
           if (!isOpen) fetchNotifications()
         }}
-        className="relative p-2 rounded-lg bg-emerald-950/60 border border-emerald-800/50 hover:bg-emerald-900/50 text-slate-300 transition-colors cursor-pointer"
+        className="relative p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
         title="Thông báo đối tác"
       >
-        <Bell className="w-4 h-4 text-emerald-300" />
+        <Bell className="w-4 h-4 text-emerald-700" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex min-w-[16px] h-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow animate-pulse">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -170,18 +170,18 @@ export function PartnerNotificationPopover({
 
       {/* Popover Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl py-3 z-50 text-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-slate-200 shadow-xl py-3 z-50 text-slate-800 animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
-          <div className="px-4 pb-2.5 border-b border-slate-800 flex items-center justify-between">
+          <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs sm:text-sm font-bold text-white">
+              <span className="text-xs sm:text-sm font-bold text-slate-900">
                 Thông Báo Hub Đối Tác
               </span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                   unreadCount > 0
-                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                    : "bg-slate-800 text-slate-400"
+                    ? "bg-rose-50 text-rose-600 border border-rose-200"
+                    : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {unreadCount > 0 ? `${unreadCount} mới` : "0 mới"}
@@ -192,7 +192,7 @@ export function PartnerNotificationPopover({
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer"
+                className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
               >
                 Đọc tất cả
               </button>
@@ -200,17 +200,17 @@ export function PartnerNotificationPopover({
           </div>
 
           {/* List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60">
+          <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
             {isLoading && notifications.length === 0 ? (
               <div className="p-6 text-center text-xs text-slate-400">
                 Đang tải thông báo...
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="w-10 h-10 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-2">
+                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
                   <Bell className="w-5 h-5" />
                 </div>
-                <p className="text-xs font-medium text-slate-300">Không có thông báo mới</p>
+                <p className="text-xs font-semibold text-slate-700">Không có thông báo mới</p>
                 <p className="text-[11px] text-slate-500 mt-1">
                   Thông báo từ STAYEA và đơn hàng mới sẽ xuất hiện tại đây
                 </p>
@@ -220,17 +220,17 @@ export function PartnerNotificationPopover({
                 <div
                   key={item.id}
                   onClick={() => handleItemClick(item)}
-                  className={`p-3.5 hover:bg-slate-800/70 transition-colors cursor-pointer group ${
-                    !item.isRead ? "bg-emerald-950/30 border-l-2 border-emerald-500" : ""
+                  className={`p-3.5 hover:bg-slate-50 transition-colors cursor-pointer group ${
+                    !item.isRead ? "bg-emerald-50/50 border-l-2 border-emerald-600" : ""
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
                       {getTypeIcon(item.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className="text-[10px] font-medium text-emerald-400/90">
+                        <span className="text-[10px] font-semibold text-emerald-800">
                           {item.senderName}
                         </span>
                         <span className="text-[10px] text-slate-400 shrink-0">
@@ -240,18 +240,18 @@ export function PartnerNotificationPopover({
 
                       <h4
                         className={`text-xs ${
-                          !item.isRead ? "font-bold text-white" : "font-medium text-slate-300"
+                          !item.isRead ? "font-bold text-slate-900" : "font-medium text-slate-700"
                         }`}
                       >
                         {item.title}
                       </h4>
 
-                      <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">
                         {item.message}
                       </p>
 
                       {item.priority === "urgent" && (
-                        <div className="mt-1.5 inline-block px-1.5 py-0.5 rounded bg-rose-500/20 border border-rose-500/30 text-[9px] font-bold text-rose-300">
+                        <div className="mt-1.5 inline-block px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200 text-[9px] font-bold text-rose-700">
                           Khẩn cấp từ Ban Quản Trị
                         </div>
                       )}
@@ -264,12 +264,12 @@ export function PartnerNotificationPopover({
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="px-4 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+            <div className="px-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
               <span>Đồng bộ thời gian thực</span>
               <button
                 type="button"
                 onClick={() => fetchNotifications()}
-                className="hover:text-emerald-400 transition-colors cursor-pointer"
+                className="font-medium text-emerald-700 hover:underline cursor-pointer"
               >
                 Làm mới
               </button>

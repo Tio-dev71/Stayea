@@ -441,3 +441,4 @@ export const stayeaPmsAuditLogsTable = pgTable(
 
 export type StayeaPmsAuditLog = typeof stayeaPmsAuditLogsTable.$inferSelect
 export type InsertStayeaPmsAuditLog = typeof stayeaPmsAuditLogsTable.$inferInsert
+

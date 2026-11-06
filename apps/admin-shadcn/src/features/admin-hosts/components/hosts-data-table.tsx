@@ -105,9 +105,9 @@ export function HostsDataTable({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs">
       {/* Table Container */}
-      <div className="overflow-x-auto scrollbar-thin min-h-[220px]">
+      <div className="overflow-x-auto scrollbar-thin min-h-[320px] pb-6">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/70 text-slate-500 font-semibold select-none">

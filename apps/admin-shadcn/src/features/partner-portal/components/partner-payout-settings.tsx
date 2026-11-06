@@ -178,13 +178,13 @@ export function PartnerPayoutSettings({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 text-slate-900">
       {/* Title */}
       <div>
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
           <span>Tài Khoản Quyết Toán & Thông Tin Doanh Nghiệp</span>
         </h2>
-        <p className="text-xs text-slate-400 mt-0.5">
+        <p className="text-xs text-slate-500 mt-0.5">
           STAYEA quyết toán doanh thu đơn hàng cho đối tác linh hoạt theo yêu cầu hoặc định kỳ qua tài khoản ngân hàng.
         </p>
       </div>
@@ -192,30 +192,30 @@ export function PartnerPayoutSettings({
       {/* Settlement Balance & Withdrawal Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Card 1: Available Balance */}
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/30 p-5 shadow-xl flex flex-col justify-between">
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-800 via-teal-850 to-emerald-900 border border-emerald-700/30 p-5 shadow-sm text-white flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-emerald-400 font-semibold mb-2">
+            <div className="flex items-center justify-between text-xs text-emerald-200 font-semibold mb-2">
               <span className="flex items-center gap-1.5">
                 <Wallet className="w-4 h-4" /> Số Dư Khả Dụng
               </span>
-              <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300">
+              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full text-white font-bold backdrop-blur-md">
                 Sẵn sàng rút
               </span>
             </div>
             <div className="text-2xl font-black text-white tracking-tight">
               {loadingOverview && activeAvailableBalance === 0 ? "..." : `${activeAvailableBalance.toLocaleString("vi-VN")} ₫`}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-emerald-100/80 mt-1">
               Doanh thu từ các đơn hàng đã phục vụ thành công
             </p>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-emerald-900/40">
+          <div className="mt-4 pt-3 border-t border-white/20">
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
               disabled={activeAvailableBalance < 100_000}
-              className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2"
+              className="w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-100 disabled:bg-white/20 disabled:text-white/60 text-emerald-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <ArrowDownToLine className="w-3.5 h-3.5" />
               <span>Yêu Cầu Rút Tiền</span>
@@ -224,40 +224,40 @@ export function PartnerPayoutSettings({
         </div>
 
         {/* Card 2: Total Earned */}
-        <div className="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold mb-2">
-              <DollarSign className="w-4 h-4 text-blue-400" /> Tổng Thu Nhập Tích Lũy
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mb-2">
+              <DollarSign className="w-4 h-4 text-blue-600" /> Tổng Thu Nhập Tích Lũy
             </div>
-            <div className="text-2xl font-black text-white tracking-tight">
+            <div className="text-2xl font-black text-slate-900 tracking-tight">
               {activeTotalEarned.toLocaleString("vi-VN")} ₫
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-slate-500 mt-1">
               Thực nhận sau khi trừ chiết khấu {profile.commissionRate}%
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
             <span>Chiết khấu nền tảng:</span>
-            <span className="text-emerald-400 font-bold">{profile.commissionRate}%</span>
+            <span className="text-emerald-700 font-bold">{profile.commissionRate}%</span>
           </div>
         </div>
 
         {/* Card 3: Total Withdrawn */}
-        <div className="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold mb-2">
-              <History className="w-4 h-4 text-purple-400" /> Đã Quyết Toán / Chờ Xử Lý
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mb-2">
+              <History className="w-4 h-4 text-purple-600" /> Đã Quyết Toán / Chờ Xử Lý
             </div>
-            <div className="text-2xl font-black text-white tracking-tight">
+            <div className="text-2xl font-black text-slate-900 tracking-tight">
               {overview.totalWithdrawn.toLocaleString("vi-VN")} ₫
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-slate-500 mt-1">
               {overview.payoutRequests.length} lệnh rút tiền qua hệ thống
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
             <span>Lệnh gần nhất:</span>
-            <span className="text-white font-medium">
+            <span className="text-slate-800 font-semibold">
               {overview.payoutRequests[0]
                 ? new Date(overview.payoutRequests[0].createdAt).toLocaleDateString("vi-VN")
                 : "Chưa có"}
@@ -268,13 +268,13 @@ export function PartnerPayoutSettings({
 
       {/* Payout History Section */}
       {overview.payoutRequests.length > 0 && (
-        <div className="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl space-y-3">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <History className="w-4 h-4 text-emerald-400" />
+        <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <History className="w-4 h-4 text-emerald-700" />
               <span>Lịch Sử Yêu Cầu Quyết Toán</span>
             </h3>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               {overview.payoutRequests.length} yêu cầu
             </span>
           </div>
@@ -282,7 +282,7 @@ export function PartnerPayoutSettings({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-800/60 text-slate-400">
+                <tr className="border-b border-slate-100 text-slate-500">
                   <th className="py-2.5 px-3">Mã Lệnh</th>
                   <th className="py-2.5 px-3">Thời Gian</th>
                   <th className="py-2.5 px-3">Số Tiền</th>
@@ -291,26 +291,26 @@ export function PartnerPayoutSettings({
                   <th className="py-2.5 px-3">Ghi Chú Admin</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/40 text-slate-300">
+              <tbody className="divide-y divide-slate-100 text-slate-700">
                 {overview.payoutRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-2.5 px-3 font-mono font-medium text-white">
+                  <tr key={req.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-2.5 px-3 font-mono font-medium text-slate-900">
                       {req.payoutCode}
                     </td>
-                    <td className="py-2.5 px-3 text-slate-400">
+                    <td className="py-2.5 px-3 text-slate-500">
                       {new Date(req.createdAt).toLocaleString("vi-VN")}
                     </td>
-                    <td className="py-2.5 px-3 font-bold text-emerald-400">
+                    <td className="py-2.5 px-3 font-bold text-emerald-700">
                       {Number.parseInt(req.amount).toLocaleString("vi-VN")} ₫
                     </td>
                     <td className="py-2.5 px-3">
-                      <div>{req.bankName}</div>
-                      <div className="font-mono text-slate-400 text-[11px]">{req.bankAccount}</div>
+                      <div className="font-medium text-slate-900">{req.bankName}</div>
+                      <div className="font-mono text-slate-500 text-[11px]">{req.bankAccount}</div>
                     </td>
                     <td className="py-2.5 px-3">{getStatusBadge(req.status)}</td>
-                    <td className="py-2.5 px-3 text-slate-400 text-[11px]">
+                    <td className="py-2.5 px-3 text-slate-500 text-[11px]">
                       {req.transactionRef && (
-                        <div className="font-mono text-blue-400">Mã GD: {req.transactionRef}</div>
+                        <div className="font-mono text-blue-600 font-semibold">Mã GD: {req.transactionRef}</div>
                       )}
                       <div>{req.adminNotes || "—"}</div>
                     </td>
@@ -325,14 +325,14 @@ export function PartnerPayoutSettings({
       {/* Main Form: Bank & Profile Settings */}
       <form onSubmit={handleSave} className="space-y-6">
         {/* Section 1: Bank Payout Information */}
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-950/30 to-slate-900 border border-emerald-900/50 p-6 shadow-xl">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <div className="rounded-2xl bg-white border border-slate-200/90 p-6 shadow-xs">
+          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Tài Khoản Ngân Hàng Nhận Tiền Quyết Toán</h3>
-              <p className="text-[11px] text-slate-400">
+              <h3 className="text-sm font-bold text-slate-900">Tài Khoản Ngân Hàng Nhận Tiền Quyết Toán</h3>
+              <p className="text-[11px] text-slate-500">
                 Tiền phòng, xe và tour được chuyển khoản trực tiếp vào tài khoản ngân hàng dưới đây
               </p>
             </div>
@@ -340,8 +340,8 @@ export function PartnerPayoutSettings({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Tên Ngân hàng <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Tên Ngân hàng <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -349,12 +349,12 @@ export function PartnerPayoutSettings({
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="VD: Vietcombank / MB Bank / Techcombank"
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Số Tài Khoản (STK) <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Số Tài Khoản (STK) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -362,12 +362,12 @@ export function PartnerPayoutSettings({
                 value={bankAccount}
                 onChange={(e) => setBankAccount(e.target.value)}
                 placeholder="VD: 0071001234567"
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Chủ Tài Khoản (In hoa không dấu) <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Chủ Tài Khoản (In hoa không dấu) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -375,21 +375,21 @@ export function PartnerPayoutSettings({
                 value={bankAccountHolder}
                 onChange={(e) => setBankAccountHolder(e.target.value.toUpperCase())}
                 placeholder="VD: NGUYEN VAN PHAT"
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white font-mono uppercase focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono uppercase focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
           </div>
         </div>
 
         {/* Section 2: Partner Profile & Business Information */}
-        <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+        <div className="rounded-2xl bg-white border border-slate-200/90 p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
               <Building className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Thông Tin Cơ Sở Kinh Doanh / Đơn Vị</h3>
-              <p className="text-[11px] text-slate-400">
+              <h3 className="text-sm font-bold text-slate-900">Thông Tin Cơ Sở Kinh Doanh / Đơn Vị</h3>
+              <p className="text-[11px] text-slate-500">
                 Thông tin xuất hiện trên hóa đơn và đối soát hệ thống
               </p>
             </div>
@@ -397,43 +397,43 @@ export function PartnerPayoutSettings({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Tên Cơ Sở / Hộ Kinh Doanh <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Tên Cơ Sở / Hộ Kinh Doanh <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Người Đại Diện Phụ Trách <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Người Đại Diện Phụ Trách <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Hotline Tiếp Nhận Khách (Zalo/SĐT) <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Hotline Tiếp Nhận Khách (Zalo/SĐT) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Email Nhận Thông Báo Đơn
               </label>
               <input
@@ -441,45 +441,45 @@ export function PartnerPayoutSettings({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Địa Chỉ Hoạt Động (Phú Quốc)
               </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white shadow-xs"
               />
             </div>
           </div>
         </div>
 
         {/* Section 3: Commission & Terms */}
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800 p-5 flex items-center justify-between text-xs text-slate-300 flex-wrap gap-3">
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5 flex items-center justify-between text-xs text-slate-700 flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <ShieldCheck className="w-5 h-5 text-emerald-700" />
             <div>
-              <div className="font-semibold text-white">
+              <div className="font-bold text-slate-900">
                 Hợp Đồng Đối Tác STAYEA: {profile.commissionRate}% Chiết Khấu
               </div>
-              <div className="text-[11px] text-slate-400">
+              <div className="text-[11px] text-slate-500">
                 STAYEA cam kết không phát sinh bất kỳ khoản phí ẩn nào khác.{" "}
                 <a
                   href="/partner-agreement"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-emerald-400 underline hover:text-emerald-300 ml-1 font-medium"
+                  className="text-emerald-700 underline hover:text-emerald-800 ml-1 font-semibold"
                 >
                   Xem điều khoản hợp đồng & quy chế quyết toán ➔
                 </a>
               </div>
             </div>
           </div>
-          <span className="px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800 text-xs font-medium">
+          <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
             Hợp đồng hiệu lực
           </span>
         </div>
@@ -487,13 +487,13 @@ export function PartnerPayoutSettings({
         {/* Action Button */}
         <div className="flex items-center justify-end gap-3 pt-2">
           {savedSuccess && (
-            <span className="text-xs text-emerald-400 flex items-center gap-1.5 animate-fade-in font-medium">
+            <span className="text-xs text-emerald-700 flex items-center gap-1.5 animate-fade-in font-bold">
               <Check className="w-4 h-4" /> Đã cập nhật thông tin thành công!
             </span>
           )}
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>Lưu Thông Tin Cài Đặt</span>
@@ -503,16 +503,16 @@ export function PartnerPayoutSettings({
 
       {/* Modal: Request Payout Withdrawal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 p-6 shadow-2xl space-y-5 text-slate-900">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
                   <ArrowDownToLine className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Yêu Cầu Rút Tiền Quyết Toán</h3>
-                  <p className="text-[11px] text-slate-400">
+                  <h3 className="text-sm font-bold text-slate-900">Yêu Cầu Rút Tiền Quyết Toán</h3>
+                  <p className="text-[11px] text-slate-500">
                     Chuyển về tài khoản ngân hàng của đối tác
                   </p>
                 </div>
@@ -520,35 +520,35 @@ export function PartnerPayoutSettings({
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleRequestPayout} className="space-y-4">
-              <div className="rounded-xl bg-slate-800/60 p-3.5 border border-slate-700/60 text-xs space-y-1.5">
-                <div className="flex justify-between text-slate-400">
+              <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-600">
                   <span>Số dư khả dụng:</span>
-                  <span className="font-bold text-emerald-400">
+                  <span className="font-bold text-emerald-700">
                     {overview.availableBalance.toLocaleString("vi-VN")} ₫
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Tài khoản nhận:</span>
-                  <span className="font-mono text-white">
+                  <span className="font-mono font-medium text-slate-900">
                     {bankAccount} ({bankName})
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Chủ tài khoản:</span>
-                  <span className="font-mono uppercase text-white">{bankAccountHolder}</span>
+                  <span className="font-mono uppercase font-medium text-slate-900">{bankAccountHolder}</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Số tiền muốn rút (₫) <span className="text-rose-400">*</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Số tiền muốn rút (₫) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -563,7 +563,7 @@ export function PartnerPayoutSettings({
                     }
                   }}
                   placeholder="VD: 2.000.000"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 font-bold"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-mono text-slate-900 focus:outline-none focus:border-emerald-600 font-bold shadow-xs"
                 />
                 <div className="flex items-center gap-2 mt-2">
                   {[1_000_000, 2_000_000, 5_000_000].map((amt) => (
@@ -571,7 +571,7 @@ export function PartnerPayoutSettings({
                       key={amt}
                       type="button"
                       onClick={() => setWithdrawAmount(amt.toLocaleString("vi-VN"))}
-                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 border border-slate-700"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] text-slate-700 border border-slate-200 cursor-pointer"
                     >
                       {amt / 1_000_000}M ₫
                     </button>
@@ -581,7 +581,7 @@ export function PartnerPayoutSettings({
                     onClick={() =>
                       setWithdrawAmount(overview.availableBalance.toLocaleString("vi-VN"))
                     }
-                    className="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-[11px] text-emerald-400 border border-emerald-800 font-medium"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[11px] text-emerald-800 border border-emerald-200 font-semibold cursor-pointer"
                   >
                     Tối đa
                   </button>
@@ -592,14 +592,14 @@ export function PartnerPayoutSettings({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 font-semibold cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={submittingPayout}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-xs font-bold text-white shadow-lg shadow-emerald-950 flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-xs font-bold text-white shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   {submittingPayout ? (
                     <>

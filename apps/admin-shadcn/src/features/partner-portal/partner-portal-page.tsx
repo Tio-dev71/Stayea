@@ -5,11 +5,9 @@ import { toast } from "sonner"
 import {
   AlertTriangle,
   ArrowRight,
-  Bot,
   Building,
   CheckCircle2,
   Plus,
-  Sparkles,
 } from "lucide-react"
 
 import { stayeaApi } from "@/lib/stayea-api-service"
@@ -513,7 +511,7 @@ export function PartnerPortalPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#070e0d] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50/60 text-slate-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
       {/* 1. Header */}
       <PartnerHeader
         currentProfile={currentProfile}
@@ -531,20 +529,20 @@ export function PartnerPortalPage({
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {loading ? (
           <div className="py-20 text-center space-y-3">
-            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-slate-400">Đang tải dữ liệu đối tác STAYEA...</p>
+            <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-slate-500 font-medium">Đang tải dữ liệu đối tác STAYEA...</p>
           </div>
         ) : !currentProfile ? (
           /* Empty State: No partners registered yet */
-          <div className="max-w-2xl mx-auto py-16 text-center space-y-6">
-            <div className="w-20 h-20 rounded-3xl bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center mx-auto text-emerald-400 shadow-2xl">
+          <div className="max-w-2xl mx-auto py-16 text-center space-y-6 bg-white border border-slate-200 rounded-3xl p-8 shadow-xs">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-700 shadow-xs">
               <Building className="w-10 h-10" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-white tracking-tight">
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
                 Chưa có cơ sở đối tác nào trong hệ thống
               </h2>
-              <p className="text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
+              <p className="text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
                 Cổng điều phối Partner Hub hiện chưa ghi nhận hồ sơ đối tác nào. Bạn có thể bấm tạo đối tác mới bên dưới để bắt đầu kinh doanh trên STAYEA.
               </p>
             </div>
@@ -552,7 +550,7 @@ export function PartnerPortalPage({
               <button
                 type="button"
                 onClick={() => setIsCreateProfileOpen(true)}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Thêm Cơ Sở Đối Tác Mới</span>
@@ -565,25 +563,25 @@ export function PartnerPortalPage({
             {activeTab === "overview" && (
               <div className="space-y-8">
                 {/* Greeting & Quick Action Banner */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-[#041c19] border border-emerald-800/40 p-6 sm:p-8 shadow-2xl">
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 border border-emerald-700/30 p-6 sm:p-8 shadow-md text-white">
                   <div className="relative z-10 max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Kênh Điều Phối Đối Tác STAYEA</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-200 text-xs font-semibold mb-3">
+                      <Building className="w-3.5 h-3.5" />
+                      <span>Cổng Quản Trị Đối Tác STAYEA</span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                       Xin chào, {currentProfile.contactName}!
                     </h1>
-                    <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                      Cơ sở: <strong className="text-emerald-300">{currentProfile.businessName}</strong>.
-                      Hệ thống AI Agent và đội ngũ Admin STAYEA đang liên tục kết nối các yêu cầu du khách Phú Quốc tới bạn.
+                    <p className="text-sm text-emerald-100/90 mt-2 leading-relaxed">
+                      Cơ sở: <strong className="text-white font-semibold">{currentProfile.businessName}</strong>.
+                      Hệ thống STAYEA đang đồng bộ thông tin dịch vụ, phòng nghỉ và tiếp nhận các yêu cầu từ du khách Phú Quốc tới bạn.
                     </p>
 
                     <div className="mt-6 flex items-center gap-3 flex-wrap">
                       <button
                         type="button"
                         onClick={() => setActiveTab("orders")}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-emerald-950 text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                       >
                         <span>Xem Đơn Hàng</span>
                         <ArrowRight className="w-4 h-4" />
@@ -591,10 +589,18 @@ export function PartnerPortalPage({
                       <button
                         type="button"
                         onClick={() => setActiveTab("services")}
-                        className="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-semibold backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
                       >
                         <Plus className="w-4 h-4" />
                         <span>Thêm Dịch Vụ Mới</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("pms")}
+                        className="px-5 py-2.5 rounded-xl bg-emerald-600/60 hover:bg-emerald-600 text-white border border-emerald-400/30 text-xs font-semibold backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <Building className="w-4 h-4" />
+                        <span>Sơ Đồ Phòng PMS</span>
                       </button>
                     </div>
                   </div>
@@ -614,18 +620,18 @@ export function PartnerPortalPage({
 
                 {/* Urgent Orders Preview (If any order needs confirmation) */}
                 {pendingOrdersCount > 0 && (
-                  <div className="rounded-2xl bg-gradient-to-r from-rose-950/40 via-slate-900 to-slate-900 border border-rose-900/60 p-6 shadow-xl space-y-4">
+                  <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 shadow-xs space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5 text-rose-300">
-                        <AlertTriangle className="w-5 h-5 text-rose-400 animate-pulse" />
-                        <h3 className="font-bold text-base text-white">
-                          Đơn Hàng Mới Cần Bạn Xác Nhận Nhận Khách ({pendingOrdersCount})
+                      <div className="flex items-center gap-2.5 text-rose-800">
+                        <AlertTriangle className="w-5 h-5 text-rose-600 animate-pulse" />
+                        <h3 className="font-bold text-base text-rose-950">
+                          Đơn Đặt Mới Cần Bạn Xác Nhận Nhận Khách ({pendingOrdersCount})
                         </h3>
                       </div>
                       <button
                         type="button"
                         onClick={() => setActiveTab("orders")}
-                        className="text-xs text-rose-400 hover:underline font-semibold"
+                        className="text-xs text-rose-700 hover:underline font-semibold cursor-pointer"
                       >
                         Xem tất cả đơn &rarr;
                       </button>
@@ -637,24 +643,24 @@ export function PartnerPortalPage({
                         .map((o) => (
                           <div
                             key={o.id}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-800/70 border border-rose-900/40"
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-white border border-rose-100 shadow-xs"
                           >
                             <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-white">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-xs font-bold text-slate-900">
                                   {o.orderCode}
                                 </span>
-                                <span className="text-xs text-emerald-400 font-semibold">
+                                <span className="text-xs text-emerald-700 font-semibold">
                                   {o.serviceTitle}
                                 </span>
                                 {o.source === "ai_agent" && (
-                                  <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 font-semibold">
-                                    <Bot className="w-3 h-3" /> AI Agent
+                                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
+                                    Đặt trực tuyến
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs text-slate-300 mt-1">
-                                Khách: <strong>{o.customerName}</strong> ({o.customerPhone}) • Ngày: {o.startDate} {o.endDate ? `→ ${o.endDate}` : ""}
+                              <div className="text-xs text-slate-600 mt-1">
+                                Khách: <strong className="text-slate-900">{o.customerName}</strong> ({o.customerPhone}) • Ngày: {o.startDate} {o.endDate ? `→ ${o.endDate}` : ""}
                               </div>
                             </div>
 
@@ -662,7 +668,7 @@ export function PartnerPortalPage({
                               <button
                                 type="button"
                                 onClick={() => handleAcceptOrder(o.id)}
-                                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 <span>Xác Nhận Nhận Đơn</span>
@@ -677,27 +683,27 @@ export function PartnerPortalPage({
                 {/* Active Services Quick Grid */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                       <span>Dịch Vụ Đang Mở Bán ({currentServices.length})</span>
                     </h3>
                     <button
                       type="button"
                       onClick={() => setActiveTab("services")}
-                      className="text-xs text-emerald-400 hover:underline font-semibold"
+                      className="text-xs text-emerald-700 hover:underline font-semibold cursor-pointer"
                     >
                       Quản lý đầy đủ &rarr;
                     </button>
                   </div>
 
                   {currentServices.length === 0 ? (
-                    <div className="text-center py-12 bg-slate-900/60 rounded-2xl border border-dashed border-slate-800">
-                      <p className="text-xs text-slate-400">
+                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200 shadow-xs">
+                      <p className="text-xs text-slate-500">
                         Cơ sở này chưa có dịch vụ nào đang mở bán.
                       </p>
                       <button
                         type="button"
                         onClick={() => setActiveTab("services")}
-                        className="mt-3 px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+                        className="mt-3 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Thêm dịch vụ ngay</span>
@@ -708,24 +714,24 @@ export function PartnerPortalPage({
                       {currentServices.map((service) => (
                         <div
                           key={service.id}
-                          className="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden flex flex-col justify-between p-4"
+                          className="rounded-2xl bg-white border border-slate-200 overflow-hidden flex flex-col justify-between p-4 shadow-xs hover:shadow-md transition-shadow"
                         >
-                          <div className="flex gap-3">
+                          <div className="flex gap-3.5">
                             <img
                               src={service.images[0]}
                               alt={service.title}
-                              className="w-20 h-20 rounded-xl object-cover shrink-0"
+                              className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-100"
                             />
                             <div className="flex-1 truncate">
-                              <h4 className="font-bold text-white text-xs truncate">
+                              <h4 className="font-bold text-slate-900 text-xs truncate">
                                 {service.title}
                               </h4>
-                              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                              <p className="text-[11px] text-slate-500 truncate mt-0.5">
                                 {service.location}
                               </p>
-                              <div className="text-emerald-400 font-extrabold text-sm mt-2">
+                              <div className="text-emerald-700 font-extrabold text-sm mt-2">
                                 {Number.parseInt(service.price).toLocaleString("vi-VN")} ₫
-                                <span className="text-[10px] text-slate-400 font-normal">
+                                <span className="text-[10px] text-slate-500 font-normal">
                                   /{service.unit}
                                 </span>
                               </div>
@@ -801,13 +807,13 @@ export function PartnerPortalPage({
       />
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-emerald-950/60 bg-[#040e0d] py-6 text-center text-xs text-slate-500">
+      <footer className="mt-auto border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             &copy; 2026 STAYEA Partner Hub • Hệ thống Quản lý Đối tác Du lịch Phú Quốc
           </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Hotline Hỗ Trợ Đối Tác: 0921 724 444</span>
+          <div className="flex items-center gap-4 text-slate-500 font-medium">
+            <span>Hotline Hỗ Trợ: 0921 724 444</span>
             <span>•</span>
             <span>Email: hi.topmedia.vn@gmail.com</span>
           </div>

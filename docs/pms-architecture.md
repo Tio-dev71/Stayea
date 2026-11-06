@@ -155,3 +155,4 @@ Theo quy tắc 5, không giả lập phần cứng bằng mock mà định nghĩ
 3. **Thiết bị quẹt thẻ POS quầy (mPOS, Payoo, SmartPOS)**:
    - Interface: `PosTerminalAdapter { createPaymentIntent(amount: number, folioNumber: string): Promise<PosResult> }`.
    - Điều kiện cần: Thiết bị POS thông minh kết nối qua mạng nội bộ LAN/Wi-Fi tới phần mềm quầy.
+

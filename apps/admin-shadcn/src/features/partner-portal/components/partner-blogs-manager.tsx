@@ -321,19 +321,19 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
   return (
     <div className="space-y-6">
       {/* Top Banner & Explanation */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-[#041c19] border border-emerald-800/40 p-6 sm:p-7 shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 border border-emerald-700/30 p-6 sm:p-7 shadow-md text-white">
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-200 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Kênh Cẩm Nang & Chia Sẻ Du Lịch</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
             Bài Viết & Cẩm Nang Của Cơ Sở
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-            Viết bài chia sẻ kinh nghiệm khám phá Phú Quốc, hướng dẫn nhận phòng hoặc mẹo phượt xe máy giúp cơ sở{" "}
-            <strong className="text-emerald-300">{profile.businessName}</strong> tăng độ nhận diện thương hiệu và được{" "}
-            <strong>AI Concierge</strong> tự động ưu tiên giới thiệu cho du khách.
+          <p className="text-xs sm:text-sm text-emerald-100/90 mt-2 leading-relaxed">
+            Viết bài chia sẻ kinh nghiệm khám phá Phú Quốc, hướng dẫn nhận phòng hoặc mẹo du lịch giúp cơ sở{" "}
+            <strong className="text-white font-semibold">{profile.businessName}</strong> tăng uy tín thương hiệu và được{" "}
+            hệ thống STAYEA ưu tiên gợi ý tới du khách.
           </p>
         </div>
 
@@ -344,13 +344,13 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
       {/* KPI Stats & Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          <div className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 shadow-xs">
             <span>Đã xuất bản: </span>
-            <strong className="text-emerald-400 font-bold">{publishedCount} bài</strong>
+            <strong className="text-emerald-700 font-bold">{publishedCount} bài</strong>
           </div>
-          <div className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          <div className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 shadow-xs">
             <span>Lượt xem du khách: </span>
-            <strong className="text-sky-400 font-bold">{totalViews} lượt</strong>
+            <strong className="text-sky-700 font-bold">{totalViews} lượt</strong>
           </div>
         </div>
 
@@ -362,13 +362,13 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
               placeholder="Tìm kiếm bài viết..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-600 shadow-xs"
             />
           </div>
 
           <button
             onClick={() => handleOpenModal()}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950 flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Viết Bài Mới</span>
@@ -379,19 +379,19 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
       {/* Articles Grid */}
       {loading ? (
         <div className="py-20 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mx-auto mb-2" />
-          <p className="text-xs text-slate-400">Đang tải danh sách bài viết của bạn...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-2" />
+          <p className="text-xs text-slate-500 font-medium">Đang tải danh sách bài viết của bạn...</p>
         </div>
       ) : filteredBlogs.length === 0 ? (
-        <div className="text-center py-16 bg-slate-900/60 rounded-2xl border border-dashed border-slate-800">
-          <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-300">Cơ sở chưa có bài viết blog nào</h3>
+        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 shadow-xs">
+          <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-slate-700">Cơ sở chưa có bài viết blog nào</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             Hãy viết một bài chia sẻ cẩm nang du lịch đầu tiên để thu hút du khách tìm đến {profile.businessName}!
           </p>
           <button
             onClick={() => handleOpenModal()}
-            className="mt-4 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer"
+            className="mt-4 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
           >
             <Plus className="w-4 h-4" />
             <span>Viết Bài Ngay</span>
@@ -406,11 +406,11 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
             return (
               <div
                 key={blog.id}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-700/60 transition-all shadow-lg"
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 transition-all shadow-xs hover:shadow-md"
               >
                 <div>
                   {/* Thumbnail Cover */}
-                  <div className="relative aspect-16/9 w-full bg-slate-800 overflow-hidden">
+                  <div className="relative aspect-16/9 w-full bg-slate-100 overflow-hidden">
                     <img
                       src={
                         blog.imageUrl ||
@@ -426,14 +426,14 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
 
                     {/* Status badge */}
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-emerald-300 border border-white/20 backdrop-blur-md">
                         {catObj?.label || blog.category}
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border backdrop-blur-md ${
                           isPub
-                            ? "bg-emerald-950/80 text-emerald-300 border-emerald-500/50"
-                            : "bg-slate-900/80 text-slate-400 border-slate-700"
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                            : "bg-slate-100 text-slate-600 border-slate-300"
                         }`}
                       >
                         {isPub ? "Đã xuất bản" : "Bản nháp"}
@@ -443,10 +443,10 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
 
                   {/* Content details */}
                   <div className="p-4 space-y-2">
-                    <h3 className="font-bold text-white text-sm line-clamp-2 group-hover:text-emerald-300 transition-colors leading-snug">
+                    <h3 className="font-bold text-slate-900 text-sm line-clamp-2 group-hover:text-emerald-700 transition-colors leading-snug">
                       {blog.title}
                     </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                       {blog.content.replace(/[#*>`-]/g, "").slice(0, 110)}...
                     </p>
                   </div>

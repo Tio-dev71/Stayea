@@ -119,7 +119,6 @@ export const settingsNavItems: NavItem[] = [
     items: [
       { title: 'General', url: appPaths.settings.general.href },
       { title: 'Sessions', url: appPaths.settings.sessions.href },
-      { title: 'Upload Demo', url: appPaths.settings.uploadDemo.href },
     ],
   },
 ]

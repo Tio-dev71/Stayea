@@ -454,7 +454,7 @@ export function ProfilePage({ onNavigate }: ProfilePageProps) {
                 }}
                 className="px-4 py-2 rounded-xl bg-[#0A2239] text-white text-xs font-semibold hover:bg-[#071726]"
               >
-                Cập nhật ảnh mẫu
+                Lưu ảnh bìa
               </button>
             </div>
           </div>

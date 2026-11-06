@@ -20,7 +20,6 @@ import {
   Receipt,
   RefreshCw,
   Search,
-  Sparkles,
   User,
   UserCheck,
   X,
@@ -192,126 +191,23 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
     return Array.from(set).sort()
   }, [rooms])
 
-  // Seed Demo PMS Data if property is brand new
-  const handleSeedDemoData = async () => {
-    if (!partnerId) return
-    setIsLoading(true)
-    try {
-      // 1. Create Room Types
-      const rt1 = await stayeaApi.createPmsRoomType(
-        {
-          name: "Phòng Standard Giường Đôi",
-          code: "STD-DBL",
-          basePrice: 650000,
-          hourlyPrice: 120000,
-          maxOccupancy: 2,
-          maxAdults: 2,
-          maxChildren: 1,
-          amenities: ["Wifi", "Điều hòa", "Bình nóng lạnh", "Tủ lạnh"],
-          description: "Phòng tiêu chuẩn ấm cúng",
-        },
-        partnerId
-      )
-
-      const rt2 = await stayeaApi.createPmsRoomType(
-        {
-          name: "Phòng Deluxe Hướng Biển",
-          code: "DLX-SEA",
-          basePrice: 1200000,
-          hourlyPrice: 180000,
-          maxOccupancy: 3,
-          maxAdults: 2,
-          maxChildren: 1,
-          amenities: ["Ban công view biển", "Bồn tắm nằm", "Smart TV 55 inch", "Minibar cao cấp"],
-          description: "Phòng cao cấp ngắm hoàng hôn",
-        },
-        partnerId
-      )
-
-      // 2. Create Rooms
-      await Promise.all([
-        stayeaApi.createPmsRoom({ roomTypeId: rt1.id, roomNumber: "101", floor: "1", status: "vacant_clean" }, partnerId),
-        stayeaApi.createPmsRoom({ roomTypeId: rt1.id, roomNumber: "102", floor: "1", status: "vacant_dirty" }, partnerId),
-        stayeaApi.createPmsRoom({ roomTypeId: rt1.id, roomNumber: "103", floor: "1", status: "vacant_clean" }, partnerId),
-        stayeaApi.createPmsRoom({ roomTypeId: rt2.id, roomNumber: "201", floor: "2", status: "vacant_clean" }, partnerId),
-        stayeaApi.createPmsRoom({ roomTypeId: rt2.id, roomNumber: "202", floor: "2", status: "vacant_clean" }, partnerId),
-        stayeaApi.createPmsRoom({ roomTypeId: rt2.id, roomNumber: "203", floor: "2", status: "vacant_clean" }, partnerId),
-      ])
-
-      // 3. Create Minibar Items
-      await Promise.all([
-        stayeaApi.createPmsServiceItem({ category: "minibar_drink", name: "Nước suối Lavie 500ml", code: "LAV-500", unit: "chai", sellingPrice: 20000, costPrice: 6000, trackInventory: true, currentStock: 48, minStockAlert: 12 }, partnerId),
-        stayeaApi.createPmsServiceItem({ category: "minibar_drink", name: "Bia Heineken Sleek 330ml", code: "HEI-330", unit: "lon", sellingPrice: 35000, costPrice: 16000, trackInventory: true, currentStock: 24, minStockAlert: 6 }, partnerId),
-        stayeaApi.createPmsServiceItem({ category: "minibar_food", name: "Mì ly Omachi Bò Hầm", code: "OMA-CUP", unit: "ly", sellingPrice: 25000, costPrice: 11000, trackInventory: true, currentStock: 20, minStockAlert: 5 }, partnerId),
-        stayeaApi.createPmsServiceItem({ category: "laundry", name: "Giặt sấy quần áo thường", code: "SRV-LAUNDRY", unit: "kg", sellingPrice: 40000, costPrice: 10000, trackInventory: false }, partnerId),
-      ])
-
-      // 4. Create one initial active stay in 201
-      const now = new Date()
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-      const res = await stayeaApi.createPmsReservation(
-        {
-          roomTypeId: rt2.id,
-          roomId: (await stayeaApi.getPmsRooms(partnerId)).find((r) => r.roomNumber === "201")?.id,
-          channel: "direct_walkin",
-          guestName: "Trần Anh Tuấn",
-          guestPhone: "0912345678",
-          guestIdNumber: "079090001234",
-          expectedCheckIn: now.toISOString(),
-          expectedCheckOut: tomorrow.toISOString(),
-          roomRate: 1200000,
-          depositAmount: 500000,
-          depositPaymentMethod: "bank_transfer",
-          isCheckInImmediately: true,
-          specialRequests: "Khách cần hóa đơn VAT",
-        },
-        partnerId
-      )
-
-      // Post 2 waters to room
-      const allItems = await stayeaApi.getPmsServiceItems(partnerId)
-      const water = allItems.find((i) => i.code === "LAV-500")
-      if (water) {
-        await stayeaApi.postPmsFolioItem(
-          res.id,
-          {
-            serviceItemId: water.id,
-            description: "2x Nước suối Lavie 500ml",
-            quantity: 2,
-            unitPrice: 20000,
-            itemType: "minibar",
-            note: "Khách lấy uống tối qua",
-          },
-          partnerId
-        )
-      }
-
-      toast.success("Khởi tạo dữ liệu khách sạn mẫu hoàn tất! Bạn có thể thao tác ngay.")
-      loadPmsData()
-    } catch (err: any) {
-      toast.error(err.message || "Khởi tạo dữ liệu mẫu thất bại")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <div className="space-y-6">
       {/* Top Banner & Quick Controls */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 border border-emerald-700/30 p-5 sm:p-7 shadow-md text-white">
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-200 text-xs font-semibold mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold mb-2">
               <BedDouble className="w-3.5 h-3.5" />
-              <span>Hệ Thống Vận Hành Khách Sạn & Homestay (PMS)</span>
+              <span>Hệ Thống Vận Hành Khách Sạn &amp; Homestay (PMS)</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span>{profile?.businessName || "Cơ Sở Đối Tác"}</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold">
                 {rooms.length} phòng
               </span>
             </h2>
-            <p className="text-xs sm:text-sm text-emerald-100/90 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Quản lý rack phòng trực quan, nhận/trả phòng nhanh tại quầy, bán minibar tự trừ kho và tất toán Folio an toàn.
             </p>
           </div>
@@ -321,31 +217,19 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
               type="button"
               onClick={loadPmsData}
               disabled={isLoading}
-              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white transition-colors flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
               title="Làm mới dữ liệu"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-emerald-600" : "text-slate-500"}`} />
               <span className="hidden sm:inline">Đồng bộ</span>
             </button>
-
-            {rooms.length === 0 && (
-              <button
-                type="button"
-                onClick={handleSeedDemoData}
-                disabled={isLoading}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Nạp Dữ Liệu Mẫu PMS</span>
-              </button>
-            )}
 
             <button
               type="button"
               onClick={() => setIsNewReservationModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-emerald-950 text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>+ Đặt Phòng / Nhận Phòng Quầy</span>
             </button>
           </div>
@@ -353,40 +237,40 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
 
         {/* Real-time KPI Ribbon */}
         {reports && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 mt-5 pt-5 border-t border-white/15">
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-              <span className="text-[11px] text-emerald-100/80 block font-medium">Tỷ Lệ Lấp Đầy</span>
-              <span className="text-lg font-extrabold text-white">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 mt-5 pt-5 border-t border-slate-100">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] text-slate-500 block font-medium">Tỷ Lệ Lấp Đầy</span>
+              <span className="text-lg font-extrabold text-slate-800">
                 {reports.roomsSummary.occupancyRate}%
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-              <span className="text-[11px] text-emerald-100/80 block font-medium">Đang Có Khách</span>
-              <span className="text-lg font-extrabold text-rose-200">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] text-slate-500 block font-medium">Đang Có Khách</span>
+              <span className="text-lg font-extrabold text-rose-600">
                 {reports.roomsSummary.occupiedRooms} / {reports.roomsSummary.totalRooms}
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-              <span className="text-[11px] text-emerald-100/80 block font-medium">Trống Sạch Sẵn Sàng</span>
-              <span className="text-lg font-extrabold text-emerald-200">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] text-slate-500 block font-medium">Trống Sạch Sẵn Sàng</span>
+              <span className="text-lg font-extrabold text-emerald-700">
                 {reports.roomsSummary.vacantClean}
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-              <span className="text-[11px] text-emerald-100/80 block font-medium">Phòng Cần Dọn</span>
-              <span className="text-lg font-extrabold text-amber-200">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] text-slate-500 block font-medium">Phòng Cần Dọn</span>
+              <span className="text-lg font-extrabold text-amber-600">
                 {reports.roomsSummary.vacantDirty}
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-              <span className="text-[11px] text-emerald-100/80 block font-medium">Đến / Đi Hôm Nay</span>
-              <span className="text-lg font-extrabold text-sky-200">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] text-slate-500 block font-medium">Đến / Đi Hôm Nay</span>
+              <span className="text-lg font-extrabold text-sky-700">
                 {reports.todayOperations.arrivalsToday} / {reports.todayOperations.departuresToday}
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-              <span className="text-[11px] text-emerald-100/80 block font-medium">Doanh Thu Đã Thu</span>
-              <span className="text-base font-extrabold text-emerald-200 truncate block">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] text-slate-500 block font-medium">Doanh Thu Đã Thu</span>
+              <span className="text-base font-extrabold text-emerald-700 truncate block">
                 {Number(reports.financialSummary.totalCollected || 0).toLocaleString("vi-VN")} ₫
               </span>
             </div>
@@ -557,20 +441,22 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
                   : "Không tìm thấy phòng nào phù hợp với bộ lọc."}
               </p>
               {rooms.length === 0 && (
-                <div className="mt-4 flex justify-center gap-3">
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
                   <button
                     type="button"
-                    onClick={handleSeedDemoData}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-xs"
+                    onClick={() => setIsNewRoomTypeModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                   >
-                    Nạp Dữ Liệu Khách Sạn Mẫu
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Thêm Hạng Phòng</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsNewRoomModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                   >
-                    Tạo Phòng Mới Thủ Công
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tạo Phòng Mới</span>
                   </button>
                 </div>
               )}

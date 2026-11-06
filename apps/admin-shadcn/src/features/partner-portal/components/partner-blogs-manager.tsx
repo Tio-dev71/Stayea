@@ -50,39 +50,6 @@ const PARTNER_BLOG_CATEGORIES = [
   { id: "trai-nghiem", label: "Tour đảo & Lặn biển" },
 ]
 
-const PARTNER_SAMPLE_TEMPLATES = [
-  {
-    title: "Hướng dẫn đường đi & Thủ tục nhận phòng thuận tiện nhất",
-    category: "luu-tru",
-    content: `### 🏡 Chào mừng quý khách đến với cơ sở của chúng tôi!
-Để chuyến đi nghỉ dưỡng tại Phú Quốc của bạn thật trọn vẹn và thư thái, cơ sở xin gửi đến bạn một số hướng dẫn chi tiết:
-
-### 📍 Chỉ dẫn đường đi & Phương tiện di chuyển:
-- Từ Sân bay Phú Quốc: Bạn chỉ mất khoảng 15 phút đi taxi hoặc xe đưa đón.
-- Định vị Google Maps chính xác: Tìm kiếm tên cơ sở để có lộ trình nhanh nhất.
-
-### ⏰ Thời gian Check-in & Nhận phòng:
-- **Giờ nhận phòng tiêu chuẩn**: 14:00 (Hỗ trợ nhận phòng sớm nếu phòng trống trước).
-- **Giờ trả phòng**: 12:00 trưa hôm sau.
-- **Dịch vụ hỗ trợ**: Giữ hành lý miễn phí nếu bạn đến sớm hoặc có chuyến bay muộn.
-
-> 💡 **Mẹo nhỏ**: Cơ sở chuẩn bị sẵn nước suối mát, trà và bản đồ du lịch Phú Quốc tại sảnh đón tiếp!`,
-  },
-  {
-    title: "Cung đường phượt xe máy ngắm hoàng hôn đẹp mê hồn ở Phú Quốc",
-    category: "kinh-nghiem-xe",
-    content: `### 🛵 Trải nghiệm vi vu gió biển trên cung đường ven biển
-Thuê xe máy tự lái là cách tuyệt vời nhất để tự do khám phá mọi ngóc ngách của Đảo Ngọc.
-
-### 🌅 Lộ trình ngắm hoàng hôn đỉnh nhất:
-- **16:00**: Xuất phát từ trung tâm Dương Đông, đi dọc đường Trần Hưng Đạo về hướng Bãi Trường.
-- **17:15**: Dừng chân tại các quán bar ven biển ngắm mặt trời đỏ rực từ từ lặn xuống mặt biển.
-- **18:30**: Ghé Chợ đêm Dinh Cậu thưởng thức hải sản và kem cuộn Thái Lan.
-
-> 💡 **Quy tắc an toàn**: Đội mũ bảo hiểm đúng quy chuẩn, kiểm tra phanh và xăng trước khi khởi hành. Đội xe chúng tôi hỗ trợ cứu hộ 24/7!`,
-  },
-]
-
 function parseDriveUrl(input: string): { convertedUrl: string; isDrive: boolean } {
   if (!input) return { convertedUrl: "", isDrive: false }
   const trimmed = input.trim()
@@ -229,13 +196,6 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
       textarea.focus()
       textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected.length || "nội dung".length))
     }, 50)
-  }
-
-  const applyTemplate = (tpl: typeof PARTNER_SAMPLE_TEMPLATES[0]) => {
-    setTitle(tpl.title)
-    setCategory(tpl.category)
-    setContent(tpl.content)
-    toast.success("Đã chèn mẫu bài viết!")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -718,25 +678,11 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
                     <button
                       type="button"
                       onClick={() => insertFormatting("> 💡 **Lưu ý**: ")}
-                      className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                      className="p-1.5 rounded-md hover:bg-slate-200 text-slate-700 cursor-pointer"
                       title="Hộp lưu ý nổi bật"
                     >
                       <Info className="w-3.5 h-3.5" />
                     </button>
-
-                    <div className="ml-auto flex items-center gap-1.5">
-                      <span className="text-[10px] text-slate-400">Mẫu:</span>
-                      {PARTNER_SAMPLE_TEMPLATES.map((tpl, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => applyTemplate(tpl)}
-                          className="px-2 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 text-[10px] font-semibold cursor-pointer"
-                        >
-                          {idx === 0 ? "Hướng dẫn nhận phòng" : "Cung đường phượt"}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 )}
 
@@ -749,11 +695,11 @@ export function PartnerBlogsManager({ profile }: PartnerBlogsManagerProps) {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Viết cẩm nang hướng dẫn du khách tại đây..."
-                    className="w-full px-3.5 py-2.5 rounded-b-xl bg-slate-800/80 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono leading-relaxed"
+                    className="w-full px-3.5 py-2.5 rounded-b-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono leading-relaxed"
                   />
                 ) : (
-                  <div className="p-4 rounded-xl bg-slate-950/90 border border-slate-800 min-h-[200px] max-h-[300px] overflow-y-auto">
-                    <RichTextPreview content={content} />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 min-h-[200px] max-h-[300px] overflow-y-auto">
+                    <RichTextPreview content={content} variant="light" />
                   </div>
                 )}
               </div>

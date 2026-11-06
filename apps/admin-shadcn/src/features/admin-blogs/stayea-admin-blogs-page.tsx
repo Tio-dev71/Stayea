@@ -58,37 +58,6 @@ const BLOG_CATEGORIES: { id: string; label: string; badgeColor: string }[] = [
   { id: "kinh-nghiem-xe", label: "Kinh nghiệm thuê xe & Phượt", badgeColor: "bg-rose-100 text-rose-800 border-rose-200" },
 ]
 
-const SAMPLE_BLOG_TEMPLATES = [
-  {
-    title: "Cẩm nang 4 ngày 3 đêm tự túc tại Đảo Ngọc Phú Quốc",
-    category: "cam-nang",
-    content: `### 🏝️ Lời mở đầu: Vì sao nên chọn Phú Quốc mùa này?
-Phú Quốc – hòn đảo ngọc phía Tây Nam Tổ quốc – sở hữu những bãi biển trong xanh như ngọc bích, cát trắng mịn màng và những rạn san hô tự nhiên đa dạng bậc nhất Việt Nam. Bài viết này STAYEA sẽ gửi đến bạn lịch trình trọn gói và chi tiết nhất!
-
-### 📅 Lịch trình gợi ý 4N3Đ tinh gọn:
-- **Ngày 1**: Hạ cánh Sân bay Phú Quốc, nhận xe tự lái giao tận nơi, check-in Villa/Homestay nghỉ dưỡng và ngắm hoàng hôn Bãi Trường.
-- **Ngày 2**: Khám phá Nam đảo, lên Cano 4 đảo (Hòn Mây Rút, Gầm Ghì, Móng Tay), lặn ngắm san hô và chụp Flycam.
-- **Ngày 3**: Chinh phục Bắc đảo, tham quan Rạch Vẹm ngắm sao biển, ghé Mũi Gành Dầu ngắm hải giới Campuchia.
-- **Ngày 4**: Thưởng thức bún quậy Kiến Xây trứ danh, mua hải sản khô Chợ Đêm và bay về.
-
-> 💡 **Mẹo nhỏ từ STAYEA**: Bạn nên đặt thuê xe máy hoặc ô tô tự lái trước ít nhất 2 ngày để đảm bảo có dòng xe đời mới tiết kiệm xăng nhất!`,
-  },
-  {
-    title: "Top 7 món ngon Phú Quốc nhất định phải thử một lần trong đời",
-    category: "am-thuc",
-    content: `### 🍜 Hương vị ẩm thực biển đảo nức lòng du khách
-Đến Phú Quốc mà chưa thưởng thức những món ăn đặc sản đậm đà hương biển cả thì chuyến đi chưa thể trọn vẹn.
-
-### 🌟 Danh sách món ngon đừng bỏ lỡ:
-1. **Bún quậy Phú Quốc**: Tự tay pha nước chấm theo khẩu vị riêng, sợi bún tươi làm tại chỗ kết hợp chả cá chả tôm ngọt lịm.
-2. **Gỏi cá trích cuốn bánh tráng**: Cá tươi rói thái mỏng, trộn cùng dừa nạo, hành tây, ngò rí và chấm nước mắm nhĩ Phú Quốc.
-3. **Nhum biển nướng mỡ hành**: Béo ngậy, ngọt thanh và ngập tràn dinh dưỡng.
-4. **Còi biên mai nướng muối ớt**: Vị cay nồng hòa quyện độ dai ngọt giòn sần sật.
-
-> 💡 **Gợi ý**: Các quán hải sản tươi sống khu vực Hàm Ninh và Chợ đêm Dương Đông luôn có nguồn hải sản cập bến trong ngày!`,
-  },
-]
-
 function parseDriveUrl(input: string): { convertedUrl: string; isDrive: boolean } {
   if (!input) return { convertedUrl: "", isDrive: false }
   const trimmed = input.trim()
@@ -242,13 +211,6 @@ export function StayeaAdminBlogsPage({
       textarea.focus()
       textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected.length || "nội dung".length))
     }, 50)
-  }
-
-  const applyTemplate = (tpl: typeof SAMPLE_BLOG_TEMPLATES[0]) => {
-    setTitle(tpl.title)
-    setCategory(tpl.category)
-    setContent(tpl.content)
-    toast.success(`Đã áp dụng mẫu "${tpl.title}"`)
   }
 
   // Submit Blog
@@ -880,25 +842,11 @@ export function StayeaAdminBlogsPage({
                     <button
                       type="button"
                       onClick={() => insertFormatting("> 💡 **Lưu ý**: ")}
-                      className="p-1.5 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                      className="p-1.5 rounded-md hover:bg-slate-200 text-slate-700 cursor-pointer"
                       title="Hộp lưu ý nổi bật"
                     >
                       <Info className="w-3.5 h-3.5" />
                     </button>
-
-                    <div className="ml-auto flex items-center gap-1.5">
-                      <span className="text-[10px] text-slate-400">Mẫu gợi ý:</span>
-                      {SAMPLE_BLOG_TEMPLATES.map((tpl, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => applyTemplate(tpl)}
-                          className="px-2 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 text-[10px] font-semibold cursor-pointer"
-                        >
-                          {idx === 0 ? "Lịch trình 4N3Đ" : "Top món ngon"}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 )}
 

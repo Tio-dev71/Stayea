@@ -14,12 +14,12 @@ import {
   Image as ImageIcon,
   Info,
   Italic,
+  Layers,
   List,
   ListOrdered,
   Loader2,
   MapPin,
   Plus,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react"
@@ -49,51 +49,6 @@ function parseDriveUrl(input: string): { convertedUrl: string; isDrive: boolean 
   }
 
   return { convertedUrl: trimmed, isDrive: false }
-}
-
-const TEMPLATES: Partial<Record<BusinessType, { label: string; text: string }>> = {
-  transport: {
-    label: "Mẫu cho thuê xe tự lái / Vận chuyển",
-    text: `### 🚗 Thông tin phương tiện & Trang bị
-- **Đời xe**: Đời mới 2024 - 2025, động cơ êm ái, bảo dưỡng định kỳ
-- **Tình trạng**: Giao xe sạch sẽ, lốp mới, phanh an toàn tuyệt đối
-- **Phụ kiện kèm theo**: 02 nón bảo hiểm cao cấp, 02 áo mưa tiện lợi, giá đỡ điện thoại
-
-### 📋 Chính sách & Thủ tục bàn giao
-- **Thủ tục đơn giản**: Chỉ cần CCCD / Hộ chiếu gốc và Bằng lái xe hợp lệ
-- **Giao nhận tận nơi**: Miễn phí tại Sân bay Phú Quốc, Cảng Bãi Vòng hoặc Khách sạn trung tâm Dương Đông
-- **Thời gian thuê**: Tính tròn 24h / ngày kể từ lúc nhận xe
-
-> 💡 **Lưu ý**: Khách hàng đổ xăng theo mức ban đầu khi nhận xe. Đội xe hỗ trợ kỹ thuật và cứu hộ 24/7 trên toàn đảo Phú Quốc.`,
-  },
-  homestay: {
-    label: "Mẫu Homestay / Villa nghỉ dưỡng",
-    text: `### 🌿 Không gian & Tiện ích nổi bật
-- **Phòng ngủ**: Nệm cao cấp tiêu chuẩn resort, máy lạnh Inverter, ban công thoáng mát
-- **Bếp gia đình**: Đầy đủ bếp từ, tủ lạnh lớn, lò vi sóng, dụng cụ nấu ăn và gia vị cơ bản
-- **Tiện ích chung**: Hồ bơi ngoài trời xanh mát, sân nướng BBQ tiệc tối, Wifi cáp quang tốc độ cao
-
-### ⏰ Giờ giấc & Quy định lưu trú
-- **Check-in**: Từ 14:00 | **Check-out**: Trước 12:00 ngày hôm sau
-- Hỗ trợ gửi hành lý miễn phí nếu quý khách đến sớm hoặc có chuyến bay muộn
-
-> 💡 **Lưu ý**: Giữ yên tĩnh chung sau 22:00. Miễn phí trà, cà phê và nước suối chào đón khi nhận phòng.`,
-  },
-  tour: {
-    label: "Mẫu Tour cano đảo / Trải nghiệm",
-    text: `### 🏝️ Lịch trình trải nghiệm đặc sắc
-- **08:30**: Xe ô tô đưa đón tận nơi tại sảnh khách sạn Dương Đông
-- **09:30**: Lên Cano cao tốc khám phá 3 hòn đảo thiên đường: Hòn Mây Rút, Hòn Gầm Ghì, Hòn Móng Tay
-- **12:00**: Dùng bữa trưa hải sản tươi sống 8 món đậm đà phong vị Phú Quốc
-- **14:00**: Trải nghiệm lặn ngắm san hô tự nhiên, chèo ván SUP và quay chụp Flycam
-- **16:30**: Cano cập cảng An Thới, xe đưa quý khách về khách sạn an toàn
-
-### ✅ Giá tour đã bao gồm
-- Xe du lịch đời mới & Cano cao tốc an toàn
-- Bữa trưa hải sản tiêu chuẩn
-- Kính lặn, ống thở, áo phao & dịch vụ Flycam chụp ảnh
-- Hướng dẫn viên địa phương nhiệt tình + Bảo hiểm du lịch trọn gói`,
-  },
 }
 
 interface PartnerCreateServiceModalProps {
@@ -318,14 +273,6 @@ export function PartnerCreateServiceModal({
     }, 50)
   }
 
-  const applyTemplate = () => {
-    const tpl = TEMPLATES[businessType]
-    if (tpl) {
-      setDescription(tpl.text)
-      toast.success(`Đã áp dụng ${tpl.label}`)
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -465,7 +412,7 @@ export function PartnerCreateServiceModal({
           <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-700" />
+                <Layers className="w-4 h-4 text-emerald-700" />
                 <span>Số lượng tồn kho & Sức chứa sẵn sàng phục vụ</span>
               </label>
               <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-300">
@@ -904,17 +851,7 @@ export function PartnerCreateServiceModal({
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="ml-auto">
-                  <button
-                    type="button"
-                    onClick={applyTemplate}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <Sparkles className="w-3 h-3 text-emerald-600" />
-                    <span>Chèn bài viết mẫu chuẩn</span>
-                  </button>
                 </div>
-              </div>
             )}
 
             {/* Editor Textarea vs Live Formatted Preview */}
@@ -924,7 +861,7 @@ export function PartnerCreateServiceModal({
                 rows={7}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Nhập mô tả chi tiết, tiện nghi, điều kiện giao xe, thủ tục hoặc nhấn 'Chèn bài viết mẫu chuẩn' phía trên..."
+                placeholder="Nhập mô tả chi tiết, tiện nghi, điều kiện giao nhận, quy định dịch vụ..."
                 className="w-full px-3.5 py-2.5 rounded-b-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono leading-relaxed"
               />
             ) : (
@@ -947,7 +884,7 @@ export function PartnerCreateServiceModal({
               type="submit"
               className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
             >
-              {isEditing ? <Sparkles className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {isEditing ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               <span>{isEditing ? "Lưu Thay Đổi Dịch Vụ" : "Đăng Bán Dịch Vụ"}</span>
             </button>
           </div>

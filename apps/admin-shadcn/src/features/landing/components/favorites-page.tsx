@@ -12,7 +12,6 @@ import {
   Ticket,
   ExternalLink,
   Trash2,
-  RotateCcw,
   Share2,
   Check,
   AlertCircle,
@@ -152,12 +151,6 @@ export function FavoritesPage({ onNavigate }: FavoritesPageProps) {
       setLastRemovedItem(null)
       showToast(`Đã khôi phục "${lastRemovedItem.title}" vào mục yêu thích`, "success")
     }
-  }
-
-  function handleResetFavorites() {
-    setFavoriteList(FAVORITE_ITEMS)
-    setIsManageModalOpen(false)
-    showToast("Đã khôi phục danh sách yêu thích mặc định (5 mục)", "success")
   }
 
   function handleClearAllFavorites() {
@@ -422,28 +415,7 @@ export function FavoritesPage({ onNavigate }: FavoritesPageProps) {
               <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
             </button>
 
-            {/* Action 2: Khôi phục về mặc định */}
-            <button
-              type="button"
-              onClick={handleResetFavorites}
-              className="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all text-left group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <RotateCcw className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-emerald-700">
-                    Khôi phục danh sách mẫu (5 mục)
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Nạp lại đầy đủ 5 dịch vụ Phú Quốc tiêu biểu theo thiết kế
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            {/* Action 3: Xóa tất cả */}
+            {/* Action 2: Xóa tất cả */}
             <button
               type="button"
               onClick={handleClearAllFavorites}

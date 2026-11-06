@@ -59,7 +59,6 @@ export const appPaths = {
     label: 'Settings',
     general: { href: '/settings/general', label: 'General' },
     sessions: { href: '/settings/sessions', label: 'Sessions' },
-    uploadDemo: { href: '/settings/upload-demo', label: 'Upload Demo' },
   },
 } as const
 

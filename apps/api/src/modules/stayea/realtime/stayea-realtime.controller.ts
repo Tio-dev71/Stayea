@@ -1,6 +1,7 @@
 import { Controller, Get, Query, Sse } from "@nestjs/common"
 import { ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger"
 import { Observable } from "rxjs"
+import { Public } from "@/shared-kernel/infrastructure/decorators/public.decorator"
 import { StayeaRealtimeService } from "@/modules/stayea/realtime/stayea-realtime.service"
 
 @ApiTags("Stayea Realtime Stream")
@@ -9,6 +10,7 @@ export class StayeaRealtimeController {
   constructor(private readonly realtimeService: StayeaRealtimeService) {}
 
   @Get("stream")
+  @Public()
   @Sse()
   @ApiOperation({
     summary: "Establish real-time Server-Sent Events (SSE) stream for instant zero-F5 live updates",
@@ -23,3 +25,4 @@ export class StayeaRealtimeController {
     return this.realtimeService.getChannelStream(targetChannel)
   }
 }
+

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { Observable, Subject, interval, map, merge } from "rxjs"
+import { Observable, Subject, interval, map, merge, filter } from "rxjs"
 
 export interface StayeaRealtimeMessage {
   type: string
@@ -17,55 +17,44 @@ export class StayeaRealtimeService {
   /**
    * Get an observable SSE stream for a specific channel (e.g. 'partner:uuid', 'admin', 'user:uuid', or 'global')
    */
-  getChannelStream(targetChannel: string): Observable<MessageEvent> {
+  getChannelStream(targetChannel: string): Observable<{ data: string }> {
     const channelLower = (targetChannel || "global").toLowerCase().trim()
 
     // 1. Filtered events stream
     const events$ = this.eventBus$.pipe(
-      map((msg) => {
-        // Match specific channel, wildcard prefix, or global broadcast
+      filter((msg) => {
         const msgChannel = (msg.channel || "").toLowerCase().trim()
-        const isMatch =
+        return (
           msgChannel === "global" ||
           msgChannel === channelLower ||
           channelLower === "global" ||
           (channelLower === "admin" && msgChannel.startsWith("admin")) ||
           msgChannel.startsWith(channelLower)
-
-        if (!isMatch) {
-          return null
-        }
-
-        return {
-          data: JSON.stringify({
-            event: msg.type,
-            channel: msg.channel,
-            payload: msg.data,
-            timestamp: msg.timestamp,
-          }),
-        } as MessageEvent
-      })
+        )
+      }),
+      map((msg) => ({
+        data: JSON.stringify({
+          event: msg.type,
+          channel: msg.channel,
+          payload: msg.data,
+          timestamp: msg.timestamp,
+        }),
+      }))
     )
 
     // 2. Keep-alive heartbeat ping every 20 seconds so reverse proxies (Nginx) never drop connection
     const heartbeat$ = interval(20000).pipe(
-      map(
-        () =>
-          ({
-            data: JSON.stringify({
-              event: "ping",
-              channel: channelLower,
-              payload: { alive: true },
-              timestamp: Date.now(),
-            }),
-          }) as MessageEvent
-      )
+      map(() => ({
+        data: JSON.stringify({
+          event: "ping",
+          channel: channelLower,
+          payload: { alive: true },
+          timestamp: Date.now(),
+        }),
+      }))
     )
 
-    return merge(events$, heartbeat$).pipe(
-      // Filter out null events that were not destined for this channel
-      map((evt) => evt as MessageEvent)
-    )
+    return merge(events$, heartbeat$)
   }
 
   /**
@@ -181,3 +170,4 @@ export class StayeaRealtimeService {
     }
   }
 }
+

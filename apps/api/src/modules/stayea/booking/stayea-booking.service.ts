@@ -5,7 +5,9 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from "@nestjs/common"
+import { EventEmitter2 } from "@nestjs/event-emitter"
 import { Cron, CronExpression } from "@nestjs/schedule"
 import {
   stayeaAccommodationsTable,
@@ -25,6 +27,7 @@ import { and, asc, desc, eq, gte, ilike, inArray, lte, ne, or, sql } from "drizz
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import { ErrorCode } from "@/shared-kernel/infrastructure/enums/error-code"
+import { StayeaNotificationService } from "@/modules/stayea/notification/stayea-notification.service"
 
 import type { DrizzleDb } from "@/app/database/db.port"
 import type { BookingQueryDto, CreateBookingDto } from "@/modules/stayea/booking/dtos/booking.dto"
@@ -33,7 +36,11 @@ import type { BookingQueryDto, CreateBookingDto } from "@/modules/stayea/booking
 export class StayeaBookingService {
   private readonly logger = new Logger(StayeaBookingService.name)
 
-  constructor(@Inject(DB_TOKEN) private readonly db: DrizzleDb) {}
+  constructor(
+    @Inject(DB_TOKEN) private readonly db: DrizzleDb,
+    @Optional() private readonly eventEmitter?: EventEmitter2,
+    @Optional() private readonly notificationService?: StayeaNotificationService
+  ) {}
 
   /**
    * Create a new unified booking across Stays, Flights, Experiences, Packages
@@ -337,10 +344,61 @@ export class StayeaBookingService {
             customerNote: dto.details?.contactInfo?.note || "",
             adminNotes: `Đơn đặt dịch vụ trực tuyến từ website (Mã booking: ${bookingCode})`,
           })
+
+          // Realtime notification and event emission
+          if (this.eventEmitter) {
+            this.eventEmitter.emit("stayea.partner.order.created", {
+              partnerId: targetPartnerId,
+              bookingId: newBooking?.id || bookingId,
+              bookingCode,
+              serviceTitle: dto.title,
+              customerName,
+              totalAmount: finalAmount,
+              startDate: dto.startDate,
+              endDate: dto.endDate,
+            })
+          }
+
+          if (this.notificationService) {
+            void this.notificationService.createNotification(
+              null,
+              "Hệ thống STAYEA",
+              {
+                recipientType: "partner",
+                recipientId: targetPartnerId,
+                title: `🔔 Đơn đặt dịch vụ mới: ${bookingCode}`,
+                message: `Khách hàng ${customerName} vừa đặt dịch vụ "${dto.title}". Số tiền: ${Number(finalAmount).toLocaleString("vi-VN")} VND. Vui lòng xác nhận!`,
+                type: "order",
+                priority: "urgent",
+                actionUrl: "/hub?tab=orders",
+                metadata: {
+                  bookingCode,
+                  serviceTitle: dto.title,
+                  finalAmount,
+                  customerPhone: cleanPhone,
+                },
+              }
+            ).catch((err) => this.logger.warn(`Failed to send partner notification: ${err.message}`))
+          }
         }
       } catch (orderErr) {
         // Log but do not block booking if partner order dispatch hits non-critical warning
         console.warn("[StayeaBooking] Partner order dispatch warning:", orderErr)
+      }
+
+      if (this.eventEmitter) {
+        this.eventEmitter.emit("stayea.booking.created", {
+          id: newBooking?.id || bookingId,
+          bookingCode,
+          userId,
+          title: dto.title,
+          bookingType: dto.bookingType,
+          destination: dto.destination,
+          totalAmount: finalAmount,
+          startDate: dto.startDate,
+          endDate: dto.endDate,
+          status: newBooking?.status || "pending",
+        })
       }
 
       return newBooking
@@ -518,6 +576,10 @@ export class StayeaBookingService {
       .where(eq(stayeaBookingsTable.id, id))
       .returning()
 
+    if (this.eventEmitter && updated) {
+      this.eventEmitter.emit("stayea.booking.updated", updated)
+    }
+
     return updated
   }
 
@@ -585,6 +647,15 @@ export class StayeaBookingService {
       }
     } catch (syncErr) {
       this.logger.warn(`Failed to synchronize partner order for booking ${updated.id}: ${syncErr}`)
+    }
+
+    if (this.eventEmitter && updated) {
+      this.eventEmitter.emit("stayea.booking.updated", updated)
+      this.eventEmitter.emit("stayea.partner.order.updated", {
+        bookingId: updated.id,
+        bookingCode: updated.bookingCode,
+        status,
+      })
     }
 
     return updated

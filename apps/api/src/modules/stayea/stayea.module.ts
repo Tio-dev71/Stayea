@@ -10,6 +10,7 @@ import { StayeaNotificationModule } from "@/modules/stayea/notification/stayea-n
 import { StayeaPartnerModule } from "@/modules/stayea/partner/stayea-partner.module"
 import { StayeaPaymentModule } from "@/modules/stayea/payment/stayea-payment.module"
 import { StayeaPmsModule } from "@/modules/stayea/pms/stayea-pms.module"
+import { StayeaRealtimeModule } from "@/modules/stayea/realtime/stayea-realtime.module"
 import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
 
 @Module({
@@ -25,6 +26,7 @@ import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
     StayeaChatModule,
     StayeaBlogModule,
     StayeaPmsModule,
+    StayeaRealtimeModule,
   ],
   exports: [
     StayeaNotificationModule,
@@ -38,6 +40,7 @@ import { StayeaUserModule } from "@/modules/stayea/user/stayea-user.module"
     StayeaChatModule,
     StayeaBlogModule,
     StayeaPmsModule,
+    StayeaRealtimeModule,
   ],
 })
 export class StayeaModule {}

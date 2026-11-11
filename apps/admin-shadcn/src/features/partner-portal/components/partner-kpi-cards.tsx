@@ -77,26 +77,23 @@ export function PartnerKpiCards({
       {/* 2. Pending Orders Card (Urgent action needed) */}
       <div
         onClick={onViewOrders}
-        className={`cursor-pointer group relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:scale-[1.01] ${
-          pendingOrders.length > 0
-            ? "bg-rose-50/70 border-rose-200 hover:border-rose-300 hover:shadow-md"
-            : "bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-md"
-        }`}
+        className={`cursor-pointer group relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:scale-[1.01] ${pendingOrders.length > 0
+          ? "bg-rose-50/70 border-rose-200 hover:border-rose-300 hover:shadow-md"
+          : "bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-md"
+          }`}
       >
         <div className="flex items-center justify-between">
           <span
-            className={`text-xs font-semibold uppercase tracking-wider ${
-              pendingOrders.length > 0 ? "text-rose-700 font-bold" : "text-slate-500"
-            }`}
+            className={`text-xs font-semibold uppercase tracking-wider ${pendingOrders.length > 0 ? "text-rose-700 font-bold" : "text-slate-500"
+              }`}
           >
             Đơn mới cần xử lý
           </span>
           <div
-            className={`w-9 h-9 rounded-xl border flex items-center justify-center ${
-              pendingOrders.length > 0
-                ? "bg-rose-100 border-rose-300 text-rose-700 animate-pulse"
-                : "bg-slate-50 border-slate-200 text-slate-500"
-            }`}
+            className={`w-9 h-9 rounded-xl border flex items-center justify-center ${pendingOrders.length > 0
+              ? "bg-rose-100 border-rose-300 text-rose-700 animate-pulse"
+              : "bg-slate-50 border-slate-200 text-slate-500"
+              }`}
           >
             <AlertTriangle className="w-5 h-5" />
           </div>

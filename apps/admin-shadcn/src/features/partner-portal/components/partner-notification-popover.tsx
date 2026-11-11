@@ -11,6 +11,7 @@ import {
   ShieldAlert,
 } from "lucide-react"
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { useStayeaRealtime } from "@/lib/stayea-realtime"
 
 interface NotificationItem {
   id: string
@@ -75,9 +76,19 @@ export function PartnerNotificationPopover({
 
   useEffect(() => {
     fetchNotifications()
-    const timer = setInterval(fetchNotifications, 45000) // Poll every 45s
+    const timer = setInterval(fetchNotifications, 45000) // Poll every 45s fallback
     return () => clearInterval(timer)
   }, [fetchNotifications])
+
+  // Realtime instant push for notifications
+  useStayeaRealtime(partnerId ? `partner:${partnerId}` : "partner", {
+    "notification:new": () => {
+      fetchNotifications()
+    },
+    "partner:order:created": () => {
+      fetchNotifications()
+    },
+  })
 
   // Close on outside click
   useEffect(() => {

@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { useStayeaRealtime } from "@/lib/stayea-realtime"
 import { clearAllAuth, getUser } from "@/lib/token"
 import { PartnerHeader } from "./components/partner-header"
 import { PartnerInventoryCalendar } from "./components/partner-inventory-calendar"
@@ -59,7 +60,7 @@ export function PartnerPortalPage({
         const parsed = JSON.parse(cachedList)
         return parsed[0] || null
       }
-    } catch {}
+    } catch { }
     return null
   })
   const [loading, setLoading] = useState(() => {
@@ -173,7 +174,7 @@ export function PartnerPortalPage({
             setProfiles(mapped)
             try {
               localStorage.setItem("stayea_cached_partner_profiles", JSON.stringify(mapped))
-            } catch {}
+            } catch { }
 
             const activeId = typeof window !== "undefined" ? localStorage.getItem("stayea_active_partner_id") : null
             const found =
@@ -186,7 +187,7 @@ export function PartnerPortalPage({
               try {
                 localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(found))
                 localStorage.setItem("stayea_active_partner_id", found.id)
-              } catch {}
+              } catch { }
             }
           }
           setLoading(false)
@@ -236,13 +237,9 @@ export function PartnerPortalPage({
   }, [currentProfile?.id])
 
   // 3. Load Orders for current partner
-  useEffect(() => {
-    if (!currentProfile) {
-      setAllOrders([])
-      return
-    }
+  const loadPartnerOrders = (partnerId: string) => {
     stayeaApi
-      .getPartnerOrders({ partnerId: currentProfile.id })
+      .getPartnerOrders({ partnerId })
       .then((live) => {
         if (Array.isArray(live)) {
           const mapped: PartnerOrderData[] = live.map((o: any) => ({
@@ -268,8 +265,8 @@ export function PartnerPortalPage({
             partnerNotes: o.partnerNotes,
             customerNote: o.customerNote || o.details?.contactInfo?.note || null,
             propertyName: o.propertyName || o.serviceTitle,
-            facilityName: o.facilityName || currentProfile.businessName || "",
-            propertyLocation: o.propertyLocation || currentProfile.address || "Phú Quốc",
+            facilityName: o.facilityName || currentProfile?.businessName || "",
+            propertyLocation: o.propertyLocation || currentProfile?.address || "Phú Quốc",
             roomType: o.roomType || o.serviceTitle,
             nightCount: o.nightCount || null,
             guestCount: o.guestCount || o.quantity || 1,
@@ -284,7 +281,44 @@ export function PartnerPortalPage({
       .catch(() => {
         setAllOrders([])
       })
+  }
+
+  useEffect(() => {
+    if (!currentProfile) {
+      setAllOrders([])
+      return
+    }
+    loadPartnerOrders(currentProfile.id)
   }, [currentProfile?.id])
+
+  // Realtime zero-F5 sync for Partner Hub
+  useStayeaRealtime(
+    currentProfile ? `partner:${currentProfile.id}` : null,
+    {
+      "partner:order:created": (data) => {
+        if (currentProfile) {
+          loadPartnerOrders(currentProfile.id)
+        }
+        toast.info(
+          `🔔 Đơn đặt mới: ${data?.bookingCode || "STA-..."}`,
+          {
+            description: `Khách: ${data?.customerName || "Khách hàng"} • ${data?.serviceTitle || "Dịch vụ"} (${Number(data?.totalAmount || 0).toLocaleString("vi-VN")} VND)`,
+            duration: 8000,
+          }
+        )
+      },
+      "partner:order:updated": () => {
+        if (currentProfile) {
+          loadPartnerOrders(currentProfile.id)
+        }
+      },
+      "pms:reservation:created": () => {
+        if (currentProfile) {
+          loadPartnerOrders(currentProfile.id)
+        }
+      },
+    }
+  )
 
   const currentOrders = currentProfile
     ? allOrders.filter((o) => o.partnerId === currentProfile.id)
@@ -312,10 +346,10 @@ export function PartnerPortalPage({
         prev.map((o) =>
           o.id === orderId
             ? {
-                ...o,
-                status: "partner_accepted",
-                partnerNotes: "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ.",
-              }
+              ...o,
+              status: "partner_accepted",
+              partnerNotes: "Đối tác đã tiếp nhận đơn và sẵn sàng phục vụ.",
+            }
             : o
         )
       )
@@ -453,7 +487,7 @@ export function PartnerPortalPage({
       if (next) {
         try {
           localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(next))
-        } catch {}
+        } catch { }
       }
       return next
     })
@@ -466,7 +500,7 @@ export function PartnerPortalPage({
     try {
       localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(profile))
       localStorage.setItem("stayea_active_partner_id", profile.id)
-    } catch {}
+    } catch { }
   }
 
   // Handle Partner Created
@@ -475,14 +509,14 @@ export function PartnerPortalPage({
       const next = [newProfile, ...prev.filter((p) => p.id !== newProfile.id)]
       try {
         localStorage.setItem("stayea_cached_partner_profiles", JSON.stringify(next))
-      } catch {}
+      } catch { }
       return next
     })
     setCurrentProfile(newProfile)
     try {
       localStorage.setItem("stayea_cached_partner_profile", JSON.stringify(newProfile))
       localStorage.setItem("stayea_active_partner_id", newProfile.id)
-    } catch {}
+    } catch { }
   }
 
   const handleLogout = async () => {
@@ -492,12 +526,12 @@ export function PartnerPortalPage({
     }
     try {
       await stayeaApi.logout()
-    } catch {}
+    } catch { }
     try {
       localStorage.removeItem("stayea_cached_partner_profiles")
       localStorage.removeItem("stayea_cached_partner_profile")
       localStorage.removeItem("stayea_active_partner_id")
-    } catch {}
+    } catch { }
     clearAllAuth()
     window.location.href = "/login"
   }

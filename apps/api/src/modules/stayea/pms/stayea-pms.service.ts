@@ -6,7 +6,9 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from "@nestjs/common"
+import { EventEmitter2 } from "@nestjs/event-emitter"
 import {
   stayeaPmsAuditLogsTable,
   stayeaPmsFolioItemsTable,
@@ -51,7 +53,10 @@ function generateCode(prefix: string) {
 export class StayeaPmsService {
   private readonly logger = new Logger(StayeaPmsService.name)
 
-  constructor(@Inject(DB_TOKEN) private readonly db: DrizzleDb) {}
+  constructor(
+    @Inject(DB_TOKEN) private readonly db: DrizzleDb,
+    @Optional() private readonly eventEmitter?: EventEmitter2
+  ) {}
 
   // -------------------------------------------------------------
   // 1. Room Types & Physical Rooms
@@ -210,6 +215,16 @@ export class StayeaPmsService {
       reason: dto.note || "Cập nhật trạng thái phòng",
       performedBy: staffName,
     })
+
+    if (this.eventEmitter && updated) {
+      this.eventEmitter.emit("stayea.pms.room.updated", {
+        partnerId,
+        roomId: updated.id,
+        roomNumber: updated.roomNumber,
+        status: updated.status,
+        housekeepingStatus: updated.housekeepingStatus,
+      })
+    }
 
     return updated
   }
@@ -437,6 +452,17 @@ export class StayeaPmsService {
       return { reservation: newRes, folio: newFolio }
     })
 
+    if (this.eventEmitter && result?.reservation) {
+      this.eventEmitter.emit("stayea.pms.reservation.created", {
+        partnerId,
+        reservationId: result.reservation.id,
+        reservationCode: result.reservation.reservationCode,
+        guestName: result.reservation.guestName,
+        roomId: result.reservation.roomId,
+        status: result.reservation.status,
+      })
+    }
+
     return result
   }
 
@@ -474,7 +500,7 @@ export class StayeaPmsService {
       throw new BadRequestException("Vui lòng chọn phòng vật lý để tiến hành nhận phòng")
     }
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       // 1. Verify target room is ready
       const [room] = await tx
         .select()
@@ -582,6 +608,24 @@ export class StayeaPmsService {
 
       return updatedRes
     })
+
+    if (this.eventEmitter && result) {
+      this.eventEmitter.emit("stayea.pms.reservation.updated", {
+        partnerId,
+        reservationId: result.id,
+        roomId: result.roomId,
+        status: result.status,
+      })
+      if (result.roomId) {
+        this.eventEmitter.emit("stayea.pms.room.updated", {
+          partnerId,
+          roomId: result.roomId,
+          status: "occupied",
+        })
+      }
+    }
+
+    return result
   }
 
   /**
@@ -617,7 +661,7 @@ export class StayeaPmsService {
 
     if (!folio) throw new NotFoundException("Không tìm thấy hồ sơ thanh toán (folio)")
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       let currentTotal = Number(folio.totalAmount)
       let currentPaid = Number(folio.paidAmount)
       let lateFee = Number(dto.lateCheckoutFee || 0)
@@ -718,6 +762,29 @@ export class StayeaPmsService {
 
       return { reservation: updatedRes, folioTotal: currentTotal, finalRemaining }
     })
+
+    if (this.eventEmitter && result?.reservation) {
+      this.eventEmitter.emit("stayea.pms.reservation.updated", {
+        partnerId,
+        reservationId: result.reservation.id,
+        roomId: result.reservation.roomId,
+        status: "checked_out",
+      })
+      if (res.roomId) {
+        this.eventEmitter.emit("stayea.pms.room.updated", {
+          partnerId,
+          roomId: res.roomId,
+          status: "vacant_dirty",
+          housekeepingStatus: "dirty",
+        })
+      }
+      this.eventEmitter.emit("stayea.pms.folio.updated", {
+        partnerId,
+        reservationId,
+      })
+    }
+
+    return result
   }
 
   /**
@@ -763,7 +830,7 @@ export class StayeaPmsService {
 
     const oldRoomId = res.roomId
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       // 1. Old room becomes vacant_dirty
       if (oldRoomId) {
         await tx
@@ -800,6 +867,27 @@ export class StayeaPmsService {
 
       return updatedRes
     })
+
+    if (this.eventEmitter && result) {
+      this.eventEmitter.emit("stayea.pms.reservation.updated", {
+        partnerId,
+        reservationId: result.id,
+        roomId: result.roomId,
+        status: result.status,
+      })
+      this.eventEmitter.emit("stayea.pms.room.updated", {
+        partnerId,
+        roomId: oldRoomId,
+        status: "vacant_dirty",
+      })
+      this.eventEmitter.emit("stayea.pms.room.updated", {
+        partnerId,
+        roomId: dto.targetRoomId,
+        status: "occupied",
+      })
+    }
+
+    return result
   }
 
   // -------------------------------------------------------------
@@ -893,7 +981,7 @@ export class StayeaPmsService {
 
     const itemAmount = dto.quantity * dto.unitPrice
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       // 1. Insert folio item
       const itemId = generateUid("fi")
       const [item] = await tx
@@ -969,6 +1057,22 @@ export class StayeaPmsService {
 
       return { item, folio: updatedFolio }
     })
+
+    if (this.eventEmitter && result?.folio) {
+      this.eventEmitter.emit("stayea.pms.folio.updated", {
+        partnerId,
+        reservationId,
+        folioId: result.folio.id,
+      })
+      if (dto.serviceItemId) {
+        this.eventEmitter.emit("stayea.pms.stock.updated", {
+          partnerId,
+          itemId: dto.serviceItemId,
+        })
+      }
+    }
+
+    return result
   }
 
   /**
@@ -1007,7 +1111,7 @@ export class StayeaPmsService {
 
     const cancelAmount = Number(item.amount)
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       // 1. Mark item cancelled
       const [cancelledItem] = await tx
         .update(stayeaPmsFolioItemsTable)
@@ -1084,6 +1188,21 @@ export class StayeaPmsService {
 
       return { cancelledItem, folio: updatedFolio }
     })
+
+    if (this.eventEmitter && result?.folio) {
+      this.eventEmitter.emit("stayea.pms.folio.updated", {
+        partnerId,
+        folioId: result.folio.id,
+      })
+      if (item.serviceItemId) {
+        this.eventEmitter.emit("stayea.pms.stock.updated", {
+          partnerId,
+          itemId: item.serviceItemId,
+        })
+      }
+    }
+
+    return result
   }
 
   /**
@@ -1108,7 +1227,7 @@ export class StayeaPmsService {
 
     if (!folio) throw new NotFoundException("Không tìm thấy hóa đơn")
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       const payId = generateUid("fp")
       const [payment] = await tx
         .insert(stayeaPmsFolioPaymentsTable)
@@ -1139,6 +1258,15 @@ export class StayeaPmsService {
 
       return { payment, folio: updatedFolio }
     })
+
+    if (this.eventEmitter && result?.folio) {
+      this.eventEmitter.emit("stayea.pms.folio.updated", {
+        partnerId,
+        folioId: result.folio.id,
+      })
+    }
+
+    return result
   }
 
   // -------------------------------------------------------------
@@ -1218,7 +1346,7 @@ export class StayeaPmsService {
       nextStock = dto.quantity
     }
 
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       await tx
         .update(stayeaPmsServiceItemsTable)
         .set({ currentStock: nextStock })
@@ -1242,6 +1370,16 @@ export class StayeaPmsService {
 
       return { item: { ...item, currentStock: nextStock }, transaction: txRecord }
     })
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit("stayea.pms.stock.updated", {
+        partnerId,
+        itemId: dto.itemId,
+        currentStock: nextStock,
+      })
+    }
+
+    return result
   }
 
   async getInventoryTransactions(partnerId: string, itemId?: string, limit = 40) {

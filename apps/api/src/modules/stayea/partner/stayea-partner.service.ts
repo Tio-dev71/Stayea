@@ -4,7 +4,9 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from "@nestjs/common"
+import { EventEmitter2 } from "@nestjs/event-emitter"
 import type { OnModuleInit } from "@nestjs/common"
 import {
   partnerInventoryTable,
@@ -51,7 +53,10 @@ function toSlug(str: string): string {
 
 @Injectable()
 export class StayeaPartnerService implements OnModuleInit {
-  constructor(@Inject(DB_TOKEN) private readonly db: DrizzleDb) {}
+  constructor(
+    @Inject(DB_TOKEN) private readonly db: DrizzleDb,
+    @Optional() private readonly eventEmitter?: EventEmitter2
+  ) {}
 
   async onModuleInit() {
     await this.syncAllExistingPartnerServices()
@@ -1138,6 +1143,16 @@ export class StayeaPartnerService implements OnModuleInit {
         .where(eq(partnerOrdersTable.id, order.id))
         .returning()
 
+      if (this.eventEmitter && updated) {
+        this.eventEmitter.emit("stayea.partner.order.updated", {
+          orderId: order.id,
+          orderCode: order.orderCode,
+          partnerId: order.partnerId,
+          status: updated.status,
+          bookingId: order.bookingId,
+        })
+      }
+
       return updated
     }
 
@@ -1166,6 +1181,16 @@ export class StayeaPartnerService implements OnModuleInit {
         .set({ status: "confirmed", updatedAt: new Date() })
         .where(eq(stayeaBookingsTable.id, order.bookingId))
         .catch(() => {})
+    }
+
+    if (this.eventEmitter && updated) {
+      this.eventEmitter.emit("stayea.partner.order.updated", {
+        orderId: order.id,
+        orderCode: order.orderCode,
+        partnerId: order.partnerId,
+        status: updated.status,
+        bookingId: order.bookingId,
+      })
     }
 
     return updated

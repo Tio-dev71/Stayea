@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
-import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Inject, Injectable, Logger, NotFoundException, Optional } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
+import { EventEmitter2 } from "@nestjs/event-emitter"
 import {
   stayeaNotificationReadsTable,
   stayeaNotificationsTable,
@@ -60,7 +61,8 @@ export class StayeaNotificationService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(DB_TOKEN) private readonly db: DrizzleDb
+    @Inject(DB_TOKEN) private readonly db: DrizzleDb,
+    @Optional() private readonly eventEmitter?: EventEmitter2
   ) {}
 
   // -------------------------------------------------------------
@@ -104,6 +106,10 @@ export class StayeaNotificationService {
     this.logger.log(
       `[Notification Center] Created ${created.type} notification: "${created.title}" to target: ${created.recipientType} (${created.recipientId || "broadcast"})`
     )
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit("stayea.notification.created", created)
+    }
 
     return created
   }

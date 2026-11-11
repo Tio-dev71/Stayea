@@ -14,6 +14,7 @@ import { CreateBookingModal } from "./components/create-booking-modal"
 import { BookingDetailModal } from "./components/booking-detail-modal"
 import { type BookingRecord, type BookingKpiItem } from "./stayea-admin-bookings-mock-data"
 import { stayeaApi } from "@/lib/stayea-api-service"
+import { useStayeaRealtime } from "@/lib/stayea-realtime"
 import { exportToCsv } from "@/lib/export-csv"
 
 interface StayeaAdminBookingsPageProps {
@@ -178,6 +179,22 @@ export function StayeaAdminBookingsPage({
   useEffect(() => {
     fetchBookings()
   }, [])
+
+  // Realtime zero-F5 sync for Admin Bookings
+  useStayeaRealtime("admin", {
+    "booking:created": (data) => {
+      fetchBookings()
+      toast.info(`🔔 Đơn đặt mới: ${data?.bookingCode || ""}`, {
+        description: `${data?.title || "Dịch vụ"} • ${Number(data?.totalAmount || 0).toLocaleString("vi-VN")} VND`,
+      })
+    },
+    "booking:updated": () => {
+      fetchBookings()
+    },
+    "partner:order:updated": () => {
+      fetchBookings()
+    },
+  })
 
   // Filtered Bookings
   const filteredBookings = useMemo(() => {

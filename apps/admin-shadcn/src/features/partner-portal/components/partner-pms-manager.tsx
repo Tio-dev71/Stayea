@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useStayeaRealtime } from "@/lib/stayea-realtime"
 import {
   stayeaApi,
   type PmsRoom,
@@ -132,6 +133,35 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
       loadPmsData()
     } catch {}
   }
+
+  // Realtime zero-F5 sync for PMS Room Rack, Folio and Stock
+  useStayeaRealtime(partnerId ? `partner:${partnerId}` : null, {
+    "pms:room:updated": () => {
+      loadPmsData()
+    },
+    "pms:reservation:created": (data) => {
+      loadPmsData()
+      toast.info(
+        `🛎️ Đặt phòng mới: #${data?.reservationCode || ""}`,
+        { description: `Khách: ${data?.guestName || "Khách"} • Phòng đã giữ chỗ` }
+      )
+    },
+    "pms:reservation:updated": () => {
+      loadPmsData()
+      if (activeReservationId) {
+        refreshActiveFolio()
+      }
+    },
+    "pms:folio:updated": () => {
+      loadPmsData()
+      if (activeReservationId) {
+        refreshActiveFolio()
+      }
+    },
+    "pms:stock:updated": () => {
+      loadPmsData()
+    },
+  })
 
   // Quick Action: Mark room as cleaned
   const handleMarkRoomClean = async (room: PmsRoom) => {

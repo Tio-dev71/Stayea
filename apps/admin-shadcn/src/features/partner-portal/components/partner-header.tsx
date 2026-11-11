@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import { motion } from "motion/react"
 import {
     BedDouble,
     Bell,
@@ -362,110 +363,54 @@ export function PartnerHeader({
                 </div>
             </div>
 
-            {/* Navigation Sub-Tabs Bar */}
+            {/* Navigation Sub-Tabs Bar with Smooth Sliding Indicator */}
             <div className="bg-white border-t border-slate-100 border-b border-slate-200 shadow-xs">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <nav className="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 no-scrollbar">
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("overview")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "overview"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <Layers className="w-4 h-4 text-emerald-700" />
-                            <span>Tổng quan</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("pms")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "pms"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <BedDouble className="w-4 h-4 text-emerald-700" />
-                            <span>Vận Hành Khách Sạn & PMS</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("services")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "services"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            {getServiceTypeIcon(currentProfile?.businessType)}
-                            <span>Quản lý Dịch vụ</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("inventory")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "inventory"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <Calendar className="w-4 h-4 text-slate-600" />
-                            <span>Lịch & Tồn chỗ</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("orders")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 relative cursor-pointer ${activeTab === "orders"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <Bell className="w-4 h-4 text-slate-600" />
-                            <span>Tiếp nhận Đơn hàng</span>
-                            {pendingOrdersCount > 0 && (
-                                <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
-                                    {pendingOrdersCount}
-                                </span>
-                            )}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("messages")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "messages"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <MessageSquare className="w-4 h-4 text-slate-600" />
-                            <span>Tin nhắn Admin</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("blogs")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "blogs"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <BookOpen className="w-4 h-4 text-slate-600" />
-                            <span>Bài viết & Cẩm nang</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => onSelectTab("settings")}
-                            className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${activeTab === "settings"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
-                                }`}
-                        >
-                            <User className="w-4 h-4 text-slate-600" />
-                            <span>Quyết toán & Cài đặt</span>
-                        </button>
+                        {[
+                            { id: "overview" as const, label: "Tổng quan", icon: <Layers className="w-4 h-4 text-emerald-700" /> },
+                            { id: "pms" as const, label: "Vận Hành Khách Sạn & PMS", icon: <BedDouble className="w-4 h-4 text-emerald-700" /> },
+                            { id: "services" as const, label: "Quản lý Dịch vụ", icon: getServiceTypeIcon(currentProfile?.businessType) },
+                            { id: "inventory" as const, label: "Lịch & Tồn chỗ", icon: <Calendar className="w-4 h-4 text-slate-600" /> },
+                            {
+                                id: "orders" as const,
+                                label: "Tiếp nhận Đơn hàng",
+                                icon: <Bell className="w-4 h-4 text-slate-600" />,
+                                badge: pendingOrdersCount > 0 ? pendingOrdersCount : null,
+                            },
+                            { id: "messages" as const, label: "Tin nhắn Admin", icon: <MessageSquare className="w-4 h-4 text-slate-600" /> },
+                            { id: "blogs" as const, label: "Bài viết & Cẩm nang", icon: <BookOpen className="w-4 h-4 text-slate-600" /> },
+                            { id: "settings" as const, label: "Quyết toán & Cài đặt", icon: <User className="w-4 h-4 text-slate-600" /> },
+                        ].map((tab) => {
+                            const isActive = activeTab === tab.id
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => onSelectTab(tab.id)}
+                                    className={`relative px-3.5 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+                                        isActive ? "text-emerald-950 font-semibold" : "text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-50/80"
+                                    }`}
+                                >
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="partnerActiveTabPill"
+                                            className="absolute inset-0 rounded-xl bg-emerald-50 border border-emerald-200/80 shadow-xs"
+                                            transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10 flex items-center gap-2">
+                                        {tab.icon}
+                                        <span>{tab.label}</span>
+                                        {tab.badge && (
+                                            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
+                                                {tab.badge}
+                                            </span>
+                                        )}
+                                    </span>
+                                </button>
+                            )
+                        })}
                     </nav>
                 </div>
             </div>

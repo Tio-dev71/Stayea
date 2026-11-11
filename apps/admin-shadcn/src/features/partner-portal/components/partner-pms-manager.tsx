@@ -25,6 +25,8 @@ import {
   X,
 } from "lucide-react"
 import { toast } from "sonner"
+import { motion } from "motion/react"
+import { PageTransition } from "@/components/animations/page-transition"
 import { useStayeaRealtime } from "@/lib/stayea-realtime"
 import {
   stayeaApi,
@@ -308,83 +310,57 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
         )}
       </div>
 
-      {/* Sub-Tabs Selector */}
+      {/* Sub-Tabs Selector with Smooth Sliding Indicator */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-        <div className="flex space-x-2 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setCurrentSubTab("rack")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentSubTab === "rack"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            <DoorClosed className="w-3.5 h-3.5" />
-            <span>Sơ Đồ Phòng (Rack Grid)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentSubTab("reservations")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentSubTab === "reservations"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Danh Sách Đặt Phòng ({reservations.length})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentSubTab("inventory")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentSubTab === "inventory"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            <Package className="w-3.5 h-3.5" />
-            <span>Minibar & Kho Hàng ({serviceItems.length})</span>
-            {reports?.lowStockItems && reports.lowStockItems.length > 0 && (
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentSubTab("reports")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentSubTab === "reports"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            <BarChart3 className="w-3.5 h-3.5" />
-            <span>Báo Cáo Vận Hành</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentSubTab("setup")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentSubTab === "setup"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Cài Đặt Phòng & Hạng</span>
-          </button>
+        <div className="flex space-x-1.5 overflow-x-auto no-scrollbar">
+          {[
+            { id: "rack" as const, label: "Sơ Đồ Phòng (Rack Grid)", icon: <DoorClosed className="w-3.5 h-3.5" /> },
+            { id: "reservations" as const, label: `Danh Sách Đặt Phòng (${reservations.length})`, icon: <Calendar className="w-3.5 h-3.5" /> },
+            {
+              id: "inventory" as const,
+              label: `Minibar & Kho Hàng (${serviceItems.length})`,
+              icon: <Package className="w-3.5 h-3.5" />,
+              hasAlert: Boolean(reports?.lowStockItems && reports.lowStockItems.length > 0),
+            },
+            { id: "reports" as const, label: "Báo Cáo Vận Hành", icon: <BarChart3 className="w-3.5 h-3.5" /> },
+            { id: "setup" as const, label: "Cài Đặt Phòng & Hạng", icon: <Layers className="w-3.5 h-3.5" /> },
+          ].map((tab) => {
+            const isActive = currentSubTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setCurrentSubTab(tab.id)}
+                className={`relative px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  isActive ? "text-white" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="pmsSubTabPill"
+                    className="absolute inset-0 rounded-xl bg-emerald-600 shadow-xs"
+                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5">
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                  {tab.hasAlert && (
+                    <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
+                  )}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* ------------------------------------------------------------- */}
-      {/* SUB-TAB 1: ROOM RACK (SƠ ĐỒ PHÒNG TRỰC QUAN)                   */}
-      {/* ------------------------------------------------------------- */}
-      {currentSubTab === "rack" && (
+      {/* Sub-Tabs Content Animated Container */}
+      <PageTransition transitionKey={currentSubTab}>
+        {/* ------------------------------------------------------------- */}
+        {/* SUB-TAB 1: ROOM RACK (SƠ ĐỒ PHÒNG TRỰC QUAN)                   */}
+        {/* ------------------------------------------------------------- */}
+        {currentSubTab === "rack" && (
         <div className="space-y-5">
           {/* Filters Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-slate-200 p-3.5 rounded-2xl shadow-xs">
@@ -1254,6 +1230,7 @@ export function PartnerPmsManager({ profile }: PartnerPmsManagerProps) {
           </div>
         </div>
       )}
+      </PageTransition>
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL 1: NEW RESERVATION / WALK-IN                            */}

@@ -23,6 +23,7 @@ import { PartnerCreateProfileModal } from "./components/partner-create-profile-m
 import { PartnerAdminChat } from "./components/partner-admin-chat"
 import { PartnerBlogsManager } from "./components/partner-blogs-manager"
 import { PartnerPmsManager } from "./components/partner-pms-manager"
+import { PageTransition } from "@/components/animations/page-transition"
 import type {
   PartnerOrderData,
   PartnerProfileData,
@@ -592,7 +593,7 @@ export function PartnerPortalPage({
             </div>
           </div>
         ) : (
-          <>
+          <PageTransition transitionKey={activeTab}>
             {/* TAB 1: OVERVIEW */}
             {activeTab === "overview" && (
               <div className="space-y-8">
@@ -829,7 +830,7 @@ export function PartnerPortalPage({
                 onUpdateProfile={handleUpdateProfile}
               />
             )}
-          </>
+          </PageTransition>
         )}
       </main>
 

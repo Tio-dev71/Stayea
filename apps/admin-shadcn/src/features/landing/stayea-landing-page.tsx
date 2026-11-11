@@ -58,6 +58,7 @@ import { StayeaAdminReportsPage } from "@/features/admin-reports"
 import { StayeaAdminSettingsPage } from "@/features/admin-settings"
 import { PartnerPortalPage } from "@/features/partner-portal"
 import { AiConciergeWidget } from "@/features/ai-concierge"
+import { PageTransition } from "@/components/animations/page-transition"
 import { AccommodationSection } from "./components/accommodation-section"
 import { ExperiencesAndPackagesSection } from "./components/experiences-and-packages-section"
 import { ExploreSection } from "./components/explore-section"
@@ -1657,9 +1658,10 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
         currentUser={currentUser}
       />
 
-      {/* Main Page Content */}
+      {/* Main Page Content with Smooth Page Transitions */}
       <main id="main-content" className="flex-grow">
-        {currentPage === "settings" ? (
+        <PageTransition transitionKey={currentPage}>
+          {currentPage === "settings" ? (
           /* Settings Screen: Cài đặt */
           <StayeaSettingsPage onNavigate={handleNavigate} />
         ) : currentPage === "flight-booking" ? (
@@ -1804,6 +1806,7 @@ export function StayeaLandingPage({ initialPage, isAdminPortal }: StayeaLandingP
             <PromosAndPartnersSection onNavigate={handleNavigate} />
           </>
         )}
+        </PageTransition>
       </main>
 
       {/* Luxury Dark Footer */}

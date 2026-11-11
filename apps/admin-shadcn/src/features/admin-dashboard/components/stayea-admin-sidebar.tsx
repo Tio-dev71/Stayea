@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
+import { motion } from "motion/react"
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -219,20 +220,30 @@ export function StayeaAdminSidebar({
               key={item.id}
               type="button"
               onClick={() => handleTabClick(item.id)}
-              className={`relative overflow-hidden w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all text-left ${
+              className={`relative overflow-hidden w-full flex items-center px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-colors text-left cursor-pointer ${
                 isActive
-                  ? "bg-[#eef8f3] text-[#1b7a4e] font-semibold shadow-2xs border border-emerald-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent"
+                  ? "text-[#1b7a4e] font-semibold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
-              {/* Left active marker pill */}
+              {/* Sliding active pill indicator */}
               {isActive && (
-                <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#1b7a4e] rounded-r-full" />
+                <motion.div
+                  layoutId="adminSidebarActivePill"
+                  className="absolute inset-0 bg-[#eef8f3] border border-emerald-200/80 shadow-2xs rounded-xl"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
               )}
-              <span className={isActive ? "text-[#1b7a4e]" : "text-slate-400"}>
-                {getSidebarIcon(item.icon)}
+              {/* Left accent bar */}
+              {isActive && (
+                <span className="absolute left-0 top-2 bottom-2 w-1 bg-[#1b7a4e] rounded-r-full z-10" />
+              )}
+              <span className="relative z-10 flex items-center gap-2.5 truncate">
+                <span className={isActive ? "text-[#1b7a4e]" : "text-slate-400"}>
+                  {getSidebarIcon(item.icon)}
+                </span>
+                <span className="truncate">{item.label}</span>
               </span>
-              <span className="truncate">{item.label}</span>
             </button>
           )
         })}

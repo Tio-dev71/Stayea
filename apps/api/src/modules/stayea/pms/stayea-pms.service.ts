@@ -1542,16 +1542,33 @@ export class StayeaPmsService {
    * Get or create linked reservation and folio for a marketplace partner order
    */
   async getOrCreateOrderFolio(partnerId: string, orderId: string) {
-    const [order] = await this.db
+    const orderMatch = or(
+      eq(partnerOrdersTable.id, orderId),
+      eq(partnerOrdersTable.orderCode, orderId)
+    )
+
+    let [order] = await this.db
       .select()
       .from(partnerOrdersTable)
       .where(
-        and(
-          eq(partnerOrdersTable.id, orderId),
-          eq(partnerOrdersTable.partnerId, partnerId)
-        )
+        partnerId
+          ? and(orderMatch, eq(partnerOrdersTable.partnerId, partnerId))
+          : orderMatch
       )
       .limit(1)
+
+    // Fallback: If not matched with specific partnerId, resolve directly by ID/Code
+    if (!order) {
+      const [orderAny] = await this.db
+        .select()
+        .from(partnerOrdersTable)
+        .where(orderMatch)
+        .limit(1)
+      if (orderAny) {
+        order = orderAny
+        partnerId = order.partnerId
+      }
+    }
 
     if (!order) {
       throw new NotFoundException(`Không tìm thấy đơn hàng #${orderId}`)

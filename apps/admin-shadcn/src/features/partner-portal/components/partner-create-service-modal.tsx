@@ -133,8 +133,8 @@ export function PartnerCreateServiceModal({
         businessType === "transport"
           ? "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80"
           : businessType === "tour"
-          ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80"
-          : "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
+            ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80"
+            : "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
 
       setTitle("")
       setDescription("")
@@ -285,8 +285,8 @@ export function PartnerCreateServiceModal({
       businessType === "transport"
         ? "transport"
         : businessType === "tour"
-        ? "experience"
-        : "stay"
+          ? "experience"
+          : "stay"
 
     const sanitizedTotalUnits = Math.max(1, Number(totalUnits) || 1)
 
@@ -295,18 +295,18 @@ export function PartnerCreateServiceModal({
       capacity: sanitizedTotalUnits,
       ...(businessType === "homestay"
         ? {
-            bedrooms,
-            maxGuests,
-            amenities: ["Hồ bơi riêng", "Bếp nấu gia đình", "Wifi cáp quang"],
-          }
+          bedrooms,
+          maxGuests,
+          amenities: ["Hồ bơi riêng", "Bếp nấu gia đình", "Wifi cáp quang"],
+        }
         : businessType === "transport"
-        ? {
+          ? {
             vehicleType,
             transmission,
             hasDriver,
             amenities: ["Giao nhận xe sân bay", "Bảo hiểm 2 chiều", "Camera hành trình"],
           }
-        : {
+          : {
             duration,
             schedule,
             amenities: ["Canô cao tốc", "Ăn trưa hải sản", "Lặn ngắm san hô"],
@@ -372,8 +372,8 @@ export function PartnerCreateServiceModal({
                 {businessType === "transport"
                   ? "Khai báo đội xe, số lượng xe sẵn sàng phục vụ và chính sách thuê"
                   : businessType === "tour"
-                  ? "Khai báo tour đảo, số chỗ tối đa mỗi ngày và lịch trình"
-                  : "Khai báo homestay/villa, số phòng cùng hạng và tiện ích"}
+                    ? "Khai báo tour đảo, số chỗ tối đa mỗi ngày và lịch trình"
+                    : "Khai báo homestay/villa, số phòng cùng hạng và tiện ích"}
               </p>
             </div>
           </div>
@@ -399,8 +399,8 @@ export function PartnerCreateServiceModal({
                 businessType === "transport"
                   ? "Ví dụ: Xe Máy Honda Wave Alpha 110cc Tiết Kiệm Xăng"
                   : businessType === "tour"
-                  ? "Ví dụ: Tour 4 Đảo Cano Cao Tốc & Lặn Ngắm San Hô Tự Nhiên"
-                  : "Ví dụ: Villa Vườn Nhiệt Đới 2 Phòng Ngủ View Biển"
+                    ? "Ví dụ: Tour 4 Đảo Cano Cao Tốc & Lặn Ngắm San Hô Tự Nhiên"
+                    : "Ví dụ: Villa Vườn Nhiệt Đới 2 Phòng Ngủ View Biển"
               }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -426,8 +426,8 @@ export function PartnerCreateServiceModal({
                   {businessType === "transport"
                     ? "Tổng số xe sẵn có trong kho:"
                     : businessType === "tour"
-                    ? "Số vé tối đa mỗi ngày:"
-                    : "Số phòng cùng hạng sẵn có:"}
+                      ? "Số vé tối đa mỗi ngày:"
+                      : "Số phòng cùng hạng sẵn có:"}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -598,11 +598,10 @@ export function PartnerCreateServiceModal({
                   return (
                     <div
                       key={idx}
-                      className={`group relative rounded-xl overflow-hidden aspect-4/3 bg-slate-100 border transition-all ${
-                        isCover
-                          ? "border-emerald-500 ring-2 ring-emerald-300 shadow-md"
-                          : "border-slate-200 hover:border-slate-400"
-                      }`}
+                      className={`group relative rounded-xl overflow-hidden aspect-4/3 bg-slate-100 border transition-all ${isCover
+                        ? "border-emerald-500 ring-2 ring-emerald-300 shadow-md"
+                        : "border-slate-200 hover:border-slate-400"
+                        }`}
                     >
                       <img
                         src={img}
@@ -774,11 +773,10 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => setDescTab("edit")}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
-                    descTab === "edit"
-                      ? "bg-white text-emerald-800 shadow-xs border border-slate-200"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${descTab === "edit"
+                    ? "bg-white text-emerald-800 shadow-xs border border-slate-200"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
                 >
                   <FileEdit className="w-3 h-3" />
                   <span>Soạn thảo</span>
@@ -786,11 +784,10 @@ export function PartnerCreateServiceModal({
                 <button
                   type="button"
                   onClick={() => setDescTab("preview")}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
-                    descTab === "preview"
-                      ? "bg-white text-emerald-800 shadow-xs border border-slate-200"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${descTab === "preview"
+                    ? "bg-white text-emerald-800 shadow-xs border border-slate-200"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
                 >
                   <Eye className="w-3 h-3" />
                   <span>Xem trước ({description ? "Đã định dạng" : "Trống"})</span>
@@ -851,7 +848,7 @@ export function PartnerCreateServiceModal({
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </button>
 
-                </div>
+              </div>
             )}
 
             {/* Editor Textarea vs Live Formatted Preview */}

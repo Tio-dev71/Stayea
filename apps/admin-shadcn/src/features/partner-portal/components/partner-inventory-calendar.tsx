@@ -51,8 +51,8 @@ export function PartnerInventoryCalendar({
     activeService?.serviceType === "transport"
       ? "xe"
       : activeService?.serviceType === "experience"
-      ? "vé"
-      : "phòng"
+        ? "vé"
+        : "phòng"
 
   const [batchSlots, setBatchSlots] = useState<number>(serviceTotalUnits)
 
@@ -376,18 +376,16 @@ export function PartnerInventoryCalendar({
             return (
               <div
                 key={slot.date}
-                className={`group relative flex flex-col justify-between p-2 sm:p-2.5 rounded-xl border min-h-[105px] transition-all ${
-                  isAvail
-                    ? "bg-emerald-50/30 border-emerald-200 hover:border-emerald-400 shadow-xs"
-                    : "bg-slate-50 border-slate-200 opacity-60 text-slate-400"
-                }`}
+                className={`group relative flex flex-col justify-between p-2 sm:p-2.5 rounded-xl border min-h-[105px] transition-all ${isAvail
+                  ? "bg-emerald-50/30 border-emerald-200 hover:border-emerald-400 shadow-xs"
+                  : "bg-slate-50 border-slate-200 opacity-60 text-slate-400"
+                  }`}
               >
                 {/* Day Header */}
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-sm font-bold ${
-                      slot.isWeekend ? "text-emerald-800" : "text-slate-900"
-                    }`}
+                    className={`text-sm font-bold ${slot.isWeekend ? "text-emerald-800" : "text-slate-900"
+                      }`}
                   >
                     {slot.dayNumber}
                   </span>

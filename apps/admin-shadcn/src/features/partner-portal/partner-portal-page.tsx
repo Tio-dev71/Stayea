@@ -807,8 +807,10 @@ export function PartnerPortalPage({
             {activeTab === "orders" && (
               <PartnerOrdersManager
                 orders={currentOrders}
+                partnerId={currentProfile?.id}
                 onAcceptOrder={handleAcceptOrder}
                 onRejectOrder={handleRejectOrder}
+                onNavigateToPms={() => setActiveTab("pms")}
               />
             )}
 

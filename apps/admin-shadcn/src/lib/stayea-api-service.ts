@@ -2640,6 +2640,30 @@ class StayeaApiService {
     return json.data || json
   }
 
+  async getPmsOrderFolio(orderId: string, partnerId?: string): Promise<PmsFolioDetails> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/orders/${orderId}/folio${q}`)
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể tải hóa đơn phòng của đơn hàng")
+    return json.data || json
+  }
+
+  async postPmsOrderFolioItem(
+    orderId: string,
+    dto: any,
+    partnerId?: string
+  ): Promise<{ item: PmsFolioItem; folio: PmsFolio }> {
+    const q = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : ""
+    const res = await this.fetchWithAuth(`/api/stayea/pms/orders/${orderId}/folio/items${q}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || "Không thể ghi nhận dịch vụ vào đơn hàng")
+    return json.data || json
+  }
+
   async postPmsFolioItem(
     reservationId: string,
     dto: any,

@@ -382,4 +382,38 @@ export class StayeaPmsController {
     const pId = await this.resolvePartnerId(req, partnerId)
     return this.pmsService.getStaffRoles(pId)
   }
+
+  // -------------------------------------------------------------
+  // 6. Order-Linked Folio & Incidental Services
+  // -------------------------------------------------------------
+
+  @Public()
+  @ApiBearerAuth()
+  @Get("orders/:orderId/folio")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Lấy chi tiết Folio (hóa đơn phòng) liên kết với Đơn hàng" })
+  async getOrderFolio(
+    @Request() req: any,
+    @Param("orderId") orderId: string,
+    @Query("partnerId") partnerId?: string
+  ) {
+    const pId = await this.resolvePartnerId(req, partnerId)
+    return this.pmsService.getOrCreateOrderFolio(pId, orderId)
+  }
+
+  @Public()
+  @ApiBearerAuth()
+  @Post("orders/:orderId/folio/items")
+  @UseEnvelope()
+  @ApiOperation({ summary: "Ghi nhận dịch vụ/trái cây/nước uống vào đơn hàng của khách" })
+  async postOrderFolioItem(
+    @Request() req: any,
+    @Param("orderId") orderId: string,
+    @Body() dto: PostServiceItemDto,
+    @Query("partnerId") partnerId?: string
+  ) {
+    const pId = await this.resolvePartnerId(req, partnerId)
+    const { staffName } = this.extractStaff(req)
+    return this.pmsService.postOrderFolioItem(pId, orderId, dto, staffName)
+  }
 }

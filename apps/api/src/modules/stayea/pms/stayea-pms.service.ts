@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import {
+  partnerOrdersTable,
   stayeaPmsAuditLogsTable,
   stayeaPmsFolioItemsTable,
   stayeaPmsFolioPaymentsTable,
@@ -21,7 +22,7 @@ import {
   stayeaPmsServiceItemsTable,
   stayeaPmsStaffRolesTable,
 } from "@workspace/database"
-import { and, desc, eq, gte, inArray, lte } from "drizzle-orm"
+import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm"
 
 import { DB_TOKEN } from "@/app/database/db.port"
 import type { DrizzleDb } from "@/app/database/db.port"
@@ -1531,5 +1532,159 @@ export class StayeaPmsService {
       .select()
       .from(stayeaPmsStaffRolesTable)
       .where(eq(stayeaPmsStaffRolesTable.partnerId, partnerId))
+  }
+
+  // -------------------------------------------------------------
+  // 7. Order-Linked Folio & Incidental Management
+  // -------------------------------------------------------------
+
+  /**
+   * Get or create linked reservation and folio for a marketplace partner order
+   */
+  async getOrCreateOrderFolio(partnerId: string, orderId: string) {
+    const [order] = await this.db
+      .select()
+      .from(partnerOrdersTable)
+      .where(
+        and(
+          eq(partnerOrdersTable.id, orderId),
+          eq(partnerOrdersTable.partnerId, partnerId)
+        )
+      )
+      .limit(1)
+
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng #${orderId}`)
+    }
+
+    // 1. Look for existing linked reservation
+    let [res] = await this.db
+      .select()
+      .from(stayeaPmsReservationsTable)
+      .where(
+        and(
+          eq(stayeaPmsReservationsTable.partnerId, partnerId),
+          or(
+            eq(stayeaPmsReservationsTable.partnerOrderId, order.id),
+            order.bookingId
+              ? eq(stayeaPmsReservationsTable.bookingId, order.bookingId)
+              : sql`false`,
+            eq(stayeaPmsReservationsTable.reservationCode, order.orderCode)
+          )
+        )
+      )
+      .limit(1)
+
+    // 2. If not found, auto-create reservation + folio
+    let targetReservationId = res?.id
+
+    if (!targetReservationId) {
+      // Find or create default room type for this partner
+      const [existingRoomType] = await this.db
+        .select()
+        .from(stayeaPmsRoomTypesTable)
+        .where(eq(stayeaPmsRoomTypesTable.partnerId, partnerId))
+        .limit(1)
+
+      let roomTypeId = existingRoomType?.id
+
+      if (!roomTypeId) {
+        const rtId = generateUid("rt")
+        const rtCode = generateCode("RT")
+        const [createdRt] = await this.db
+          .insert(stayeaPmsRoomTypesTable)
+          .values({
+            id: rtId,
+            partnerId,
+            name: order.serviceTitle || "Hạng phòng tiêu chuẩn",
+            code: rtCode,
+            basePrice: order.unitPrice || "0",
+            maxOccupancy: 4,
+            maxAdults: 2,
+            maxChildren: 2,
+          })
+          .returning()
+        roomTypeId = createdRt?.id || rtId
+      }
+
+      const resId = generateUid("res")
+      targetReservationId = resId
+      const folioId = generateUid("fol")
+      const folioNumber = generateCode("FOL")
+      const checkInDate = order.startDate ? new Date(order.startDate) : new Date()
+      const checkOutDate = order.endDate
+        ? new Date(order.endDate)
+        : new Date(checkInDate.getTime() + 86400000)
+
+      await this.db.transaction(async (tx) => {
+        await tx.insert(stayeaPmsReservationsTable).values({
+          id: resId,
+          reservationCode: order.orderCode,
+          partnerId,
+          partnerOrderId: order.id,
+          bookingId: order.bookingId || null,
+          roomTypeId,
+          channel: "stayea_marketplace",
+          guestName: order.customerName,
+          guestPhone: order.customerPhone,
+          guestEmail: order.customerEmail || null,
+          guestCount: order.quantity || 1,
+          expectedCheckIn: checkInDate,
+          expectedCheckOut: checkOutDate,
+          actualCheckIn: new Date(),
+          roomRate: order.unitPrice || "0",
+          totalNights: 1,
+          status: "checked_in",
+          depositAmount: order.totalAmount || "0",
+          paymentStatus: "paid",
+          specialRequests: order.customerNote || null,
+          createdBy: "STAYEA Marketplace",
+        })
+
+        // Create Folio
+        await tx.insert(stayeaPmsFoliosTable).values({
+          id: folioId,
+          partnerId,
+          reservationId: resId,
+          folioNumber,
+          roomCharges: order.totalAmount || "0",
+          serviceCharges: "0",
+          surcharges: "0",
+          discountAmount: "0",
+          totalAmount: order.totalAmount || "0",
+          paidAmount: order.totalAmount || "0",
+          remainingBalance: "0",
+          status: "open",
+        })
+
+        // Insert initial room charge item
+        await tx.insert(stayeaPmsFolioItemsTable).values({
+          id: generateUid("fi"),
+          partnerId,
+          folioId,
+          itemType: "room_charge",
+          description: `Tiền phòng ${order.serviceTitle} (Đã bảo chứng thanh toán qua STAYEA)`,
+          quantity: "1",
+          unitPrice: order.totalAmount || "0",
+          amount: order.totalAmount || "0",
+          recordedBy: "Hệ thống STAYEA",
+        })
+      })
+    }
+
+    return this.getFolio(partnerId, targetReservationId)
+  }
+
+  /**
+   * Post incidental service / minibar item directly to an order's folio
+   */
+  async postOrderFolioItem(
+    partnerId: string,
+    orderId: string,
+    dto: PostServiceItemDto,
+    staffName: string
+  ) {
+    const folioData = await this.getOrCreateOrderFolio(partnerId, orderId)
+    return this.postServiceItem(partnerId, folioData.reservation.id, dto, staffName)
   }
 }

@@ -93,6 +93,12 @@ export interface CreateBookingPayload {
   details?: {
     stayId?: string
     roomType?: string
+    ratePlan?: string
+    ratePlanId?: string
+    adultCount?: number
+    childCount?: number
+    childAges?: number[]
+    childSurcharges?: number
     nightCount?: number
     flightId?: string
     flightNumber?: string
